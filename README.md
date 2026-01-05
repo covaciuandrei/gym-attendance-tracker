@@ -132,7 +132,7 @@ The app uses a multi-tenant Firestore structure:
 
 ```
 /users/{userId}
-  - email, displayName, createdAt, preferences
+  - email, displayName, createdAt, lastLoginAt, theme, preferences
 
 /users/{userId}/trainingTypes/{typeId}
   - name, color, icon, createdAt
