@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "gym-presence-tracker": {
+    "gym-attendance-tracker": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/gym-presence-tracker",
+            "outputPath": "dist/gym-attendance-tracker",
             "index": "src/index.html",
             "browser": "src/main.ts",
             "polyfills": [
@@ -57,10 +57,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "gym-presence-tracker:build:production"
+              "buildTarget": "gym-attendance-tracker:build:production"
             },
             "development": {
-              "buildTarget": "gym-presence-tracker:build:development"
+              "buildTarget": "gym-attendance-tracker:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -68,7 +68,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "gym-presence-tracker:build"
+            "buildTarget": "gym-attendance-tracker:build"
           }
         },
         "test": {

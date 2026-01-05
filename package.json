@@ -1,5 +1,5 @@
 {
-  "name": "gym-presence-tracker",
+  "name": "gym-attendance-tracker",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",

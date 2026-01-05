@@ -1,4 +1,4 @@
-# 🏋️ Gym Presence Tracker
+# 🏋️ Gym Attendance Tracker
 
 A modern, mobile-responsive web application designed to help you and your friends track gym attendance with ease. Visualize your progress, analyze your consistency, and stay motivated on your fitness journey.
 
@@ -42,8 +42,8 @@ A modern, mobile-responsive web application designed to help you and your friend
 
 1.  **Clone the repository**
     ```bash
-    git clone https://github.com/yourusername/gym-presence-tracker.git
-    cd gym-presence-tracker
+    git clone https://github.com/yourusername/gym-attendance-tracker.git
+    cd gym-attendance-tracker
     ```
 
 2.  **Install dependencies**

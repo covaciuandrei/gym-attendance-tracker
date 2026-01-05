@@ -14,16 +14,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have the 'gym-presence-tracker' title`, () => {
+  it(`should have the 'Gym Attendance Tracker' title`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('gym-presence-tracker');
+    expect(app.title).toEqual('Gym Attendance Tracker');
   });
 
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, gym-presence-tracker');
+    expect(compiled.querySelector('h1')?.textContent).toContain('Gym Attendance Tracker');
   });
 });
