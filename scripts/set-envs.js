@@ -35,6 +35,11 @@ const envFileContent = `export const environment = {
 `;
 
 const targetPath = path.join(__dirname, '../src/environments/environment.ts');
+const targetDir = path.dirname(targetPath);
+
+if (!fs.existsSync(targetDir)) {
+  fs.mkdirSync(targetDir, { recursive: true });
+}
 
 fs.writeFile(targetPath, envFileContent, (err) => {
   if (err) {
