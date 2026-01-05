@@ -99,12 +99,12 @@
 }
 
 .stat-card.secondary {
-  background: linear-gradient(135deg, var(--success-color), var(--success-dark));
+  background: linear-gradient(135deg, #ec4899, #be185d);
   color: white;
 }
 
 .stat-card.tertiary {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: white;
 }
 
