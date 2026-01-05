@@ -20,6 +20,24 @@
 
 </head>
 <body>
+  <script>
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+        
+        if (isDark) {
+          document.body.classList.add('dark-mode');
+          // Update meta theme-color for safe area immediately to match dark background
+          // We target the one that matches the current assumption or just force a new one
+          document.querySelector('meta[name="theme-color"][media="(prefers-color-scheme: light)"]').setAttribute('content', '#0f172a');
+        }
+      } catch (e) {
+        console.error('Error in theme init script', e);
+      }
+    })();
+  </script>
   <app-root></app-root>
   <noscript>Please enable JavaScript to continue using this application.</noscript>
 </body>

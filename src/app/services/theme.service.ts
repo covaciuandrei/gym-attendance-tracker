@@ -1,5 +1,4 @@
 import { Injectable, signal } from '@angular/core';
-import { Firestore } from 'firebase/firestore';
 import { AuthService } from './auth.service';
 
 @Injectable({
@@ -7,13 +6,9 @@ import { AuthService } from './auth.service';
 })
 export class ThemeService {
   isDarkMode = signal<boolean>(false);
-  private firestore: Firestore | null = null; // Will inject properly if I knew how you inject it, but looking at auth service it seems manual or not standard. Let's look at how to get firestore instance.
 
   constructor(private authService: AuthService) {
-    // Initialize theme based on system preference initially
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    this.isDarkMode.set(prefersDark);
-    this.applyTheme(prefersDark);
+    this.initializeTheme();
 
     // Watch for auth changes to load user preference
     this.authService.currentUser$.subscribe(async (user) => {
@@ -22,13 +17,23 @@ export class ThemeService {
       }
     });
   }
-  
-  // We need to inject Firestore. Since I didn't see it in auth service (it used getAuth), let's see if we can use getFirestore.
-  // I will assume standard modular SDK usage. 
+
+  private initializeTheme() {
+    // Check localStorage first
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    let isDark = prefersDark;
+    if (savedTheme) {
+      isDark = savedTheme === 'dark';
+    }
+
+    this.isDarkMode.set(isDark);
+    this.applyTheme(isDark);
+  }
   
   private async loadUserTheme(uid: string) {
      try {
-       // Lazy load firestore to avoid import issues if not initialized
        const { getFirestore, doc, getDoc } = await import('firebase/firestore');
        const { getApp } = await import('firebase/app');
        const app = getApp();
@@ -40,10 +45,16 @@ export class ThemeService {
        if (docSnap.exists() && docSnap.data()['theme']) {
          const theme = docSnap.data()['theme'];
          const isDark = theme === 'dark';
-         this.isDarkMode.set(isDark);
-         this.applyTheme(isDark);
+         
+         // Only update if different from what we already have (which might be from localse storage)
+         if (this.isDarkMode() !== isDark) {
+            this.isDarkMode.set(isDark);
+            this.applyTheme(isDark);
+            // Sync local storage
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+         }
        } else {
-          // If no preference, save current default
+          // If no preference in DB, save current default
           await this.saveUserTheme(uid, this.isDarkMode());
        }
      } catch (error) {
@@ -56,6 +67,9 @@ export class ThemeService {
     this.isDarkMode.set(newStatus);
     this.applyTheme(newStatus);
     
+    // Save to local storage
+    localStorage.setItem('theme', newStatus ? 'dark' : 'light');
+    
     const user = this.authService.currentUser;
     if (user) {
       this.saveUserTheme(user.uid, newStatus);
@@ -65,9 +79,19 @@ export class ThemeService {
   private applyTheme(isDark: boolean) {
     if (isDark) {
       document.body.classList.add('dark-mode');
+      this.updateSafeColor('#0f172a'); // Dark bg color
     } else {
       document.body.classList.remove('dark-mode');
+      this.updateSafeColor('#f8fafc'); // Light bg color
     }
+  }
+
+  private updateSafeColor(color: string) {
+    // Update both just to be safe and override system preference visual
+    const metaTags = document.querySelectorAll('meta[name="theme-color"]');
+    metaTags.forEach(meta => {
+        meta.setAttribute('content', color);
+    });
   }
 
   private async saveUserTheme(uid: string, isDark: boolean) {
