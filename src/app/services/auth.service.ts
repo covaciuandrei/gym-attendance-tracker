@@ -2,16 +2,19 @@ import { Injectable } from '@angular/core';
 import { FirebaseApp, getApp, initializeApp } from 'firebase/app';
 import {
     Auth,
+    EmailAuthProvider,
     User,
     applyActionCode,
     confirmPasswordReset,
     createUserWithEmailAndPassword,
     getAuth,
     onAuthStateChanged,
+    reauthenticateWithCredential,
     sendEmailVerification,
     sendPasswordResetEmail,
     signInWithEmailAndPassword,
     signOut,
+    updatePassword,
     verifyPasswordResetCode
 } from 'firebase/auth';
 import { BehaviorSubject } from 'rxjs';
@@ -168,6 +171,27 @@ export class AuthService {
     console.log('📧 Resending verification email...');
     await sendEmailVerification(this.auth.currentUser);
     console.log('✅ Verification email resent');
+  }
+
+  async updatePassword(newPassword: string): Promise<void> {
+    if (!this.auth || !this.auth.currentUser) {
+      throw new Error('No user signed in');
+    }
+
+    console.log('🔐 Updating password...');
+    await updatePassword(this.auth.currentUser, newPassword);
+    console.log('✅ Password updated successfully');
+  }
+
+  async reauthenticate(password: string): Promise<void> {
+    if (!this.auth || !this.auth.currentUser || !this.auth.currentUser.email) {
+      throw new Error('No user signed in or email missing');
+    }
+
+    const credential = EmailAuthProvider.credential(this.auth.currentUser.email, password);
+    console.log('🔐 Re-authenticating user...');
+    await reauthenticateWithCredential(this.auth.currentUser, credential);
+    console.log('✅ Re-authentication successful');
   }
 
   getFirebaseAuth(): Auth | null {
