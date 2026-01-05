@@ -28,6 +28,7 @@ export class FirebaseService {
   private useLocalStorage = false;
 
   constructor() {
+    console.log('🏋️ Gym Tracker: Initializing...');
     this.initializeFirebase();
   }
 
@@ -35,8 +36,8 @@ export class FirebaseService {
     // Check if Firebase is properly configured
     const config = environment.firebase;
     if (!config.apiKey || config.apiKey === 'YOUR_API_KEY' || config.apiKey.startsWith('YOUR_')) {
-      console.warn('Firebase not configured. Using localStorage for data persistence.');
-      console.warn('To enable Firebase, update src/environments/environment.ts with your Firebase config.');
+      console.warn('⚠️ Firebase not configured. Using localStorage for data persistence.');
+      console.info('💡 To enable Firebase, update src/environments/environment.ts with your Firebase config.');
       this.useLocalStorage = true;
       return;
     }
@@ -44,10 +45,10 @@ export class FirebaseService {
     try {
       this.app = initializeApp(config);
       this.db = getFirestore(this.app);
-      console.log('Firebase initialized successfully');
+      console.log('✅ Firebase initialized successfully');
     } catch (error) {
-      console.error('Failed to initialize Firebase:', error);
-      console.warn('Falling back to localStorage for data persistence.');
+      console.error('❌ Failed to initialize Firebase:', error);
+      console.warn('⚠️ Falling back to localStorage for data persistence.');
       this.useLocalStorage = true;
     }
   }
@@ -55,19 +56,25 @@ export class FirebaseService {
   // LocalStorage methods
   private getLocalDates(): string[] {
     const stored = localStorage.getItem(this.LOCAL_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    const dates = stored ? JSON.parse(stored) : [];
+    console.log('📦 LocalStorage: Retrieved', dates.length, 'attendance records');
+    return dates;
   }
 
   private setLocalDates(dates: string[]): void {
     localStorage.setItem(this.LOCAL_STORAGE_KEY, JSON.stringify(dates));
+    console.log('💾 LocalStorage: Saved', dates.length, 'attendance records');
   }
 
   async markAttendance(date: string): Promise<void> {
+    console.log('➕ Marking attendance for:', date);
+    
     if (this.useLocalStorage) {
       const dates = this.getLocalDates();
       if (!dates.includes(date)) {
         dates.push(date);
         this.setLocalDates(dates);
+        console.log('✅ Attendance marked (localStorage):', date);
       }
       return;
     }
@@ -77,23 +84,29 @@ export class FirebaseService {
       date: date,
       timestamp: Timestamp.now()
     });
+    console.log('✅ Attendance marked (Firebase):', date);
   }
 
   async removeAttendance(date: string): Promise<void> {
+    console.log('➖ Removing attendance for:', date);
+    
     if (this.useLocalStorage) {
       const dates = this.getLocalDates().filter(d => d !== date);
       this.setLocalDates(dates);
+      console.log('✅ Attendance removed (localStorage):', date);
       return;
     }
 
     const docRef = doc(this.db!, this.COLLECTION_NAME, date);
     await deleteDoc(docRef);
+    console.log('✅ Attendance removed (Firebase):', date);
   }
 
   async getAttendance(year: number, month?: number): Promise<string[]> {
+    console.log('🔍 Getting attendance for:', month !== undefined ? `${year}-${month}` : year);
     const allDates = await this.getAllAttendance();
     
-    return allDates.filter(date => {
+    const filtered = allDates.filter(date => {
       const [docYear, docMonth] = date.split('-').map(Number);
       
       if (month !== undefined) {
@@ -101,9 +114,14 @@ export class FirebaseService {
       }
       return docYear === year;
     });
+    
+    console.log('📊 Found', filtered.length, 'records for the period');
+    return filtered;
   }
 
   async getAllAttendance(): Promise<string[]> {
+    console.log('📥 Loading all attendance records...');
+    
     if (this.useLocalStorage) {
       return this.getLocalDates();
     }
@@ -117,18 +135,22 @@ export class FirebaseService {
       dates.push(data.date);
     });
     
+    console.log('📊 Loaded', dates.length, 'records from Firebase');
     return dates;
   }
 
   async toggleAttendance(date: string): Promise<boolean> {
+    console.log('🔄 Toggling attendance for:', date);
     const allDates = await this.getAllAttendance();
     const exists = allDates.includes(date);
     
     if (exists) {
       await this.removeAttendance(date);
+      console.log('📅 Result: Attendance REMOVED for', date);
       return false;
     } else {
       await this.markAttendance(date);
+      console.log('📅 Result: Attendance ADDED for', date);
       return true;
     }
   }
