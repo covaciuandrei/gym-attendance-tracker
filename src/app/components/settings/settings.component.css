@@ -1,69 +1,78 @@
 .settings-container {
-  min-height: 100vh;
-  background: var(--bg-color);
-  padding-bottom: 5rem;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
 }
 
 .page-header {
-  background: var(--card-bg);
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   gap: 1rem;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .back-btn {
   font-size: 1.5rem;
-  color: var(--primary-color);
-  text-decoration: none;
-  padding: 0.25rem 0.5rem;
-  margin-left: -0.5rem;
-}
-
-.page-header h2 {
-  flex: 1;
-  font-size: 1.25rem;
-  font-weight: 700;
   color: var(--text-primary);
-  margin: 0;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 0.5rem;
+  margin-left: -0.5rem;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
 }
 
-.settings-content {
-  padding: 1.5rem;
-  max-width: 600px;
-  margin: 0 auto;
+.back-btn:hover {
+  background-color: var(--hover-bg);
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .settings-section {
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
-.settings-section h4 {
-  font-size: 0.75rem;
-  font-weight: 600;
+h4 {
   color: var(--text-secondary);
+  font-size: 0.875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin: 0 0 0.75rem 0.25rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
 }
 
 .setting-item {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 0.75rem;
+  align-items: center;
   padding: 1rem;
-  margin-bottom: 0.5rem;
+  background: var(--card-bg);
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border-color);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.setting-item:not(.disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
 }
 
 .setting-item.disabled {
-  opacity: 0.5;
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--bg-color);
 }
 
 .setting-info {
@@ -73,7 +82,6 @@
 }
 
 .setting-label {
-  font-size: 1rem;
   font-weight: 500;
   color: var(--text-primary);
 }
@@ -83,19 +91,56 @@
   color: var(--text-secondary);
 }
 
-.footer-info {
-  text-align: center;
-  padding: 2rem 0;
-  margin-top: 2rem;
+/* Theme Toggle Switch */
+.theme-toggle {
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 30px;
+  width: 64px;
+  height: 32px;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.3s;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  justify-items: center;
 }
 
-.footer-info p {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  margin: 0;
+.toggle-icon {
+  font-size: 14px;
+  z-index: 1;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
 }
 
-.footer-info .credits {
-  margin-top: 0.25rem;
-  font-size: 0.75rem;
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  z-index: 2;
+}
+
+.theme-toggle.dark .toggle-thumb {
+  transform: translateX(32px);
+  background: #334155;
+}
+
+.theme-toggle.dark {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+@media (max-width: 640px) {
+  .settings-container {
+    padding: 1rem;
+  }
 }

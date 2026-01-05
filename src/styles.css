@@ -18,8 +18,10 @@
 }
 
 /* Dark mode support */
+/* Dark mode support */
 @media (prefers-color-scheme: dark) {
   :root {
+    /* Auto dark mode if no manual override */
     --bg-color: #0f172a;
     --card-bg: #1e293b;
     --text-primary: #f1f5f9;
@@ -28,6 +30,18 @@
     --hover-bg: #334155;
     --primary-light: rgba(99, 102, 241, 0.2);
   }
+}
+
+/* Manual Dark Mode Override */
+body.dark-mode {
+  --bg-color: #0f172a;
+  --card-bg: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+  --hover-bg: #334155;
+  --primary-light: rgba(99, 102, 241, 0.2);
+  color-scheme: dark;
 }
 
 /* Reset & Base Styles */

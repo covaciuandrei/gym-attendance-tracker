@@ -26,11 +26,16 @@
     <div class="settings-section">
       <h4>Coming Soon</h4>
       
-      <div class="setting-item disabled">
+      <div class="setting-item">
         <div class="setting-info">
           <span class="setting-label">Theme</span>
-          <span class="setting-value">System Default</span>
+          <span class="setting-value">{{ themeService.isDarkMode() ? 'Dark Mode' : 'Light Mode' }}</span>
         </div>
+        <button class="theme-toggle" (click)="toggleTheme()" [class.dark]="themeService.isDarkMode()">
+          <span class="toggle-icon sun">☀️</span>
+          <span class="toggle-icon moon">🌙</span>
+          <div class="toggle-thumb"></div>
+        </button>
       </div>
 
       <div class="setting-item disabled">
