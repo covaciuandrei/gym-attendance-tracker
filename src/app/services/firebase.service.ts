@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import {
-    collection,
-    deleteDoc,
-    doc,
-    Firestore,
-    getDocs,
-    getFirestore,
-    setDoc,
-    Timestamp
+  collection,
+  deleteDoc,
+  doc,
+  Firestore,
+  getDocs,
+  getFirestore,
+  setDoc,
+  Timestamp
 } from 'firebase/firestore';
 import { environment } from '../../environments/environment';
 

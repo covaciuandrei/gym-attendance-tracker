@@ -10,7 +10,7 @@ import { FirebaseService } from '../../services/firebase.service';
   styleUrls: ['./stats.component.css']
 })
 export class StatsComponent implements OnInit {
-  viewMode: 'monthly' | 'yearly' = 'monthly';
+  viewMode: 'yearly' = 'yearly';
   currentDate = new Date();
   currentYear: number;
   currentMonth: number;
@@ -70,40 +70,19 @@ export class StatsComponent implements OnInit {
     this.isLoading = false;
   }
 
-  toggleView() {
-    this.viewMode = this.viewMode === 'monthly' ? 'yearly' : 'monthly';
-  }
+
 
   previousPeriod() {
-    if (this.viewMode === 'monthly') {
-      this.currentMonth--;
-      if (this.currentMonth < 0) {
-        this.currentMonth = 11;
-        this.currentYear--;
-      }
-    } else {
-      this.currentYear--;
-    }
+    this.currentYear--;
     this.loadStats();
   }
 
   nextPeriod() {
-    if (this.viewMode === 'monthly') {
-      this.currentMonth++;
-      if (this.currentMonth > 11) {
-        this.currentMonth = 0;
-        this.currentYear++;
-      }
-    } else {
-      this.currentYear++;
-    }
+    this.currentYear++;
     this.loadStats();
   }
 
   getDisplayTitle(): string {
-    if (this.viewMode === 'monthly') {
-      return `${this.monthNames[this.currentMonth]} ${this.currentYear}`;
-    }
     return `${this.currentYear}`;
   }
 

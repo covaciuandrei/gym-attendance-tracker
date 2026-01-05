@@ -9,20 +9,7 @@
     </button>
   </header>
 
-  <div class="view-toggle">
-    <button 
-      class="toggle-btn" 
-      [class.active]="viewMode === 'monthly'"
-      (click)="viewMode !== 'monthly' && toggleView()">
-      Monthly
-    </button>
-    <button 
-      class="toggle-btn" 
-      [class.active]="viewMode === 'yearly'"
-      (click)="viewMode !== 'yearly' && toggleView()">
-      Yearly
-    </button>
-  </div>
+
 
   <!-- Summary Cards -->
   <div class="summary-cards">
@@ -50,7 +37,7 @@
   </div>
 
   <!-- Yearly Chart -->
-  <div class="chart-container" *ngIf="viewMode === 'yearly'">
+  <div class="chart-container">
     <h3 class="chart-title">Monthly Breakdown</h3>
     <div class="chart">
       <div class="chart-bar" *ngFor="let data of monthlyData">
@@ -67,29 +54,7 @@
     </div>
   </div>
 
-  <!-- Monthly Details -->
-  <div class="monthly-details" *ngIf="viewMode === 'monthly'">
-    <div class="motivation-card">
-      <div class="motivation-emoji">
-        <span *ngIf="monthlyCount === 0">🚀</span>
-        <span *ngIf="monthlyCount > 0 && monthlyCount < 5">💪</span>
-        <span *ngIf="monthlyCount >= 5 && monthlyCount < 15">🔥</span>
-        <span *ngIf="monthlyCount >= 15">🏆</span>
-      </div>
-      <p class="motivation-text" *ngIf="monthlyCount === 0">
-        Start your journey! Go to the gym today.
-      </p>
-      <p class="motivation-text" *ngIf="monthlyCount > 0 && monthlyCount < 5">
-        Good start! Keep building that habit.
-      </p>
-      <p class="motivation-text" *ngIf="monthlyCount >= 5 && monthlyCount < 15">
-        You're on fire! Keep up the momentum.
-      </p>
-      <p class="motivation-text" *ngIf="monthlyCount >= 15">
-        Amazing dedication! You're crushing it!
-      </p>
-    </div>
-  </div>
+
 
   <!-- Loading Overlay -->
   <div class="loading-overlay" *ngIf="isLoading">
