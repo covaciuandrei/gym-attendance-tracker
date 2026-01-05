@@ -1,37 +1,78 @@
 import { Injectable } from '@angular/core';
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import {
-    Firestore,
-    Timestamp,
     collection,
     deleteDoc,
     doc,
+    Firestore,
     getDocs,
     getFirestore,
-    setDoc
+    setDoc,
+    Timestamp
 } from 'firebase/firestore';
 import { environment } from '../../environments/environment';
 
 export interface AttendanceRecord {
   date: string; // Format: YYYY-MM-DD
-  timestamp: Timestamp;
+  timestamp: any;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class FirebaseService {
-  private app: FirebaseApp;
-  private db: Firestore;
+  private app: FirebaseApp | null = null;
+  private db: Firestore | null = null;
   private readonly COLLECTION_NAME = 'attendance';
+  private readonly LOCAL_STORAGE_KEY = 'gym_attendance_dates';
+  private useLocalStorage = false;
 
   constructor() {
-    this.app = initializeApp(environment.firebase);
-    this.db = getFirestore(this.app);
+    this.initializeFirebase();
+  }
+
+  private initializeFirebase(): void {
+    // Check if Firebase is properly configured
+    const config = environment.firebase;
+    if (!config.apiKey || config.apiKey === 'YOUR_API_KEY' || config.apiKey.startsWith('YOUR_')) {
+      console.warn('Firebase not configured. Using localStorage for data persistence.');
+      console.warn('To enable Firebase, update src/environments/environment.ts with your Firebase config.');
+      this.useLocalStorage = true;
+      return;
+    }
+
+    try {
+      this.app = initializeApp(config);
+      this.db = getFirestore(this.app);
+      console.log('Firebase initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize Firebase:', error);
+      console.warn('Falling back to localStorage for data persistence.');
+      this.useLocalStorage = true;
+    }
+  }
+
+  // LocalStorage methods
+  private getLocalDates(): string[] {
+    const stored = localStorage.getItem(this.LOCAL_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  }
+
+  private setLocalDates(dates: string[]): void {
+    localStorage.setItem(this.LOCAL_STORAGE_KEY, JSON.stringify(dates));
   }
 
   async markAttendance(date: string): Promise<void> {
-    const docRef = doc(this.db, this.COLLECTION_NAME, date);
+    if (this.useLocalStorage) {
+      const dates = this.getLocalDates();
+      if (!dates.includes(date)) {
+        dates.push(date);
+        this.setLocalDates(dates);
+      }
+      return;
+    }
+
+    const docRef = doc(this.db!, this.COLLECTION_NAME, date);
     await setDoc(docRef, {
       date: date,
       timestamp: Timestamp.now()
@@ -39,37 +80,35 @@ export class FirebaseService {
   }
 
   async removeAttendance(date: string): Promise<void> {
-    const docRef = doc(this.db, this.COLLECTION_NAME, date);
+    if (this.useLocalStorage) {
+      const dates = this.getLocalDates().filter(d => d !== date);
+      this.setLocalDates(dates);
+      return;
+    }
+
+    const docRef = doc(this.db!, this.COLLECTION_NAME, date);
     await deleteDoc(docRef);
   }
 
   async getAttendance(year: number, month?: number): Promise<string[]> {
-    const attendanceRef = collection(this.db, this.COLLECTION_NAME);
-    const snapshot = await getDocs(attendanceRef);
+    const allDates = await this.getAllAttendance();
     
-    const dates: string[] = [];
-    snapshot.forEach((doc) => {
-      const data = doc.data() as AttendanceRecord;
-      const [docYear, docMonth] = data.date.split('-').map(Number);
+    return allDates.filter(date => {
+      const [docYear, docMonth] = date.split('-').map(Number);
       
       if (month !== undefined) {
-        // Filter by year and month
-        if (docYear === year && docMonth === month) {
-          dates.push(data.date);
-        }
-      } else {
-        // Filter by year only
-        if (docYear === year) {
-          dates.push(data.date);
-        }
+        return docYear === year && docMonth === month;
       }
+      return docYear === year;
     });
-    
-    return dates;
   }
 
   async getAllAttendance(): Promise<string[]> {
-    const attendanceRef = collection(this.db, this.COLLECTION_NAME);
+    if (this.useLocalStorage) {
+      return this.getLocalDates();
+    }
+
+    const attendanceRef = collection(this.db!, this.COLLECTION_NAME);
     const snapshot = await getDocs(attendanceRef);
     
     const dates: string[] = [];
@@ -92,5 +131,9 @@ export class FirebaseService {
       await this.markAttendance(date);
       return true;
     }
+  }
+
+  isUsingLocalStorage(): boolean {
+    return this.useLocalStorage;
   }
 }
