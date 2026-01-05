@@ -1,0 +1,90 @@
+<div class="calendar-container">
+  <header class="calendar-header">
+    <button class="nav-btn" (click)="previousMonth()">
+      <span>‹</span>
+    </button>
+    <h2 class="title">{{ getDisplayTitle() }}</h2>
+    <button class="nav-btn" (click)="nextMonth()">
+      <span>›</span>
+    </button>
+  </header>
+
+  <div class="view-toggle">
+    <button 
+      class="toggle-btn" 
+      [class.active]="viewMode === 'monthly'"
+      (click)="viewMode !== 'monthly' && toggleView()">
+      Monthly
+    </button>
+    <button 
+      class="toggle-btn" 
+      [class.active]="viewMode === 'yearly'"
+      (click)="viewMode !== 'yearly' && toggleView()">
+      Yearly
+    </button>
+  </div>
+
+  <!-- Monthly View -->
+  <div class="monthly-view" *ngIf="viewMode === 'monthly'">
+    <div class="weekdays">
+      <div class="weekday" *ngFor="let day of weekDays">{{ day }}</div>
+    </div>
+    <div class="days-grid">
+      <div 
+        class="day-cell"
+        *ngFor="let day of days"
+        [class.other-month]="!day.isCurrentMonth"
+        [class.today]="day.isToday"
+        [class.attended]="day.attended"
+        (click)="onDayClick(day)">
+        <span class="day-number">{{ day.date }}</span>
+        <span class="attendance-dot" *ngIf="day.attended"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Yearly View -->
+  <div class="yearly-view" *ngIf="viewMode === 'yearly'">
+    <div class="month-card" *ngFor="let monthData of monthsData">
+      <h3 class="month-name">{{ monthData.name }}</h3>
+      <div class="mini-weekdays">
+        <span *ngFor="let day of ['S','M','T','W','T','F','S']">{{ day }}</span>
+      </div>
+      <div class="mini-days-grid">
+        <div 
+          class="mini-day"
+          *ngFor="let day of monthData.days"
+          [class.empty]="day.date === 0"
+          [class.today]="day.isToday"
+          [class.attended]="day.attended"
+          (click)="day.date !== 0 && onDayClick(day)">
+          <span *ngIf="day.date !== 0">{{ day.date }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="spinner"></div>
+  </div>
+</div>
+
+<!-- Attendance Popup -->
+<div class="popup-overlay" *ngIf="showPopup" (click)="closePopup()">
+  <div class="popup" (click)="$event.stopPropagation()">
+    <h3>{{ selectedDate?.fullDate }}</h3>
+    <p *ngIf="selectedDate?.attended">You went to the gym! 💪</p>
+    <p *ngIf="!selectedDate?.attended">Did you go to the gym?</p>
+    <div class="popup-actions">
+      <button 
+        class="btn" 
+        [class.btn-danger]="selectedDate?.attended"
+        [class.btn-success]="!selectedDate?.attended"
+        (click)="toggleAttendance()">
+        {{ selectedDate?.attended ? 'Remove' : 'Mark Attended' }}
+      </button>
+      <button class="btn btn-secondary" (click)="closePopup()">Cancel</button>
+    </div>
+  </div>
+</div>

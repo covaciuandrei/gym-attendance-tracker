@@ -1,0 +1,98 @@
+<div class="stats-container">
+  <header class="stats-header">
+    <button class="nav-btn" (click)="previousPeriod()">
+      <span>‹</span>
+    </button>
+    <h2 class="title">{{ getDisplayTitle() }}</h2>
+    <button class="nav-btn" (click)="nextPeriod()">
+      <span>›</span>
+    </button>
+  </header>
+
+  <div class="view-toggle">
+    <button 
+      class="toggle-btn" 
+      [class.active]="viewMode === 'monthly'"
+      (click)="viewMode !== 'monthly' && toggleView()">
+      Monthly
+    </button>
+    <button 
+      class="toggle-btn" 
+      [class.active]="viewMode === 'yearly'"
+      (click)="viewMode !== 'yearly' && toggleView()">
+      Yearly
+    </button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <div class="stat-card primary">
+      <div class="stat-icon">📅</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ monthlyCount }}</span>
+        <span class="stat-label">This Month</span>
+      </div>
+    </div>
+    <div class="stat-card secondary">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ yearlyCount }}</span>
+        <span class="stat-label">This Year</span>
+      </div>
+    </div>
+    <div class="stat-card tertiary">
+      <div class="stat-icon">🏆</div>
+      <div class="stat-content">
+        <span class="stat-value">{{ totalCount }}</span>
+        <span class="stat-label">All Time</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Yearly Chart -->
+  <div class="chart-container" *ngIf="viewMode === 'yearly'">
+    <h3 class="chart-title">Monthly Breakdown</h3>
+    <div class="chart">
+      <div class="chart-bar" *ngFor="let data of monthlyData">
+        <div class="bar-container">
+          <div 
+            class="bar" 
+            [style.height.%]="(data.count / getMaxCount()) * 100"
+            [class.has-value]="data.count > 0">
+            <span class="bar-value" *ngIf="data.count > 0">{{ data.count }}</span>
+          </div>
+        </div>
+        <span class="bar-label">{{ data.month.substring(0, 3) }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Details -->
+  <div class="monthly-details" *ngIf="viewMode === 'monthly'">
+    <div class="motivation-card">
+      <div class="motivation-emoji">
+        <span *ngIf="monthlyCount === 0">🚀</span>
+        <span *ngIf="monthlyCount > 0 && monthlyCount < 5">💪</span>
+        <span *ngIf="monthlyCount >= 5 && monthlyCount < 15">🔥</span>
+        <span *ngIf="monthlyCount >= 15">🏆</span>
+      </div>
+      <p class="motivation-text" *ngIf="monthlyCount === 0">
+        Start your journey! Go to the gym today.
+      </p>
+      <p class="motivation-text" *ngIf="monthlyCount > 0 && monthlyCount < 5">
+        Good start! Keep building that habit.
+      </p>
+      <p class="motivation-text" *ngIf="monthlyCount >= 5 && monthlyCount < 15">
+        You're on fire! Keep up the momentum.
+      </p>
+      <p class="motivation-text" *ngIf="monthlyCount >= 15">
+        Amazing dedication! You're crushing it!
+      </p>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="spinner"></div>
+  </div>
+</div>
