@@ -43,16 +43,27 @@ A modern, mobile-responsive web application designed to help you track your gym 
     npm install
     ```
 
-3.  **Environment Configuration**
+    ### 3. Firebase Setup
     
-    This project uses Firebase. You need to create a `.env` file in the root directory.
+    1.  Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
+    2.  Register a web app in your project settings.
+    3.  Create a **Firestore Database** in the project (Start in Test Mode for development).
     
-    Copy the example file:
+    ### 4. Environment Configuration
+    
+    Create a `.env` file in the root directory based on the example.
+    
+    **Mac/Linux/Git Bash:**
     ```bash
     cp .env.example .env
     ```
     
-    Then, fill in your Firebase configuration keys in the `.env` file:
+    **Windows (Command Prompt):**
+    ```cmd
+    copy .env.example .env
+    ```
+    
+    Fill in your Firebase configuration keys in the `.env` file:
     ```env
     FIREBASE_API_KEY=your_api_key
     FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
@@ -63,11 +74,13 @@ A modern, mobile-responsive web application designed to help you track your gym 
     FIREBASE_MEASUREMENT_ID=your_measurement_id
     ```
 
-4.  **Run the application**
+### 5. Run the application
     ```bash
     npm start
     ```
     Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+
+
 
 ## 🤖 Credits
 
