@@ -377,7 +377,7 @@
   right: 0;
   background: var(--card-bg);
   border-radius: 14px; /* Fully rounded corners for the dropdown */
-  border: 1px solid var(--border-color);
+  border: 0.75px solid var(--border-color);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   z-index: 1000;
@@ -502,6 +502,8 @@
 }
 
 .btn-small {
+  margin-left: 2px;
+  margin-right: 2px;
   padding: 8px 16px;
   border: none;
   border-radius: 8px;
