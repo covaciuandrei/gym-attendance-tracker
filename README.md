@@ -1,27 +1,73 @@
-# GymPresenceTracker
+# 🏋️ Gym Presence Tracker
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.17.
+A modern, mobile-responsive web application designed to help you track your gym attendance with ease. Visualize your progress, analyze your consistency, and stay motivated on your fitness journey.
 
-## Development server
+![Angular](https://img.shields.io/badge/Angular-DD0031?style=for-the-badge&logo=angular&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-039BE5?style=for-the-badge&logo=Firebase&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## ✨ Features
 
-## Code scaffolding
+-   **Interactive Calendar**: Intuitive monthly and yearly views to mark and visualize your gym sessions.
+-   **Insightful Statistics**: Track your monthly and yearly attendance counts to monitor your consistency.
+-   **Data Persistence**: Seamless real-time data storage powered by **Firebase Firestore**.
+-   **Responsive Design**: Optimized for a great experience on both mobile devices and desktop screens.
+-   **Modern UI**: Clean, user-friendly interface built with Angular's powerful component system.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## 🛠️ Tech Stack
 
-## Build
+-   **Frontend**: Angular v17+
+-   **Language**: TypeScript
+-   **Styling**: Modern CSS3 (Responsive Flexbox/Grid)
+-   **Database**: Firebase Firestore
+-   **State Management**: RxJS
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## 🚀 Getting Started
 
-## Running unit tests
+### Prerequisites
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+-   Node.js (v18 or higher)
+-   npm (v10 or higher)
+-   Angular CLI (`npm install -g @angular/cli`)
 
-## Running end-to-end tests
+### Installation
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/yourusername/gym-presence-tracker.git
+    cd gym-presence-tracker
+    ```
 
-## Further help
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+3.  **Environment Configuration**
+    
+    This project uses Firebase. You need to create a `.env` file in the root directory.
+    
+    Copy the example file:
+    ```bash
+    cp .env.example .env
+    ```
+    
+    Then, fill in your Firebase configuration keys in the `.env` file:
+    ```env
+    NG_APP_FIREBASE_API_KEY=your_api_key
+    NG_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+    NG_APP_FIREBASE_PROJECT_ID=your_project_id
+    NG_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+    NG_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+    NG_APP_FIREBASE_APP_ID=your_app_id
+    ```
+
+4.  **Run the application**
+    ```bash
+    ng serve
+    ```
+    Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+
+## 🤖 Credits
+
+This project was **created using antigravity and planning mode with Claude opus 4.5 and Gemini Pro 3**.
