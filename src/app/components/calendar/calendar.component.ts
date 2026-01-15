@@ -62,7 +62,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
     'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
   ];
 
-  weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  weekDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
   
   // Helper to get day number from date string YYYY-MM-DD
   getDay(dateStr: string): string {
@@ -185,7 +185,8 @@ export class CalendarComponent implements OnInit, OnDestroy {
     this.days = [];
     const firstDay = new Date(this.currentYear, this.currentMonth, 1);
     const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
-    const startingDay = firstDay.getDay();
+    // Adjust to make Monday the first day (0=Monday, 6=Sunday)
+    const startingDay = (firstDay.getDay() + 6) % 7;
     const totalDays = lastDay.getDate();
     
     const today = new Date();
@@ -239,7 +240,8 @@ export class CalendarComponent implements OnInit, OnDestroy {
     for (let month = 0; month < 12; month++) {
       const firstDay = new Date(this.currentYear, month, 1);
       const lastDay = new Date(this.currentYear, month + 1, 0);
-      const startingDay = firstDay.getDay();
+      // Adjust to make Monday the first day (0=Monday, 6=Sunday)
+      const startingDay = (firstDay.getDay() + 6) % 7;
       const totalDays = lastDay.getDate();
       
       const days: DayCell[] = [];
