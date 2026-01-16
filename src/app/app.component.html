@@ -9,12 +9,16 @@
       <span class="nav-icon">📊</span>
       <span class="nav-label">{{ 'NAV.STATS' | translate }}</span>
     </a>
+    <a routerLink="/health" routerLinkActive="active" class="nav-item">
+      <span class="nav-icon">💊</span>
+      <span class="nav-label">Health</span>
+    </a>
     <a routerLink="/profile" routerLinkActive="active" class="nav-item">
       <span class="nav-icon">👤</span>
       <span class="nav-label">{{ 'NAV.PROFILE' | translate }}</span>
     </a>
   </nav>
-  
+
   <main class="main-content" [class.has-nav]="showNav">
     <router-outlet></router-outlet>
   </main>

@@ -16,6 +16,12 @@
   --border-color: #e2e8f0;
   --hover-bg: #f1f5f9;
 
+  /* Semantic Surfaces */
+  --surface-card: #ffffff;
+  --surface-ground: #f1f5f9;
+  --surface-overlay: #ffffff;
+  --surface-hover: #f8fafc;
+
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
   --overlay-bg: rgba(255, 255, 255, 0.8);
 }
@@ -32,6 +38,14 @@
     --hover-bg: #334155;
     --primary-light: rgba(99, 102, 241, 0.2);
     --overlay-bg: rgba(30, 41, 59, 0.85);
+
+    /* Semantic Surfaces Dark */
+    --surface-card: #1e293b;
+    --surface-ground: #0f172a;
+    /* Inputs darker than card */
+    --surface-overlay: #334155;
+    /* Dropdowns lighter */
+    --surface-hover: #334155;
   }
 }
 
@@ -45,6 +59,12 @@ body.dark-mode {
   --hover-bg: #334155;
   --primary-light: rgba(99, 102, 241, 0.2);
   --overlay-bg: rgba(30, 41, 59, 0.85);
+
+  --surface-card: #1e293b;
+  --surface-ground: #0f172a;
+  --surface-overlay: #334155;
+  --surface-hover: #334155;
+
   color-scheme: dark;
 }
 

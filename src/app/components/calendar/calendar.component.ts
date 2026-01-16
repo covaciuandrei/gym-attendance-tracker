@@ -3,8 +3,9 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
+import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { AttendanceRecord, FirebaseService, TrainingType } from '../../services/firebase.service';
+import { AttendanceRecord, FirebaseService, TrainingType, SupplementProduct } from '../../services/firebase.service';
 
 interface DayCell {
   date: number;
@@ -24,7 +25,7 @@ interface MonthData {
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule, FormsModule, TranslateModule],
+  imports: [CommonModule, FormsModule, TranslateModule, RouterModule],
   templateUrl: './calendar.component.html',
   styleUrls: ['./calendar.component.css']
 })
@@ -38,10 +39,16 @@ export class CalendarComponent implements OnInit, OnDestroy {
   monthsData: MonthData[] = [];
   attendedDates: Set<string> = new Set();
   attendanceMap: Map<string, AttendanceRecord> = new Map();
+  supplementMap: Map<string, boolean> = new Map();
+  // Supplement logs cache for popup details
+  supplementLogsMap: Map<string, any[]> = new Map();
+
   iconCache: Map<string, string> = new Map(); // Cache icons to prevent infinite loops
 
   showPopup = false;
   selectedDate: DayCell | null = null;
+  selectedTab: 'workout' | 'health' = 'workout';
+
   isLoading = false;
 
   // Workout types
@@ -54,8 +61,17 @@ export class CalendarComponent implements OnInit, OnDestroy {
   selectedDuration: number | null = null;
   editDuration: number | null = null;
 
+  // Products
+  products: SupplementProduct[] = [];
+  selectedProductId: string = '';
+
   // Custom Dropdown State
   dropdownOpen = false;
+  productDropdownOpen = false;
+
+  // Supplement Carousel State
+  currentSupplementPage = 0;
+  supplementsPerPage = 2;
 
 
   private authSub: Subscription | null = null;
@@ -136,6 +152,10 @@ export class CalendarComponent implements OnInit, OnDestroy {
       // Build both set and map
       this.attendedDates = new Set(records.map(r => r.date));
       this.attendanceMap = new Map(records.map(r => [r.date, r]));
+
+      // Load supplements too
+      this.products = await this.firebaseService.getProducts();
+      await this.loadSupplementLogs();
 
       // Pre-compute icon cache
       this.buildIconCache();
@@ -327,6 +347,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
     this.selectedDate = day;
     this.selectedTypeId = ''; // Reset selection
     this.selectedDuration = null; // Reset duration
+    this.currentSupplementPage = 0; // Reset carousel page
     this.showPopup = true;
   }
 
@@ -335,8 +356,10 @@ export class CalendarComponent implements OnInit, OnDestroy {
     this.selectedDate = null;
     this.isEditingType = false;
     this.dropdownOpen = false; // Reset dropdown state
+    this.productDropdownOpen = false;
     this.selectedDuration = null; // Reset duration
     this.editDuration = null; // Reset edit duration
+    this.currentSupplementPage = 0; // Reset carousel page
   }
 
   startEditType() {
@@ -502,5 +525,212 @@ export class CalendarComponent implements OnInit, OnDestroy {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+  }
+
+  async loadSupplementLogs() {
+    if (!this.userId) return;
+
+    let logs: any[] = [];
+
+    // Simplification for MVP: Just load adjacent months for monthly view
+    if (this.viewMode === 'monthly') {
+      const prevMonth = this.currentMonth === 0 ? 12 : this.currentMonth;
+      const prevYear = this.currentMonth === 0 ? this.currentYear - 1 : this.currentYear;
+      const nextMonth = this.currentMonth === 11 ? 1 : this.currentMonth + 2;
+      const nextYear = this.currentMonth === 11 ? this.currentYear + 1 : this.currentYear;
+
+      const [prev, curr, next] = await Promise.all([
+        this.firebaseService.getSupplementLogs(this.userId, prevYear, prevMonth),
+        this.firebaseService.getSupplementLogs(this.userId, this.currentYear, this.currentMonth + 1),
+        this.firebaseService.getSupplementLogs(this.userId, nextYear, nextMonth)
+      ]);
+      logs = [...prev, ...curr, ...next];
+    } else {
+      // Load all 12 months for yearly view
+      const promises = [];
+      for (let i = 1; i <= 12; i++) {
+        promises.push(this.firebaseService.getSupplementLogs(this.userId, this.currentYear, i));
+      }
+      const results = await Promise.all(promises);
+      logs = results.flat();
+    }
+
+    this.supplementMap.clear();
+    this.supplementLogsMap.clear();
+
+    logs.forEach(l => {
+      // Assuming new log structure: each l is a SupplementLog { date, productId, servingsTaken }
+      // We group by date
+      if (l.servingsTaken > 0) {
+        this.supplementMap.set(l.date, true);
+
+        const existing = this.supplementLogsMap.get(l.date) || [];
+        existing.push(l);
+        this.supplementLogsMap.set(l.date, existing);
+      }
+    });
+  }
+
+  getDaySupplementLogs(fullDate: string): any[] {
+    return this.supplementLogsMap.get(fullDate) || [];
+  }
+
+  hasSupplement(fullDate: string): boolean {
+    return this.supplementMap.has(fullDate);
+  }
+
+  async addProductLog() {
+    if (!this.selectedDate || !this.selectedProductId || !this.userId) return;
+    this.isLoading = true;
+    try {
+      const product = this.products.find(p => p.id === this.selectedProductId);
+      const servings = product?.servingsPerDayDefault || 1;
+
+      if (product) {
+        await this.firebaseService.logSupplement(
+          this.userId,
+          this.selectedDate.fullDate,
+          this.selectedProductId,
+          servings,
+          { name: product.name, brand: product.brand }
+        );
+      }
+
+      // Refresh logs
+      await this.loadSupplementLogs();
+      this.selectedProductId = ''; // Reset selection
+      this.closePopup(); // Close popup after adding
+    } catch (error) {
+      console.error('Error adding log:', error);
+    }
+    this.isLoading = false;
+  }
+
+  toggleProductDropdown() {
+    this.productDropdownOpen = !this.productDropdownOpen;
+  }
+
+  selectProduct(productId: string) {
+    this.selectedProductId = productId;
+    this.productDropdownOpen = false;
+  }
+
+  async removeProductLog(logId: string) {
+    console.log('removeProductLog called with logId:', logId);
+    if (!this.selectedDate || !this.userId) {
+      console.log('Missing selectedDate or userId');
+      return;
+    }
+
+    // Skip confirm for now to test
+    // if (!confirm('Delete this entry?')) return;
+
+    this.isLoading = true;
+    try {
+      console.log('Calling removeSupplementLog with:', this.userId, logId, this.selectedDate.fullDate);
+      await this.firebaseService.removeSupplementLog(this.userId, logId, this.selectedDate.fullDate);
+      console.log('Successfully removed, refreshing logs...');
+
+      // Refresh logs
+      await this.loadSupplementLogs();
+      console.log('Logs refreshed');
+    } catch (error) {
+      console.error('Error removing log:', error);
+    }
+    this.isLoading = false;
+  }
+
+  getProductName(productId: string): string {
+    const p = this.products.find(x => x.id === productId);
+    return p ? p.name : 'Unknown';
+  }
+
+  // Supplement Carousel Methods
+  getPaginatedSupplements(fullDate: string): any[][] {
+    const allLogs = this.getDaySupplementLogs(fullDate);
+    const pages: any[][] = [];
+    for (let i = 0; i < allLogs.length; i += this.supplementsPerPage) {
+      pages.push(allLogs.slice(i, i + this.supplementsPerPage));
+    }
+    return pages;
+  }
+
+  getTotalPages(fullDate: string): number {
+    const allLogs = this.getDaySupplementLogs(fullDate);
+    return Math.ceil(allLogs.length / this.supplementsPerPage);
+  }
+
+  goToSupplementPage(pageIndex: number) {
+    this.currentSupplementPage = pageIndex;
+    // Scroll to the page
+    const carousel = document.querySelector('.supplement-carousel');
+    if (carousel) {
+      const pageWidth = carousel.clientWidth;
+      carousel.scrollTo({
+        left: pageIndex * pageWidth,
+        behavior: 'smooth'
+      });
+    }
+  }
+
+  onCarouselScroll(event: Event) {
+    const carousel = event.target as HTMLElement;
+    const pageWidth = carousel.clientWidth;
+    const scrollLeft = carousel.scrollLeft;
+    const newPage = Math.round(scrollLeft / pageWidth);
+    if (newPage !== this.currentSupplementPage) {
+      this.currentSupplementPage = newPage;
+    }
+  }
+
+  getVisibleDots(fullDate: string): number[] {
+    const totalPages = this.getTotalPages(fullDate);
+    if (totalPages <= 3) {
+      // Show all dots if 3 or fewer
+      return Array.from({ length: totalPages }, (_, i) => i);
+    }
+
+    // Show sliding window of 3 dots
+    const current = this.currentSupplementPage;
+
+    if (current === 0) {
+      // At the start: show [0, 1, 2]
+      return [0, 1, 2];
+    } else if (current === totalPages - 1) {
+      // At the end: show last 3
+      return [totalPages - 3, totalPages - 2, totalPages - 1];
+    } else {
+      // In the middle: show [current-1, current, current+1]
+      return [current - 1, current, current + 1];
+    }
+  }
+
+  formatSupplementTime(log: any): string {
+    if (!log.timestamp) {
+      return '';
+    }
+
+    let date: Date;
+    // Handle Firestore Timestamp with toDate() method
+    if (log.timestamp.toDate) {
+      date = log.timestamp.toDate();
+    }
+    // Handle plain object with seconds/nanoseconds (serialized Firestore Timestamp)
+    else if (typeof log.timestamp === 'object' && 'seconds' in log.timestamp) {
+      date = new Date(log.timestamp.seconds * 1000);
+    }
+    // Handle ISO string
+    else if (typeof log.timestamp === 'string') {
+      date = new Date(log.timestamp);
+    }
+    else {
+      console.log('Timestamp format not recognized:', log.timestamp);
+      return '';
+    }
+
+    // Format as HH:MM (24h format)
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
   }
 }

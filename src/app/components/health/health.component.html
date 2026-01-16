@@ -1,0 +1,189 @@
+<div class="health-container">
+    <!-- HEADER -->
+    <div class="header">
+        <h1>Health Tracker</h1>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs" *ngIf="!showForm">
+        <button class="tab" [class.active]="viewMode === 'today'" (click)="setView('today')">
+            <span class="tab-icon">📊</span>
+            <span>Today</span>
+        </button>
+        <button class="tab" [class.active]="viewMode === 'my_supplements'" (click)="setView('my_supplements')">
+            <span class="tab-icon">👤</span>
+            <span>My Supplements</span>
+        </button>
+        <button class="tab" [class.active]="viewMode === 'all_supplements'" (click)="setView('all_supplements')">
+            <span class="tab-icon">🌐</span>
+            <span>All Supplements</span>
+        </button>
+    </div>
+
+    <!-- TODAY VIEW -->
+    <div class="tab-content" *ngIf="!showForm && viewMode === 'today'">
+        <div class="today-summary">
+            <h2>Today's Intake</h2>
+            <p class="date">{{ getCurrentDate() }}</p>
+
+            <div class="intake-list" *ngIf="todayLogs.length > 0; else emptyToday">
+                <div class="intake-item" *ngFor="let grouped of getGroupedTodayLogs()">
+                    <div class="item-icon">💊</div>
+                    <div class="item-info">
+                        <div class="item-name">{{ grouped.productName }}</div>
+                        <div class="item-brand">{{ grouped.productBrand }}</div>
+                    </div>
+                    <div class="item-servings">×{{ grouped.totalServings }}</div>
+                </div>
+            </div>
+            <ng-template #emptyToday>
+                <div class="empty-today">
+                    <div class="empty-icon">🌅</div>
+                    <h3>No supplements logged today</h3>
+                    <p>Start your day by logging your supplements</p>
+                </div>
+            </ng-template>
+        </div>
+    </div>
+
+    <!-- MY SUPPLEMENTS VIEW -->
+    <div class="tab-content" *ngIf="!showForm && viewMode === 'my_supplements'">
+        <div class="catalog-view">
+            <div class="view-header">
+                <h2>My Personal List</h2>
+                <p>Supplements you have added to the system.</p>
+            </div>
+
+            <div class="supplements-grid" *ngIf="myProducts.length > 0">
+                <div class="supplement-card" *ngFor="let product of myProducts">
+                    <div class="card-header">
+                        <div class="sup-details">
+                            <span class="brand">{{ product.brand || 'Generic' }}</span>
+                            <span class="name">{{ product.name }}</span>
+                        </div>
+                    </div>
+
+                    <div class="ingredients-preview">
+                        <span *ngFor="let ing of product.ingredients; let last = last">
+                            {{ ing.amount }}{{ ing.unit }} {{ ing.name || ing.stdId }}<span *ngIf="!last">, </span>
+                        </span>
+                    </div>
+
+                    <div class="card-footer actions-row">
+                        <!-- Only allow edit/delete if created by current user -->
+                        <button class="btn-icon small edit" (click)="startEdit(product)" title="Edit"
+                            *ngIf="product.createdBy === userId">
+                            ✏️ Edit
+                        </button>
+                        <button class="btn-icon small delete" (click)="deleteProduct(product)" title="Delete"
+                            *ngIf="product.createdBy === userId">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State for My Supplements -->
+            <div *ngIf="myProducts.length === 0" class="empty-supplements">
+                <div class="empty-icon">👤</div>
+                <h3>No Personal Supplements</h3>
+                <p>You haven't added any custom supplements yet.</p>
+                <button class="btn-primary large" (click)="openAddForm()">
+                    <span>+ Add Supplement</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Floating Action Button -->
+        <button class="fab" *ngIf="myProducts.length > 0" (click)="openAddForm()" title="Add Supplement">
+            <span>+</span>
+        </button>
+    </div>
+
+    <!-- ALL SUPPLEMENTS VIEW -->
+    <div class="tab-content" *ngIf="!showForm && viewMode === 'all_supplements'">
+        <div class="catalog-view">
+            <div class="view-header">
+                <h2>Global Database</h2>
+                <p>All available supplements in the system.</p>
+            </div>
+
+            <div class="supplements-grid" *ngIf="products.length > 0">
+                <div class="supplement-card" *ngFor="let product of products">
+                    <div class="card-header">
+                        <div class="sup-details">
+                            <span class="brand">{{ product.brand || 'Generic' }}</span>
+                            <span class="name">{{ product.name }}</span>
+                        </div>
+                    </div>
+
+                    <div class="ingredients-preview">
+                        <span *ngFor="let ing of product.ingredients; let last = last">
+                            {{ ing.amount }}{{ ing.unit }} {{ ing.name || ing.stdId }}<span *ngIf="!last">, </span>
+                        </span>
+                    </div>
+
+                    <div class="card-footer actions-row">
+                        <!-- Only allow edit/delete if created by current user -->
+                        <button class="btn-icon small edit" (click)="startEdit(product)" title="Edit"
+                            *ngIf="product.createdBy === userId">
+                            ✏️ Edit
+                        </button>
+                        <button class="btn-icon small delete" (click)="deleteProduct(product)" title="Delete"
+                            *ngIf="product.createdBy === userId">
+                            🗑️ Delete
+                        </button>
+                        <!-- Maybe add a "Take" button here too for convenience? -> Leaving out for now to keep scoped -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State for Global (Unlikely but handle it) -->
+            <div *ngIf="products.length === 0" class="empty-supplements">
+                <div class="empty-icon">🌐</div>
+                <h3>Database Empty</h3>
+                <p>No supplements found in the global database.</p>
+                <button class="btn-primary large" (click)="openAddForm()">
+                    <span>+ Add First Supplement</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Floating Action Button -->
+        <button class="fab" *ngIf="products.length > 0" (click)="openAddForm()" title="Add Supplement">
+            <span>+</span>
+        </button>
+    </div>
+
+    <!-- FORM VIEW -->
+    <div class="form-view" *ngIf="showForm">
+        <div class="form-header">
+            <button class="btn-back" (click)="closeForm()">
+                <span>← Back to Supplements</span>
+            </button>
+        </div>
+        <app-supplement-form [userId]="userId!" [productToEdit]="productToEdit" (save)="onFormSaved($event)"
+            (cancel)="closeForm()">
+        </app-supplement-form>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-icon-wrapper">
+                <div class="modal-icon">🗑️</div>
+            </div>
+            <h3>Delete Supplement</h3>
+            <p class="modal-message">
+                You're about to delete <strong>"{{ productToDelete?.name }}"</strong>
+            </p>
+            <p class="modal-warning">⚠️ This action cannot be undone.</p>
+
+            <div class="modal-actions">
+                <button class="modal-btn cancel" (click)="cancelDelete()">Cancel</button>
+                <button class="modal-btn delete" (click)="confirmDelete()">Delete Supplement</button>
+            </div>
+        </div>
+    </div>
+
+</div>

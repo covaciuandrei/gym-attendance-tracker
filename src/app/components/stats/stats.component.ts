@@ -14,8 +14,8 @@ import { ThemeService } from '../../services/theme.service';
   styleUrls: ['./stats.component.css']
 })
 export class StatsComponent implements OnInit, OnDestroy {
-  // View mode: 'attendances' | 'workouts' | 'duration'
-  viewMode: 'attendances' | 'workouts' | 'duration' = 'attendances';
+  // View mode: 'attendances' | 'workouts' | 'duration' | 'health'
+  viewMode: 'attendances' | 'workouts' | 'duration' | 'health' = 'attendances';
 
   // Attendance Stats
   totalCount = 0;
@@ -49,6 +49,12 @@ export class StatsComponent implements OnInit, OnDestroy {
     'JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE',
     'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER'
   ];
+
+  // Health Stats
+  mostTakenProduct: { name: string; count: number } | null = null;
+  topNutrients: { name: string; amount: number; unit: string }[] = [];
+  totalHealthLogs = 0;
+  monthlyHealthData: { month: string; count: number }[] = [];
 
   constructor(
     private firebaseService: FirebaseService,
@@ -92,24 +98,19 @@ export class StatsComponent implements OnInit, OnDestroy {
     this.workoutTypeDurationStats = [];
     this.monthlyDurationStats = [];
     this.monthlyDurationData = [];
+    // Reset health stats
+    this.mostTakenProduct = null;
+    this.topNutrients = [];
+    this.totalHealthLogs = 0;
+    this.monthlyHealthData = [];
   }
 
   async loadStats() {
     if (!this.userId) return;
 
     // Load attendance stats
-    // Note: detailed implementation of these methods should be verified in FirebaseService
-    // For now we use the available methods or workarounds if methods are missing logic
-
-    // We already added placeholders in FirebaseService, but we need real data
-    // Let's rely on getYearAttendance to calculate these locally if service methods are placeholders
-
-    // Calculate stats locally from year data to ensure accuracy until service is fully improved
     const yearData = await this.firebaseService.getYearAttendance(this.userId, this.currentYear);
-
     this.yearlyCount = yearData.length;
-    // Note: totalCount would need all time data, which might be heavy. 
-    // For now, let's just use yearly count or try the placeholder.
     this.totalCount = await this.firebaseService.getTotalAttendanceCount() || this.yearlyCount;
 
     // Current month count
@@ -134,6 +135,104 @@ export class StatsComponent implements OnInit, OnDestroy {
 
     // Load duration stats
     await this.loadDurationStats();
+
+    // Load Health stats
+    await this.loadHealthStats();
+  }
+
+  async loadHealthStats() {
+    if (!this.userId) return;
+
+    // Fetch all logs for the year (simplification: iterate 12 months)
+    const logsPromises = [];
+    for (let m = 1; m <= 12; m++) {
+      logsPromises.push(this.firebaseService.getSupplementLogs(this.userId, this.currentYear, m));
+    }
+    const monthlyLogs = await Promise.all(logsPromises);
+    const allLogs = monthlyLogs.flat();
+
+    this.totalHealthLogs = allLogs.length;
+
+    // Calculate Monthly consistency
+    this.monthlyHealthData = this.monthNames.map((name, idx) => {
+      return { month: name, count: monthlyLogs[idx].length };
+    });
+
+    // Need products to aggregate nutrients
+    const products = await this.firebaseService.getProducts();
+    const productMap = new Map<string, any>();
+    products.forEach(p => productMap.set(p.id, p));
+
+    const nutrientMap = new Map<string, { name: string; amount: number; unit: string }>();
+    const productCounts = new Map<string, number>();
+
+    allLogs.forEach(log => {
+      const product = productMap.get(log.productId);
+      if (product) {
+        // Track product usage
+        const currentCount = productCounts.get(product.name) || 0;
+        productCounts.set(product.name, currentCount + log.servingsTaken);
+
+        // Aggregate nutrients
+        product.ingredients.forEach((ing: any) => {
+          // We might want to resolve ingredient name from global list if needed, 
+          // but product.ingredients usually has stdId. 
+          // We need to know the 'Display Name' of the stdId.
+          // For now, let's use the stdId as name or fetch ingredients list too?
+          // The product SHOULD store the name in ingredients for display, but my interface 
+          // SupplementProduct ingredients: { stdId, amount, unit }. Name is missing!
+          // Ah, I missed adding 'name' to the product ingredient interface for cache/display?
+          // Or I fetch Global Ingredients to map stdId -> Name.
+          // I should fetch Global Ingredients.
+          const total = log.servingsTaken * ing.amount;
+          const existing = nutrientMap.get(ing.stdId) || { name: ing.stdId, amount: 0, unit: ing.unit };
+          existing.amount += total;
+          nutrientMap.set(ing.stdId, existing);
+        });
+      }
+    });
+
+    // Resolve Nutrient Names
+    if (nutrientMap.size > 0) {
+      const globalIngredients = await this.firebaseService.getIngredients();
+      const ingMap = new Map(globalIngredients.map(i => [i.id, i.name]));
+
+      nutrientMap.forEach((val, key) => {
+        val.name = ingMap.get(key) || val.name; // Use global name or stdId fallback
+      });
+    }
+
+    // Top Nutrients
+    this.topNutrients = Array.from(nutrientMap.values())
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5); // Start with top 5
+
+    // Most Taken Product
+    let maxProduct = '';
+    let maxVal = 0;
+    productCounts.forEach((val, key) => {
+      if (val > maxVal) {
+        maxVal = val;
+        maxProduct = key;
+      }
+    });
+
+    if (maxProduct) {
+      this.mostTakenProduct = { name: maxProduct, count: maxVal };
+    }
+  }
+
+  // ... existing methods ...
+
+  getDisplayTitle(): string {
+    if (this.viewMode === 'attendances') return 'STATS.TITLE_ATTENDANCE';
+    if (this.viewMode === 'workouts') return 'STATS.TITLE_WORKOUTS';
+    if (this.viewMode === 'health') return 'Health Stats';
+    return 'STATS.TITLE_DURATION';
+  }
+
+  toggleView(mode: 'attendances' | 'workouts' | 'duration' | 'health') {
+    this.viewMode = mode;
   }
 
   async loadDurationStats() {
@@ -261,15 +360,6 @@ export class StatsComponent implements OnInit, OnDestroy {
     return Math.max(...this.monthlyDurationData.map(d => d.avgMinutes), 1);
   }
 
-  getDisplayTitle(): string {
-    if (this.viewMode === 'attendances') return 'STATS.TITLE_ATTENDANCE';
-    if (this.viewMode === 'workouts') return 'STATS.TITLE_WORKOUTS';
-    return 'STATS.TITLE_DURATION';
-  }
-
-  toggleView(mode: 'attendances' | 'workouts' | 'duration') {
-    this.viewMode = mode;
-  }
 
   formatDuration(minutes: number): string {
     if (minutes === 0) return '0 min';

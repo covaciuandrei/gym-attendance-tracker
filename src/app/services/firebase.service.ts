@@ -10,7 +10,13 @@ import {
   getFirestore,
   setDoc,
   Timestamp,
-  updateDoc
+  updateDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  startAt,
+  endAt
 } from 'firebase/firestore';
 import { environment } from '../../environments/environment';
 
@@ -62,6 +68,35 @@ export interface WorkoutTypeDurationStat {
   avgMinutes: number;   // average duration in minutes
 }
 
+export interface Ingredient {
+  id: string; // stdId
+  name: string;
+  aliases?: string[];
+  category: string; // Vitamin, Mineral, etc.
+  defaultUnit: string;
+  safeUpperLimit?: number;
+  rda?: number;
+}
+
+export interface SupplementProduct {
+  id: string;
+  name: string;
+  brand: string;
+  ingredients: { stdId: string; name: string; amount: number; unit: string }[];
+  servingsPerDayDefault: number;
+  createdBy?: string;
+  verified?: boolean;
+}
+
+export interface SupplementLog {
+  date: string;
+  productId: string;
+  productName?: string; // Snapshot of name at time of logging
+  productBrand?: string; // Snapshot of brand at time of logging
+  servingsTaken: number;
+  timestamp?: any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -74,6 +109,23 @@ export class FirebaseService {
   constructor() {
     console.log('🏋️ Gym Tracker: Initializing Firebase Service...');
     this.initializeFirebase();
+  }
+
+  // Utility to remove undefined fields for Firestore
+  private sanitizeForFirestore(obj: any): any {
+    if (obj === null || obj === undefined) return null;
+    if (Array.isArray(obj)) return obj.map(item => this.sanitizeForFirestore(item));
+    if (typeof obj === 'object') {
+      const newObj: any = {};
+      Object.keys(obj).forEach(key => {
+        const value = this.sanitizeForFirestore(obj[key]);
+        if (value !== undefined) {
+          newObj[key] = value;
+        }
+      });
+      return newObj;
+    }
+    return obj;
   }
 
   private initializeFirebase(): void {
@@ -599,5 +651,306 @@ export class FirebaseService {
 
     console.log(`✅ Migration complete (Firebase): ${migrated}/${total} records updated`);
     return { migrated, total };
+  }
+
+  // ========================================
+  // Ingredient Methods (Global)
+  // ========================================
+
+  async seedIngredients(): Promise<void> {
+    const ingredients: Ingredient[] = [
+      // Vitamins
+      { id: 'vitamin_a', name: 'Vitamin A', defaultUnit: 'IU', category: 'Vitamin' },
+      { id: 'vitamin_b1', name: 'Vitamin B1 (Thiamine)', defaultUnit: 'mg', category: 'Vitamin', aliases: ['Thiamine'] },
+      { id: 'vitamin_b2', name: 'Vitamin B2 (Riboflavin)', defaultUnit: 'mg', category: 'Vitamin', aliases: ['Riboflavin'] },
+      { id: 'vitamin_b3', name: 'Vitamin B3 (Niacin)', defaultUnit: 'mg', category: 'Vitamin', aliases: ['Niacin', 'Niacinamide'] },
+      { id: 'vitamin_b5', name: 'Vitamin B5 (Pantothenic Acid)', defaultUnit: 'mg', category: 'Vitamin' },
+      { id: 'vitamin_b6', name: 'Vitamin B6 (Pyridoxine)', defaultUnit: 'mg', category: 'Vitamin' },
+      { id: 'vitamin_b7', name: 'Vitamin B7 (Biotin)', defaultUnit: 'mcg', category: 'Vitamin', aliases: ['Biotin'] },
+      { id: 'vitamin_b9', name: 'Vitamin B9 (Folate)', defaultUnit: 'mcg', category: 'Vitamin', aliases: ['Folate', 'Folic Acid'] },
+      { id: 'vitamin_b12', name: 'Vitamin B12', defaultUnit: 'mcg', category: 'Vitamin', aliases: ['Cobalamin'] },
+      { id: 'vitamin_c', name: 'Vitamin C', defaultUnit: 'mg', category: 'Vitamin', aliases: ['Ascorbic Acid'] },
+      { id: 'vitamin_d3', name: 'Vitamin D3', defaultUnit: 'IU', category: 'Vitamin', aliases: ['Cholecalciferol'] },
+      { id: 'vitamin_e', name: 'Vitamin E', defaultUnit: 'IU', category: 'Vitamin' },
+      { id: 'vitamin_k2', name: 'Vitamin K2', defaultUnit: 'mcg', category: 'Vitamin', aliases: ['Menaquinone'] },
+
+      // Minerals
+      { id: 'calcium', name: 'Calcium', defaultUnit: 'mg', category: 'Mineral' },
+      { id: 'chromium', name: 'Chromium', defaultUnit: 'mcg', category: 'Mineral' },
+      { id: 'copper', name: 'Copper', defaultUnit: 'mg', category: 'Mineral' },
+      { id: 'iodine', name: 'Iodine', defaultUnit: 'mcg', category: 'Mineral' },
+      { id: 'iron', name: 'Iron', defaultUnit: 'mg', category: 'Mineral' },
+      { id: 'magnesium', name: 'Magnesium', defaultUnit: 'mg', category: 'Mineral', aliases: ['Magnesium Citrate', 'Magnesium Glycinate'] },
+      { id: 'manganese', name: 'Manganese', defaultUnit: 'mg', category: 'Mineral' },
+      { id: 'molybdenum', name: 'Molybdenum', defaultUnit: 'mcg', category: 'Mineral' },
+      { id: 'potassium', name: 'Potassium', defaultUnit: 'mg', category: 'Mineral' },
+      { id: 'selenium', name: 'Selenium', defaultUnit: 'mcg', category: 'Mineral' },
+      { id: 'sodium', name: 'Sodium', defaultUnit: 'mg', category: 'Mineral' },
+      { id: 'zinc', name: 'Zinc', defaultUnit: 'mg', category: 'Mineral', aliases: ['Zinc Picolinate', 'Zinc Gluconate'] },
+
+      // Sports & Performance / Amino Acids
+      { id: 'creatine', name: 'Creatine Monohydrate', defaultUnit: 'g', category: 'Performance' },
+      { id: 'whey_protein', name: 'Whey Protein', defaultUnit: 'g', category: 'Performance' },
+      { id: 'casein_protein', name: 'Casein Protein', defaultUnit: 'g', category: 'Performance' },
+      { id: 'bcaas', name: 'BCAAs', defaultUnit: 'g', category: 'Amino Acid' },
+      { id: 'eaas', name: 'EAAs', defaultUnit: 'g', category: 'Amino Acid' },
+      { id: 'caffeine', name: 'Caffeine', defaultUnit: 'mg', category: 'Performance' },
+      { id: 'beta_alanine', name: 'Beta Alanine', defaultUnit: 'g', category: 'Performance' },
+      { id: 'citrulline', name: 'L-Citrulline', defaultUnit: 'g', category: 'Amino Acid', aliases: ['Citrulline Malate'] },
+      { id: 'arginine', name: 'L-Arginine', defaultUnit: 'g', category: 'Amino Acid' },
+      { id: 'glutamine', name: 'L-Glutamine', defaultUnit: 'g', category: 'Amino Acid' },
+      { id: 'taurine', name: 'Taurine', defaultUnit: 'g', category: 'Amino Acid' },
+      { id: 'tyrosine', name: 'L-Tyrosine', defaultUnit: 'mg', category: 'Amino Acid' },
+      { id: 'electrolytes', name: 'Electrolytes', defaultUnit: 'servings', category: 'Performance' },
+
+      // Fatty Acids
+      { id: 'omega_3', name: 'Omega-3 (Fish Oil)', defaultUnit: 'mg', category: 'Fatty Acid', aliases: ['Fish Oil'] },
+      { id: 'epa', name: 'EPA', defaultUnit: 'mg', category: 'Fatty Acid' },
+      { id: 'dha', name: 'DHA', defaultUnit: 'mg', category: 'Fatty Acid' },
+      { id: 'cla', name: 'CLA', defaultUnit: 'g', category: 'Fatty Acid' },
+
+      // Sleep / Stress / Nootropics
+      { id: 'melatonin', name: 'Melatonin', defaultUnit: 'mg', category: 'Hormone' },
+      { id: 'ashwagandha', name: 'Ashwagandha', defaultUnit: 'mg', category: 'Herbal' },
+      { id: 'l_theanine', name: 'L-Theanine', defaultUnit: 'mg', category: 'Amino Acid' },
+      { id: 'glycine', name: 'Glycine', defaultUnit: 'g', category: 'Amino Acid' },
+      { id: 'gaba', name: 'GABA', defaultUnit: 'mg', category: 'Amino Acid' },
+      { id: '5htp', name: '5-HTP', defaultUnit: 'mg', category: 'Amino Acid' },
+      { id: 'rhodiola', name: 'Rhodiola Rosea', defaultUnit: 'mg', category: 'Herbal' },
+      { id: 'magnesium_glycinate', name: 'Magnesium Glycinate', defaultUnit: 'mg', category: 'Mineral' },
+
+      // Joint / Connective Tissue
+      { id: 'collagen', name: 'Collagen Peptides', defaultUnit: 'g', category: 'Other' },
+      { id: 'glucosamine', name: 'Glucosamine', defaultUnit: 'mg', category: 'Other' },
+      { id: 'chondroitin', name: 'Chondroitin', defaultUnit: 'mg', category: 'Other' },
+      { id: 'msm', name: 'MSM', defaultUnit: 'g', category: 'Other' },
+
+      // Longevity / Immune / General Health
+      { id: 'coq10', name: 'CoQ10', defaultUnit: 'mg', category: 'Other' },
+      { id: 'curcumin', name: 'Curcumin (Turmeric)', defaultUnit: 'mg', category: 'Herbal' },
+      { id: 'quercetin', name: 'Quercetin', defaultUnit: 'mg', category: 'Herbal' },
+      { id: 'nac', name: 'NAC (N-Acetyl Cysteine)', defaultUnit: 'mg', category: 'Amino Acid' },
+      { id: 'resveratrol', name: 'Resveratrol', defaultUnit: 'mg', category: 'Herbal' },
+      { id: 'glutathione', name: 'Glutathione', defaultUnit: 'mg', category: 'Other' },
+      { id: 'probiotics', name: 'Probiotics', defaultUnit: 'CFU', category: 'Other' },
+      { id: 'fiber', name: 'Fiber / Psyllium', defaultUnit: 'g', category: 'Other' },
+      { id: 'greens', name: 'Greens Powder', defaultUnit: 'servings', category: 'Other' }
+    ];
+
+    if (this.useLocalStorage) {
+      localStorage.setItem('ingredients_global', JSON.stringify(ingredients));
+      return;
+    }
+
+    const batch: Promise<void>[] = [];
+    ingredients.forEach(ing => {
+      // Use sanitizeForFirestore just in case
+      const cleanIng = this.sanitizeForFirestore(ing);
+      // setDoc with merge: true to avoid overwriting if exists, but we want to ensure fields are up to date
+      const ref = doc(this.db!, 'ingredients', ing.id);
+      batch.push(setDoc(ref, cleanIng));
+    });
+
+    await Promise.all(batch);
+    console.log('✅ Global ingredients seeded successfully');
+  }
+
+  async getIngredients(): Promise<Ingredient[]> {
+    if (this.useLocalStorage) {
+      const data = localStorage.getItem('ingredients_global');
+      return data ? JSON.parse(data) : [];
+    }
+
+    const colRef = collection(this.db!, 'ingredients');
+    // We could order by name
+    const q = query(colRef, orderBy('name'));
+    const snapshot = await getDocs(q);
+
+    const ingredients: Ingredient[] = [];
+    snapshot.forEach(doc => ingredients.push(doc.data() as Ingredient));
+    return ingredients;
+  }
+
+  async searchIngredients(term: string): Promise<Ingredient[]> {
+    const all = await this.getIngredients(); // For now, client-side filter since list is small (<100)
+    const lower = term.toLowerCase();
+    return all.filter(ing =>
+      ing.name.toLowerCase().includes(lower) ||
+      ing.id.includes(lower) ||
+      ing.aliases?.some(a => a.toLowerCase().includes(lower))
+    );
+  }
+
+  // ========================================
+  // Product Methods (Global)
+  // ========================================
+
+  async getProducts(): Promise<SupplementProduct[]> {
+    if (this.useLocalStorage) {
+      const data = localStorage.getItem('supplement_products');
+      return data ? JSON.parse(data) : [];
+    }
+
+    const colRef = collection(this.db!, 'supplementProducts');
+    const snapshot = await getDocs(colRef);
+    const products: SupplementProduct[] = [];
+    snapshot.forEach(doc => products.push({ id: doc.id, ...doc.data() } as SupplementProduct));
+    return products;
+  }
+
+  async addProduct(userId: string, data: Omit<SupplementProduct, 'id' | 'verified'>): Promise<string> {
+    const id = this.generateId();
+    const product: SupplementProduct = {
+      id,
+      ...data,
+      createdBy: userId,
+      verified: false
+    };
+
+    if (this.useLocalStorage) {
+      const products = await this.getProducts();
+      products.push(product);
+      localStorage.setItem('supplement_products', JSON.stringify(products));
+      return id;
+    }
+
+    const cleanProduct = this.sanitizeForFirestore(product);
+    const docRef = doc(this.db!, 'supplementProducts', id);
+    await setDoc(docRef, cleanProduct);
+    return id;
+  }
+
+  async searchProducts(term: string): Promise<SupplementProduct[]> {
+    // Basic search impl
+    const all = await this.getProducts();
+    const lower = term.toLowerCase();
+    return all.filter(p =>
+      p.name.toLowerCase().includes(lower) ||
+      p.brand.toLowerCase().includes(lower)
+    );
+  }
+
+  async getProduct(productId: string): Promise<SupplementProduct | undefined> {
+    if (this.useLocalStorage) {
+      const all = await this.getProducts();
+      return all.find(p => p.id === productId);
+    }
+
+    const docRef = doc(this.db!, 'supplementProducts', productId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return { id: snap.id, ...snap.data() } as SupplementProduct;
+    }
+    return undefined;
+  }
+
+  async deleteProduct(productId: string): Promise<void> {
+    if (this.useLocalStorage) {
+      const products = await this.getProducts();
+      const updatedProducts = products.filter(p => p.id !== productId);
+      localStorage.setItem('supplement_products', JSON.stringify(updatedProducts));
+      return;
+    }
+
+    if (!this.db) return;
+    await deleteDoc(doc(this.db, 'supplementProducts', productId));
+  }
+
+  // ========================================
+  async updateProduct(productId: string, data: Partial<Omit<SupplementProduct, 'id'>>): Promise<void> {
+    if (this.useLocalStorage) {
+      const products = await this.getProducts();
+      const index = products.findIndex(p => p.id === productId);
+      if (index !== -1) {
+        products[index] = { ...products[index], ...data };
+        localStorage.setItem('supplement_products', JSON.stringify(products));
+      }
+      return;
+    }
+
+    if (!this.db) return;
+
+    // Sanitize data
+    const cleanData: any = { ...data };
+    if (cleanData.ingredients) {
+      cleanData.ingredients = cleanData.ingredients.map((ing: any) => this.sanitizeForFirestore(ing));
+    }
+
+    await updateDoc(doc(this.db, 'supplementProducts', productId), cleanData);
+  }
+
+  // --- Supplement Logging (User Scoped) ---
+  // ========================================
+
+  async getSupplementLogs(userId: string, year: number, month: number): Promise<SupplementLog[]> {
+    const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
+
+    if (this.useLocalStorage) {
+      const key = `supplement_logs_${userId}`;
+      const data = localStorage.getItem(key);
+      const logsRecord: Record<string, any> = data ? JSON.parse(data) : {};
+      // Include the ID (key) in each log object
+      return Object.entries(logsRecord)
+        .filter(([_, log]) => log.date.startsWith(yearMonth))
+        .map(([id, log]) => ({ id, ...log }));
+    }
+
+    const colRef = collection(this.db!, 'users', userId, 'healthLogs', yearMonth, 'entries');
+    const snapshot = await getDocs(colRef);
+    const logs: any[] = [];
+    snapshot.forEach(doc => logs.push({ id: doc.id, ...doc.data() }));
+    return logs;
+  }
+
+  async logSupplement(userId: string, date: string, productId: string, servingsTaken: number, snapshotData?: { name: string; brand?: string }): Promise<void> {
+
+    // I'll implement: `users/{userId}/healthLogs/{yearMonth}/entries/{logId}`
+
+    const yearMonth = this.getYearMonthKey(date);
+    const logId = this.generateId();
+
+    const logEntry: SupplementLog = {
+      date,
+      productId,
+      servingsTaken,
+      timestamp: this.useLocalStorage ? new Date().toISOString() : Timestamp.now()
+    };
+
+    if (snapshotData) {
+      logEntry.productName = snapshotData.name;
+      if (snapshotData.brand) logEntry.productBrand = snapshotData.brand;
+    }
+
+    if (this.useLocalStorage) {
+      const key = `supplement_logs_${userId}`;
+      const data = localStorage.getItem(key);
+      const logs: Record<string, SupplementLog> = data ? JSON.parse(data) : {};
+      logs[logId] = logEntry; // Store by ID
+      localStorage.setItem(key, JSON.stringify(logs));
+      return;
+    }
+
+    const cleanLog = this.sanitizeForFirestore(logEntry);
+    // Path: users/uid/healthLogs/YYYY-MM/entries/logId
+    const docRef = doc(this.db!, 'users', userId, 'healthLogs', yearMonth, 'entries', logId);
+    await setDoc(docRef, cleanLog);
+  }
+
+  async removeSupplementLog(userId: string, logId: string, date: string): Promise<void> {
+    // We need date to find the folder
+    if (this.useLocalStorage) {
+      const key = `supplement_logs_${userId}`;
+      const data = localStorage.getItem(key);
+      if (data) {
+        const logs = JSON.parse(data);
+        delete logs[logId];
+        localStorage.setItem(key, JSON.stringify(logs));
+      }
+      return;
+    }
+
+    const yearMonth = this.getYearMonthKey(date);
+    const docRef = doc(this.db!, 'users', userId, 'healthLogs', yearMonth, 'entries', logId);
+    await deleteDoc(docRef);
   }
 }

@@ -1,0 +1,67 @@
+<div class="form-container">
+  <h2>{{ productToEdit ? 'Edit Supplement' : 'Add New Supplement' }}</h2>
+
+  <div class="form-group">
+    <label>Supplement Name</label>
+    <input type="text" [(ngModel)]="name" placeholder="e.g. Daily Multivitamin" class="form-input">
+  </div>
+
+  <div class="form-group">
+    <label>Brand (Optional)</label>
+    <input type="text" [(ngModel)]="brand" placeholder="e.g. Nature's Way" class="form-input">
+  </div>
+
+  <div class="ingredients-section">
+    <h3>Ingredients</h3>
+
+    <div class="ingredient-input-row">
+      <div class="autocomplete-wrapper">
+        <input type="text" [(ngModel)]="currentIngredientName" (input)="onIngredientInput()"
+          placeholder="Search ingredient..." class="form-input">
+        <div class="autocomplete-dropdown" *ngIf="showAutocomplete">
+          <div *ngFor="let option of filteredOptions" class="autocomplete-option" (click)="selectOption(option)">
+            <span class="opt-name">{{ option.name }}</span>
+            <span class="opt-cat">{{ option.category }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls-row">
+        <input type="number" [(ngModel)]="currentIngredientAmount" placeholder="Amt" class="form-input amount-input">
+
+        <select [(ngModel)]="currentIngredientUnit" class="form-select unit-input">
+          <option value="mg">mg</option>
+          <option value="mcg">mcg</option>
+          <option value="g">g</option>
+          <option value="IU">IU</option>
+          <option value="ml">ml</option>
+        </select>
+
+        <button class="btn-icon add" (click)="addIngredient()"
+          [disabled]="!currentIngredientName || !currentIngredientAmount">
+          ➕
+        </button>
+      </div>
+    </div>
+
+    <div class="ingredients-list">
+      <div *ngFor="let ing of ingredients; let i = index" class="ingredient-item">
+        <div class="ing-info">
+          <span class="ing-name">{{ ing.name }}</span>
+          <span class="ing-amount">{{ ing.amount }} {{ ing.unit }}</span>
+        </div>
+        <button class="btn-icon remove" (click)="removeIngredient(i)">❌</button>
+      </div>
+      <div *ngIf="ingredients.length === 0" class="empty-message">
+        No ingredients added yet. Search and add ingredients above.
+      </div>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn-secondary" (click)="onCancel()">Cancel</button>
+    <button class="btn-primary" (click)="onSubmit()" [disabled]="!name || ingredients.length === 0">
+      {{ productToEdit ? 'Save Supplement' : 'Add Supplement' }}
+    </button>
+  </div>
+</div>

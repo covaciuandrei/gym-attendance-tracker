@@ -1,0 +1,11 @@
+.carousel-dot.active {
+    background-color: var(--primary-color);
+    width: 24px;
+    border-radius: 4px;
+}
+
+.supplement-time {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+}

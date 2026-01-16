@@ -25,12 +25,16 @@
     </div>
     <div class="days-grid">
       <div class="day-cell" *ngFor="let day of days" [class.other-month]="!day.isCurrentMonth"
-        [class.today]="day.isToday" [class.attended]="day.attended" (click)="onDayClick(day)">
+        [class.today]="day.isToday" [class.attended]="day.attended" [class.has-supplement]="hasSupplement(day.fullDate)"
+        (click)="onDayClick(day)">
         <span class="day-number">{{ day.date }}</span>
-        <span class="workout-icon" *ngIf="day.attended && getWorkoutIcon(day.fullDate)">
-          {{ getWorkoutIcon(day.fullDate) }}
-        </span>
-        <span class="attendance-dot" *ngIf="day.attended && !getWorkoutIcon(day.fullDate)"></span>
+        <div class="indicators">
+          <span class="workout-icon" *ngIf="day.attended && getWorkoutIcon(day.fullDate)">
+            {{ getWorkoutIcon(day.fullDate) }}
+          </span>
+          <span class="attendance-dot" *ngIf="day.attended && !getWorkoutIcon(day.fullDate)"></span>
+          <span class="supplement-dot" *ngIf="hasSupplement(day.fullDate)">💊</span>
+        </div>
       </div>
     </div>
   </div>
@@ -47,10 +51,15 @@
       <div class="mini-days-grid">
         <div class="mini-day" *ngFor="let day of monthData.days" [class.empty]="day.date === 0"
           [class.today]="day.isToday" [class.attended]="day.attended"
-          [class.has-icon]="day.attended && getWorkoutIcon(day.fullDate)" (click)="day.date !== 0 && onDayClick(day)">
-          <span *ngIf="day.date !== 0 && !(day.attended && getWorkoutIcon(day.fullDate))">{{ day.date }}</span>
-          <span *ngIf="day.attended && getWorkoutIcon(day.fullDate)" class="mini-icon">{{ getWorkoutIcon(day.fullDate)
-            }}</span>
+          [class.has-supplement]="hasSupplement(day.fullDate)" (click)="day.date !== 0 && onDayClick(day)">
+          <span class="mini-day-number" *ngIf="day.date !== 0">{{ day.date }}</span>
+          <div class="mini-indicators" *ngIf="day.date !== 0">
+            <span class="mini-workout-icon" *ngIf="day.attended && getWorkoutIcon(day.fullDate)">
+              {{ getWorkoutIcon(day.fullDate) }}
+            </span>
+            <span class="mini-attendance-dot" *ngIf="day.attended && !getWorkoutIcon(day.fullDate)"></span>
+            <span class="mini-supplement-icon" *ngIf="hasSupplement(day.fullDate)">💊</span>
+          </div>
         </div>
       </div>
     </div>
@@ -71,114 +80,203 @@
       {{ getYear(selectedDate.fullDate) }}
     </h3>
 
-    <div *ngIf="selectedDate?.attended">
-      <p>{{ 'CALENDAR.WENT_TO_GYM' | translate }}</p>
+    <div class="popup-tabs">
+      <button class="tab-btn" [class.active]="selectedTab === 'workout'"
+        (click)="selectedTab = 'workout'">Workout</button>
+      <button class="tab-btn" [class.active]="selectedTab === 'health'" (click)="selectedTab = 'health'">Health
+        💊</button>
+    </div>
 
-      <!-- View Mode - Tappable card -->
-      <div class="workout-type-display" *ngIf="!isEditingType" (click)="startEditType()">
-        <!-- Edit bubble indicator -->
-        <span class="edit-bubble">✏️</span>
+    <!-- Workout Section -->
+    <div class="workout-section" *ngIf="selectedTab === 'workout'">
+      <div *ngIf="selectedDate?.attended">
+        <p>{{ 'CALENDAR.WENT_TO_GYM' | translate }}</p>
 
-        <!-- Workout type -->
-        <div class="type-row" *ngIf="getWorkoutIcon(selectedDate!.fullDate)">
-          <span class="type-icon">{{ getWorkoutIcon(selectedDate!.fullDate) }}</span>
-          <span class="type-name">{{ getWorkoutTypeName(selectedDate!.fullDate) }}</span>
+        <!-- View Mode - Tappable card -->
+        <div class="workout-type-display" *ngIf="!isEditingType" (click)="startEditType()">
+          <!-- Edit bubble indicator -->
+          <span class="edit-bubble">✏️</span>
+
+          <!-- Workout type -->
+          <div class="type-row" *ngIf="getWorkoutIcon(selectedDate!.fullDate)">
+            <span class="type-icon">{{ getWorkoutIcon(selectedDate!.fullDate) }}</span>
+            <span class="type-name">{{ getWorkoutTypeName(selectedDate!.fullDate) }}</span>
+          </div>
+          <span class="no-type" *ngIf="!getWorkoutIcon(selectedDate!.fullDate)">{{ 'CALENDAR.NO_TYPE' | translate
+            }}</span>
+
+          <!-- Duration -->
+          <div class="duration-display" *ngIf="getWorkoutDuration(selectedDate!.fullDate)">
+            <span class="duration-icon">⏱️</span>
+            <span class="duration-value">{{ formatDuration(getWorkoutDuration(selectedDate!.fullDate)) }}</span>
+          </div>
         </div>
-        <span class="no-type" *ngIf="!getWorkoutIcon(selectedDate!.fullDate)">{{ 'CALENDAR.NO_TYPE' | translate
-          }}</span>
 
-        <!-- Duration -->
-        <div class="duration-display" *ngIf="getWorkoutDuration(selectedDate!.fullDate)">
-          <span class="duration-icon">⏱️</span>
-          <span class="duration-value">{{ formatDuration(getWorkoutDuration(selectedDate!.fullDate)) }}</span>
+        <!-- Edit Mode -->
+        <div class="workout-type-editor" *ngIf="isEditingType">
+          <label class="editor-label">{{ 'CALENDAR.SELECT_TYPE' | translate }}</label>
+          <div class="custom-select" [class.open]="dropdownOpen">
+            <div class="select-trigger" (click)="toggleDropdown()">
+              <span *ngIf="getSelectedType()">
+                {{ getSelectedType()!.icon }} {{ getSelectedType()!.name }}
+              </span>
+              <span *ngIf="!getSelectedType()">{{ 'CALENDAR.NO_TYPE_OPTION' | translate }}</span>
+              <span class="chevron"></span>
+            </div>
+            <div class="options-container" *ngIf="dropdownOpen">
+              <div class="option" (click)="selectType('')">
+                <span class="option-name">{{ 'CALENDAR.NO_TYPE_OPTION' | translate }}</span>
+              </div>
+              <div class="option" *ngFor="let type of workoutTypes" (click)="selectType(type.id)">
+                <span class="option-icon">{{ type.icon }}</span>
+                <span class="option-name">{{ type.name }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Duration Input (Edit Mode) -->
+          <label class="editor-label">{{ 'CALENDAR.DURATION' | translate }} {{ 'CALENDAR.OPTIONAL' | translate
+            }}</label>
+          <div class="duration-input-group">
+            <input type="number" class="duration-input" [(ngModel)]="editDuration"
+              [placeholder]="'CALENDAR.DURATION_PLACEHOLDER' | translate" min="1" max="600">
+            <span class="duration-unit">{{ 'CALENDAR.MINUTES' | translate }}</span>
+          </div>
+
+          <div class="edit-actions">
+            <button class="btn-small btn-save" (click)="saveEditType()">{{ 'CALENDAR.SAVE' | translate }}</button>
+            <button class="btn-small btn-cancel" (click)="cancelEditType()">{{ 'CALENDAR.CANCEL' | translate }}</button>
+          </div>
         </div>
       </div>
 
-      <!-- Edit Mode -->
-      <div class="workout-type-editor" *ngIf="isEditingType">
-        <label class="editor-label">{{ 'CALENDAR.SELECT_TYPE' | translate }}</label>
-        <div class="custom-select" [class.open]="dropdownOpen">
-          <div class="select-trigger" (click)="toggleDropdown()">
-            <span *ngIf="getSelectedType()">
-              {{ getSelectedType()!.icon }} {{ getSelectedType()!.name }}
-            </span>
-            <span *ngIf="!getSelectedType()">{{ 'CALENDAR.NO_TYPE_OPTION' | translate }}</span>
-            <span class="chevron"></span>
-          </div>
-          <div class="options-container" *ngIf="dropdownOpen">
-            <div class="option" (click)="selectType('')">
-              <span class="option-name">{{ 'CALENDAR.NO_TYPE_OPTION' | translate }}</span>
+      <div *ngIf="!selectedDate?.attended">
+        <p>{{ 'CALENDAR.DID_YOU_GO' | translate }}</p>
+
+        <!-- Workout Type Selector -->
+        <div class="workout-type-selector" *ngIf="workoutTypes.length > 0">
+          <label>{{ 'CALENDAR.SELECT_TYPE' | translate }} {{ 'CALENDAR.OPTIONAL' | translate }}</label>
+
+          <div class="custom-select" [class.open]="dropdownOpen">
+            <div class="select-trigger" (click)="toggleDropdown()">
+              <span *ngIf="getSelectedType()">
+                {{ getSelectedType()!.icon }} {{ getSelectedType()!.name }}
+              </span>
+              <span *ngIf="!getSelectedType()">{{ 'CALENDAR.SELECT_TYPE_OPTION' | translate }}</span>
+              <span class="chevron"></span>
             </div>
-            <div class="option" *ngFor="let type of workoutTypes" (click)="selectType(type.id)">
-              <span class="option-icon">{{ type.icon }}</span>
-              <span class="option-name">{{ type.name }}</span>
+            <div class="options-container" *ngIf="dropdownOpen">
+              <div class="option" (click)="selectType('')">
+                <span class="option-name">{{ 'CALENDAR.SELECT_TYPE_OPTION' | translate }}</span>
+              </div>
+              <div class="option" *ngFor="let type of workoutTypes" (click)="selectType(type.id)">
+                <span class="option-icon">{{ type.icon }}</span>
+                <span class="option-name">{{ type.name }}</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Duration Input (Edit Mode) -->
-        <label class="editor-label">{{ 'CALENDAR.DURATION' | translate }} {{ 'CALENDAR.OPTIONAL' | translate }}</label>
-        <div class="duration-input-group">
-          <input type="number" class="duration-input" [(ngModel)]="editDuration"
-            [placeholder]="'CALENDAR.DURATION_PLACEHOLDER' | translate" min="1" max="600">
-          <span class="duration-unit">{{ 'CALENDAR.MINUTES' | translate }}</span>
+        <!-- Duration Input (New Attendance) -->
+        <div class="duration-selector">
+          <label>{{ 'CALENDAR.DURATION' | translate }} {{ 'CALENDAR.OPTIONAL' | translate }}</label>
+          <div class="duration-input-group">
+            <input type="number" class="duration-input" [(ngModel)]="selectedDuration"
+              [placeholder]="'CALENDAR.DURATION_PLACEHOLDER' | translate" min="1" max="600">
+            <span class="duration-unit">{{ 'CALENDAR.MINUTES' | translate }}</span>
+          </div>
         </div>
 
-        <div class="edit-actions">
-          <button class="btn-small btn-save" (click)="saveEditType()">{{ 'CALENDAR.SAVE' | translate }}</button>
-          <button class="btn-small btn-cancel" (click)="cancelEditType()">{{ 'CALENDAR.CANCEL' | translate }}</button>
-        </div>
+        <p class="no-types-hint" *ngIf="workoutTypes.length === 0">
+          <small>{{ 'CALENDAR.ADD_TYPES_HINT' | translate }}</small>
+        </p>
+      </div>
+
+      <div class="popup-actions">
+        <button class="btn" [class.btn-danger]="selectedDate?.attended" [class.btn-success]="!selectedDate?.attended"
+          (click)="toggleAttendance()">
+          {{ selectedDate?.attended ? ('CALENDAR.REMOVE' | translate) : ('CALENDAR.MARK_ATTENDED' | translate) }}
+        </button>
+        <button class="btn btn-secondary" (click)="closePopup()">{{ 'CALENDAR.CANCEL' | translate }}</button>
       </div>
     </div>
 
-    <div *ngIf="!selectedDate?.attended">
-      <p>{{ 'CALENDAR.DID_YOU_GO' | translate }}</p>
+    <!-- Health Section -->
+    <div class="health-section" *ngIf="selectedTab === 'health'">
 
-      <!-- Workout Type Selector -->
-      <div class="workout-type-selector" *ngIf="workoutTypes.length > 0">
-        <label>{{ 'CALENDAR.SELECT_TYPE' | translate }} {{ 'CALENDAR.OPTIONAL' | translate }}</label>
+      <!-- Existing Logs - Carousel Style -->
+      <div *ngIf="getDaySupplementLogs(selectedDate!.fullDate).length > 0">
+        <p style="color: var(--text-secondary); margin-bottom: 1rem; text-align: center;">Supplements taken 💊</p>
 
-        <div class="custom-select" [class.open]="dropdownOpen">
-          <div class="select-trigger" (click)="toggleDropdown()">
-            <span *ngIf="getSelectedType()">
-              {{ getSelectedType()!.icon }} {{ getSelectedType()!.name }}
+        <!-- Carousel Container -->
+        <div class="supplement-carousel-container">
+          <!-- Supplement Cards (Scrollable Pages) -->
+          <div class="supplement-carousel" (scroll)="onCarouselScroll($event)">
+            <div class="supplement-page" *ngFor="let page of getPaginatedSupplements(selectedDate!.fullDate)">
+              <div *ngFor="let log of page" class="workout-type-display" style="margin-bottom: 0.5rem;">
+                <div class="type-row">
+                  <span class="type-icon">💊</span>
+                  <div style="flex: 1;">
+                    <span class="type-name">{{ log.productName || getProductName(log.productId) }}</span>
+                    <div class="supplement-time" *ngIf="formatSupplementTime(log)">
+                      🕐 {{ formatSupplementTime(log) }}
+                    </div>
+                  </div>
+                </div>
+                <button class="btn btn-danger" (click)="removeProductLog(log.id)">Remove</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination Dots (Max 3, Sliding Window) -->
+          <div class="carousel-dots" *ngIf="getTotalPages(selectedDate!.fullDate) > 1">
+            <span *ngFor="let pageIndex of getVisibleDots(selectedDate!.fullDate)" class="carousel-dot"
+              [class.active]="pageIndex === currentSupplementPage" (click)="goToSupplementPage(pageIndex)">
             </span>
-            <span *ngIf="!getSelectedType()">{{ 'CALENDAR.SELECT_TYPE_OPTION' | translate }}</span>
-            <span class="chevron"></span>
-          </div>
-          <div class="options-container" *ngIf="dropdownOpen">
-            <div class="option" (click)="selectType('')">
-              <span class="option-name">{{ 'CALENDAR.SELECT_TYPE_OPTION' | translate }}</span>
-            </div>
-            <div class="option" *ngFor="let type of workoutTypes" (click)="selectType(type.id)">
-              <span class="option-icon">{{ type.icon }}</span>
-              <span class="option-name">{{ type.name }}</span>
-            </div>
           </div>
         </div>
       </div>
 
-      <!-- Duration Input (New Attendance) -->
-      <div class="duration-selector">
-        <label>{{ 'CALENDAR.DURATION' | translate }} {{ 'CALENDAR.OPTIONAL' | translate }}</label>
-        <div class="duration-input-group">
-          <input type="number" class="duration-input" [(ngModel)]="selectedDuration"
-            [placeholder]="'CALENDAR.DURATION_PLACEHOLDER' | translate" min="1" max="600">
-          <span class="duration-unit">{{ 'CALENDAR.MINUTES' | translate }}</span>
-        </div>
-      </div>
-
-      <p class="no-types-hint" *ngIf="workoutTypes.length === 0">
-        <small>{{ 'CALENDAR.ADD_TYPES_HINT' | translate }}</small>
+      <!-- No logs message -->
+      <p *ngIf="getDaySupplementLogs(selectedDate!.fullDate).length === 0"
+        style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem;">
+        No supplements logged for this day.
       </p>
-    </div>
 
-    <div class="popup-actions">
-      <button class="btn" [class.btn-danger]="selectedDate?.attended" [class.btn-success]="!selectedDate?.attended"
-        (click)="toggleAttendance()">
-        {{ selectedDate?.attended ? ('CALENDAR.REMOVE' | translate) : ('CALENDAR.MARK_ATTENDED' | translate) }}
-      </button>
-      <button class="btn btn-secondary" (click)="closePopup()">{{ 'CALENDAR.CANCEL' | translate }}</button>
+      <!-- Add New Log -->
+      <div class="workout-type-selector" *ngIf="products.length > 0">
+        <label>Add Supplement:</label>
+
+        <div class="custom-select" [class.open]="productDropdownOpen">
+          <div class="select-trigger" (click)="toggleProductDropdown()">
+            <span *ngIf="selectedProductId">
+              💊 {{ getProductName(selectedProductId) }}
+            </span>
+            <span *ngIf="!selectedProductId">Select a supplement...</span>
+            <span class="chevron"></span>
+          </div>
+          <div class="options-container" *ngIf="productDropdownOpen">
+            <div class="option" *ngFor="let prod of products" (click)="selectProduct(prod.id)">
+              <span class="option-icon">💊</span>
+              <span class="option-name">{{ prod.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="popup-actions" style="margin-top: 1.5rem;">
+        <button class="btn btn-success" [disabled]="!selectedProductId" (click)="addProductLog()">
+          Add Supplement
+        </button>
+        <button class="btn btn-secondary" (click)="closePopup()">Cancel</button>
+      </div>
+
+      <!-- No Products Hint -->
+      <div class="health-actions" *ngIf="products.length === 0" style="margin-top: 1rem;">
+        <p class="hint">No products found. Go to Health tab to create some.</p>
+        <a routerLink="/health" class="btn btn-primary" style="display: block; text-align: center;">Go to Health Tab</a>
+      </div>
     </div>
   </div>
 </div>
