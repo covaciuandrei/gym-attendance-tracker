@@ -22,7 +22,13 @@
         "LIGHT_MODE": "Mod Luminos",
         "ENGLISH": "Engleză",
         "ROMANIAN": "Română",
-        "LOGOUT": "Deconectare"
+        "LOGOUT": "Deconectare",
+        "MIGRATION_TITLE": "Migrare Date",
+        "MIGRATION_DESC": "Rulează această migrare pentru a adăuga suport pentru durată la înregistrările existente. Aceasta este o operație unică.",
+        "RUN_MIGRATION": "Rulează Migrarea",
+        "MIGRATING": "Se migrează...",
+        "MIGRATION_RESULT": "Migrate {{migrated}} din {{total}} înregistrări",
+        "DISMISS": "Gata"
     },
     "STATS": {
         "THIS_MONTH": "Luna Asta",
@@ -76,7 +82,11 @@
         "NO_TYPE_OPTION": "-- Fără tip --",
         "SELECT_TYPE_OPTION": "-- Selectează tip --",
         "OPTIONAL": "(opțional)",
-        "ADD_TYPES_HINT": "💡 Adaugă tipuri în Profil → Tipuri Antrenament"
+        "ADD_TYPES_HINT": "💡 Adaugă tipuri în Profil → Tipuri Antrenament",
+        "DURATION": "Durată",
+        "DURATION_PLACEHOLDER": "ex. 60",
+        "MINUTES": "min",
+        "EDIT": "Editează"
     },
     "AUTH": {
         "WELCOME_BACK": "Bine ai revenit",

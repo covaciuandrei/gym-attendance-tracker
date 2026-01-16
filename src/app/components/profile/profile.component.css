@@ -1,7 +1,8 @@
 .profile-container {
   min-height: 100vh;
   background: var(--bg-color);
-  padding-bottom: 5rem; /* Space for bottom nav */
+  padding-bottom: 5rem;
+  /* Space for bottom nav */
 }
 
 .profile-header {
@@ -82,7 +83,7 @@
   gap: 0.25rem;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #10b981;
+  color: var(--accent-green);
   background: rgba(16, 185, 129, 0.1);
   padding: 0.25rem 0.5rem;
   border-radius: 0.5rem;

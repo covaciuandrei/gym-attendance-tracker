@@ -7,7 +7,7 @@
   <div class="settings-content">
     <div class="settings-section">
       <h4>{{ 'SETTINGS.ABOUT' | translate }}</h4>
-      
+
       <div class="setting-item">
         <div class="setting-info">
           <span class="setting-label">{{ 'SETTINGS.APP_VERSION' | translate }}</span>
@@ -39,22 +39,26 @@
       <div class="password-form" *ngIf="showPasswordForm">
         <div class="form-group">
           <label>{{ 'SETTINGS.CURRENT_PASSWORD' | translate }}</label>
-          <input type="password" [(ngModel)]="passwordData.currentPassword" [placeholder]="'SETTINGS.CURRENT_PASSWORD' | translate" [disabled]="isLoading">
+          <input type="password" [(ngModel)]="passwordData.currentPassword"
+            [placeholder]="'SETTINGS.CURRENT_PASSWORD' | translate" [disabled]="isLoading">
         </div>
         <div class="form-group">
           <label>{{ 'SETTINGS.NEW_PASSWORD' | translate }}</label>
-          <input type="password" [(ngModel)]="passwordData.newPassword" [placeholder]="'SETTINGS.NEW_PASSWORD' | translate" [disabled]="isLoading">
+          <input type="password" [(ngModel)]="passwordData.newPassword"
+            [placeholder]="'SETTINGS.NEW_PASSWORD' | translate" [disabled]="isLoading">
         </div>
         <div class="form-group">
           <label>{{ 'SETTINGS.CONFIRM_PASSWORD' | translate }}</label>
-          <input type="password" [(ngModel)]="passwordData.confirmPassword" [placeholder]="'SETTINGS.CONFIRM_PASSWORD' | translate" [disabled]="isLoading">
+          <input type="password" [(ngModel)]="passwordData.confirmPassword"
+            [placeholder]="'SETTINGS.CONFIRM_PASSWORD' | translate" [disabled]="isLoading">
         </div>
 
         <div class="message {{ message.type }}" *ngIf="message">
           {{ message.text }}
         </div>
 
-        <button class="btn-primary" (click)="updatePassword()" [disabled]="isLoading || !passwordData.newPassword || !passwordData.currentPassword">
+        <button class="btn-primary" (click)="updatePassword()"
+          [disabled]="isLoading || !passwordData.newPassword || !passwordData.currentPassword">
           {{ isLoading ? ('SETTINGS.UPDATING' | translate) : ('SETTINGS.UPDATE_PASSWORD' | translate) }}
         </button>
       </div>
@@ -62,11 +66,12 @@
 
     <div class="settings-section">
       <h4>{{ 'SETTINGS.GENERAL' | translate }}</h4>
-      
+
       <div class="setting-item">
         <div class="setting-info">
           <span class="setting-label">{{ 'SETTINGS.THEME' | translate }}</span>
-          <span class="setting-value">{{ themeService.isDarkMode() ? ('SETTINGS.DARK_MODE' | translate) : ('SETTINGS.LIGHT_MODE' | translate) }}</span>
+          <span class="setting-value">{{ themeService.isDarkMode() ? ('SETTINGS.DARK_MODE' | translate) :
+            ('SETTINGS.LIGHT_MODE' | translate) }}</span>
         </div>
         <button class="theme-toggle" (click)="toggleTheme()" [class.dark]="themeService.isDarkMode()">
           <span class="toggle-icon sun">☀️</span>
@@ -78,9 +83,11 @@
       <div class="setting-item">
         <div class="setting-info">
           <span class="setting-label">{{ 'SETTINGS.LANGUAGE' | translate }}</span>
-          <span class="setting-value">{{ languageService.currentLang() === 'ro' ? ('SETTINGS.ROMANIAN' | translate) : ('SETTINGS.ENGLISH' | translate) }}</span>
+          <span class="setting-value">{{ languageService.currentLang() === 'ro' ? ('SETTINGS.ROMANIAN' | translate) :
+            ('SETTINGS.ENGLISH' | translate) }}</span>
         </div>
-        <button class="language-toggle" [class.ro]="languageService.currentLang() === 'ro'" (click)="setLanguage(languageService.currentLang() === 'en' ? 'ro' : 'en')">
+        <button class="language-toggle" [class.ro]="languageService.currentLang() === 'ro'"
+          (click)="setLanguage(languageService.currentLang() === 'en' ? 'ro' : 'en')">
           <span class="lang-text" style="grid-column: 1;">EN</span>
           <span class="lang-text" style="grid-column: 2;">RO</span>
           <div class="toggle-thumb"></div>

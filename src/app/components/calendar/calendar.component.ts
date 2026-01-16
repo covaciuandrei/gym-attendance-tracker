@@ -33,23 +33,27 @@ export class CalendarComponent implements OnInit, OnDestroy {
   currentYear: number;
   currentMonth: number;
   viewMode: 'monthly' | 'yearly' = 'monthly';
-  
+
   days: DayCell[] = [];
   monthsData: MonthData[] = [];
   attendedDates: Set<string> = new Set();
   attendanceMap: Map<string, AttendanceRecord> = new Map();
   iconCache: Map<string, string> = new Map(); // Cache icons to prevent infinite loops
-  
+
   showPopup = false;
   selectedDate: DayCell | null = null;
   isLoading = false;
-  
+
   // Workout types
   workoutTypes: TrainingType[] = [];
   selectedTypeId: string = '';
   isEditingType = false;
   editTypeId: string = '';
-  
+
+  // Duration
+  selectedDuration: number | null = null;
+  editDuration: number | null = null;
+
   // Custom Dropdown State
   dropdownOpen = false;
 
@@ -63,20 +67,20 @@ export class CalendarComponent implements OnInit, OnDestroy {
   ];
 
   weekDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
-  
+
   // Helper to get day number from date string YYYY-MM-DD
   getDay(dateStr: string): string {
     if (!dateStr) return '';
     return dateStr.split('-')[2];
   }
-  
+
   // Helper to get month key from date string YYYY-MM-DD
   getMonthKey(dateStr: string): string {
     if (!dateStr) return '';
     const monthIndex = parseInt(dateStr.split('-')[1]) - 1;
     return this.monthNames[monthIndex];
   }
-  
+
   // Helper to get year from date string YYYY-MM-DD
   getYear(dateStr: string): string {
     if (!dateStr) return '';
@@ -119,7 +123,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
 
   async loadAttendance() {
     if (!this.userId) return;
-    
+
     this.isLoading = true;
     try {
       let records: AttendanceRecord[];
@@ -128,11 +132,11 @@ export class CalendarComponent implements OnInit, OnDestroy {
       } else {
         records = await this.firebaseService.getYearAttendance(this.userId, this.currentYear);
       }
-      
+
       // Build both set and map
       this.attendedDates = new Set(records.map(r => r.date));
       this.attendanceMap = new Map(records.map(r => [r.date, r]));
-      
+
       // Pre-compute icon cache
       this.buildIconCache();
     } catch (error) {
@@ -145,7 +149,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
     if (!this.userId) return [];
 
     const records: AttendanceRecord[] = [];
-    
+
     // Previous month
     let prevMonth = this.currentMonth;
     let prevYear = this.currentYear;
@@ -153,7 +157,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
       prevMonth = 12;
       prevYear--;
     }
-    
+
     // Next month
     let nextMonth = this.currentMonth + 2;
     let nextYear = this.currentYear;
@@ -188,7 +192,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
     // Adjust to make Monday the first day (0=Monday, 6=Sunday)
     const startingDay = (firstDay.getDay() + 6) % 7;
     const totalDays = lastDay.getDate();
-    
+
     const today = new Date();
     const todayStr = this.formatDate(today);
 
@@ -243,7 +247,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
       // Adjust to make Monday the first day (0=Monday, 6=Sunday)
       const startingDay = (firstDay.getDay() + 6) % 7;
       const totalDays = lastDay.getDate();
-      
+
       const days: DayCell[] = [];
 
       // Empty cells for alignment
@@ -322,6 +326,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
     if (day.date === 0) return;
     this.selectedDate = day;
     this.selectedTypeId = ''; // Reset selection
+    this.selectedDuration = null; // Reset duration
     this.showPopup = true;
   }
 
@@ -330,34 +335,40 @@ export class CalendarComponent implements OnInit, OnDestroy {
     this.selectedDate = null;
     this.isEditingType = false;
     this.dropdownOpen = false; // Reset dropdown state
+    this.selectedDuration = null; // Reset duration
+    this.editDuration = null; // Reset edit duration
   }
 
   startEditType() {
     if (!this.selectedDate) return;
     const attendance = this.attendanceMap.get(this.selectedDate.fullDate);
     this.editTypeId = attendance?.trainingTypeId || '';
+    this.editDuration = attendance?.durationMinutes ?? null;
     this.isEditingType = true;
   }
 
   async saveEditType() {
     if (!this.selectedDate || !this.userId) return;
-    
+
     this.isLoading = true;
     try {
-      // Update the attendance with the new workout type
+      // Update the attendance with the new workout type and duration
       await this.firebaseService.markAttendance(
         this.userId,
         this.selectedDate.fullDate,
-        this.editTypeId || undefined
+        this.editTypeId || undefined,
+        undefined,
+        this.editDuration ?? undefined
       );
-      
+
       // Update local cache
       const record = this.attendanceMap.get(this.selectedDate.fullDate);
       if (record) {
         record.trainingTypeId = this.editTypeId || undefined;
+        record.durationMinutes = this.editDuration ?? undefined;
         this.attendanceMap.set(this.selectedDate.fullDate, record);
       }
-      
+
       // Update icon cache
       if (this.editTypeId) {
         const workoutType = this.workoutTypes.find(t => t.id === this.editTypeId);
@@ -367,7 +378,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
       } else {
         this.iconCache.delete(this.selectedDate.fullDate);
       }
-      
+
       this.isEditingType = false;
       this.generateCalendar();
     } catch (error) {
@@ -382,7 +393,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
 
   async toggleAttendance() {
     if (!this.selectedDate || !this.userId) return;
-    
+
     this.isLoading = true;
     try {
       if (this.selectedDate.attended) {
@@ -393,19 +404,26 @@ export class CalendarComponent implements OnInit, OnDestroy {
         this.iconCache.delete(this.selectedDate.fullDate);
         this.selectedDate.attended = false;
       } else {
-        // Add attendance with optional workout type
+        // Add attendance with optional workout type and duration
         await this.firebaseService.markAttendance(
-          this.userId, 
-          this.selectedDate.fullDate, 
-          this.selectedTypeId || undefined
+          this.userId,
+          this.selectedDate.fullDate,
+          this.selectedTypeId || undefined,
+          undefined,
+          this.selectedDuration ?? undefined
         );
         this.attendedDates.add(this.selectedDate.fullDate);
         this.selectedDate.attended = true;
-        
+
         // Update local cache immediately
-        const record = { date: this.selectedDate.fullDate, timestamp: new Date(), trainingTypeId: this.selectedTypeId || undefined };
+        const record = {
+          date: this.selectedDate.fullDate,
+          timestamp: new Date(),
+          trainingTypeId: this.selectedTypeId || undefined,
+          durationMinutes: this.selectedDuration ?? undefined
+        };
         this.attendanceMap.set(this.selectedDate.fullDate, record);
-        
+
         // Update icon cache if workout type selected
         if (this.selectedTypeId) {
           const workoutType = this.workoutTypes.find(t => t.id === this.selectedTypeId);
@@ -414,7 +432,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
           }
         }
       }
-      
+
       this.generateCalendar();
     } catch (error) {
       console.error('Error toggling attendance:', error);
@@ -471,5 +489,18 @@ export class CalendarComponent implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  getWorkoutDuration(fullDate: string): number | null {
+    const attendance = this.attendanceMap.get(fullDate);
+    return attendance?.durationMinutes ?? null;
+  }
+
+  formatDuration(minutes: number | null): string {
+    if (minutes === null || minutes === undefined) return '';
+    if (minutes < 60) return `${minutes}min`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
   }
 }

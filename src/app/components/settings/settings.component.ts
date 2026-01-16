@@ -18,7 +18,7 @@ export class SettingsComponent {
   appVersion = '2.0.0';
 
   showPasswordForm = false;
-  
+
   passwordData = {
     currentPassword: '',
     newPassword: '',
@@ -32,7 +32,7 @@ export class SettingsComponent {
     public themeService: ThemeService,
     public authService: AuthService,
     public languageService: LanguageService
-  ) {}
+  ) { }
 
   setLanguage(lang: string) {
     this.languageService.setLanguage(lang);
@@ -70,10 +70,10 @@ export class SettingsComponent {
     try {
       // First re-authenticate to allow sensitive operation
       await this.authService.reauthenticate(this.passwordData.currentPassword);
-      
+
       // Then update the password
       await this.authService.updatePassword(this.passwordData.newPassword);
-      
+
       this.message = { text: 'Password updated successfully', type: 'success' };
       this.passwordData = { currentPassword: '', newPassword: '', confirmPassword: '' };
       setTimeout(() => {
@@ -85,9 +85,9 @@ export class SettingsComponent {
       if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
         this.message = { text: 'Current password is incorrect.', type: 'error' };
       } else if (error.code === 'auth/requires-recent-login') {
-        this.message = { 
-          text: 'Security timeout. Please log out and log back in.', 
-          type: 'error' 
+        this.message = {
+          text: 'Security timeout. Please log out and log back in.',
+          type: 'error'
         };
       } else {
         this.message = { text: 'Failed to update password. Please try again.', type: 'error' };

@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { FirebaseApp, getApp, initializeApp } from 'firebase/app';
 import {
-    collection,
-    deleteDoc,
-    doc,
-    Firestore,
-    getDoc,
-    getDocs,
-    getFirestore,
-    setDoc,
-    Timestamp,
-    updateDoc
+  collection,
+  deleteDoc,
+  doc,
+  Firestore,
+  getDoc,
+  getDocs,
+  getFirestore,
+  setDoc,
+  Timestamp,
+  updateDoc
 } from 'firebase/firestore';
 import { environment } from '../../environments/environment';
 
@@ -18,6 +18,7 @@ export interface AttendanceRecord {
   date: string; // Format: YYYY-MM-DD
   timestamp: any;
   trainingTypeId?: string;
+  durationMinutes?: number;
   notes?: string;
 }
 
@@ -140,19 +141,19 @@ export class FirebaseService {
 
     const typesRef = collection(this.db!, 'users', userId, 'trainingTypes');
     const snapshot = await getDocs(typesRef);
-    
+
     const types: TrainingType[] = [];
     snapshot.forEach((doc) => {
       types.push({ id: doc.id, ...doc.data() } as TrainingType);
     });
-    
+
     console.log('📊 Loaded', types.length, 'training types for user:', userId);
     return types;
   }
 
   async createTrainingType(userId: string, data: Omit<TrainingType, 'id' | 'createdAt'>): Promise<string> {
     const typeId = this.generateId();
-    
+
     if (this.useLocalStorage) {
       const types = await this.getTrainingTypes(userId);
       types.push({ id: typeId, ...data, createdAt: new Date().toISOString() });
@@ -207,14 +208,14 @@ export class FirebaseService {
     return date.substring(0, 7); // Returns YYYY-MM
   }
 
-  async markAttendance(userId: string, date: string, trainingTypeId?: string, notes?: string): Promise<void> {
+  async markAttendance(userId: string, date: string, trainingTypeId?: string, notes?: string, durationMinutes?: number): Promise<void> {
     console.log('➕ Marking attendance for user:', userId, 'date:', date);
-    
+
     if (this.useLocalStorage) {
       const key = `attendance_${userId}`;
       const data = localStorage.getItem(key);
       const attendances: Record<string, AttendanceRecord> = data ? JSON.parse(data) : {};
-      attendances[date] = { date, timestamp: new Date().toISOString(), trainingTypeId, notes };
+      attendances[date] = { date, timestamp: new Date().toISOString(), trainingTypeId, durationMinutes, notes };
       localStorage.setItem(key, JSON.stringify(attendances));
       console.log('✅ Attendance marked (localStorage):', date);
       return;
@@ -226,6 +227,7 @@ export class FirebaseService {
       date,
       timestamp: Timestamp.now(),
       trainingTypeId: trainingTypeId || null,
+      durationMinutes: durationMinutes || null,
       notes: notes || null
     });
     console.log('✅ Attendance marked (Firebase):', date);
@@ -233,7 +235,7 @@ export class FirebaseService {
 
   async removeAttendance(userId: string, date: string): Promise<void> {
     console.log('➖ Removing attendance for user:', userId, 'date:', date);
-    
+
     if (this.useLocalStorage) {
       const key = `attendance_${userId}`;
       const data = localStorage.getItem(key);
@@ -253,7 +255,7 @@ export class FirebaseService {
   async getMonthAttendance(userId: string, year: number, month: number): Promise<AttendanceRecord[]> {
     const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
     console.log('🔍 Getting attendance for:', yearMonth);
-    
+
     if (this.useLocalStorage) {
       const key = `attendance_${userId}`;
       const data = localStorage.getItem(key);
@@ -263,12 +265,12 @@ export class FirebaseService {
 
     const monthRef = collection(this.db!, 'users', userId, 'attendances', yearMonth, 'days');
     const snapshot = await getDocs(monthRef);
-    
+
     const records: AttendanceRecord[] = [];
     snapshot.forEach((doc) => {
       records.push(doc.data() as AttendanceRecord);
     });
-    
+
     console.log('📊 Found', records.length, 'records for', yearMonth);
     return records;
     return records;
@@ -295,85 +297,85 @@ export class FirebaseService {
   }
 
   async getTotalAttendanceCount(): Promise<number> {
-      // Placeholder implementation until we track this in user profile
-      return 0;
+    // Placeholder implementation until we track this in user profile
+    return 0;
   }
 
   async getCurrentYearCount(): Promise<number> {
-      // Placeholder
-      return 0;
+    // Placeholder
+    return 0;
   }
 
   async getWorkoutTypeStats(userId: string, year: number): Promise<WorkoutTypeStat[]> {
     const records = await this.getYearAttendance(userId, year);
     const types = await this.getTrainingTypes(userId);
-    
+
     // Count per type
     const counts = new Map<string, number>();
     records.forEach(r => {
-        if (r.trainingTypeId) {
-            counts.set(r.trainingTypeId, (counts.get(r.trainingTypeId) || 0) + 1);
-        }
+      if (r.trainingTypeId) {
+        counts.set(r.trainingTypeId, (counts.get(r.trainingTypeId) || 0) + 1);
+      }
     });
 
     return types.map(t => ({
-        id: t.id,
-        name: t.name,
-        color: t.color,
-        icon: t.icon,
-        count: counts.get(t.id) || 0
+      id: t.id,
+      name: t.name,
+      color: t.color,
+      icon: t.icon,
+      count: counts.get(t.id) || 0
     })).sort((a, b) => b.count - a.count);
   }
 
   async getMonthlyWorkoutTypeStats(userId: string, year: number, month: number): Promise<WorkoutTypeStat[]> {
     const records = await this.getMonthAttendance(userId, year, month);
     const types = await this.getTrainingTypes(userId);
-    
+
     const counts = new Map<string, number>();
     records.forEach(r => {
-        if (r.trainingTypeId) {
-            counts.set(r.trainingTypeId, (counts.get(r.trainingTypeId) || 0) + 1);
-        }
+      if (r.trainingTypeId) {
+        counts.set(r.trainingTypeId, (counts.get(r.trainingTypeId) || 0) + 1);
+      }
     });
 
     return types.map(t => ({
-        id: t.id,
-        name: t.name,
-        color: t.color,
-        icon: t.icon,
-        count: counts.get(t.id) || 0
+      id: t.id,
+      name: t.name,
+      color: t.color,
+      icon: t.icon,
+      count: counts.get(t.id) || 0
     })).sort((a, b) => b.count - a.count);
   }
 
   // Alias for legacy support if needed, or update consumers to use getYearAttendance
   async getYearlyAttendance(userId: string, year: number): Promise<AttendanceRecord[]> {
-      return this.getYearAttendance(userId, year);
+    return this.getYearAttendance(userId, year);
   }
 
   async getYearAttendance(userId: string, year: number): Promise<AttendanceRecord[]> {
     console.log('🔍 Getting year attendance for:', year);
-    
+
     // Load all 12 months in PARALLEL for speed
     const monthPromises = [];
     for (let month = 1; month <= 12; month++) {
       monthPromises.push(this.getMonthAttendance(userId, year, month));
     }
-    
+
     const monthResults = await Promise.all(monthPromises);
     const allRecords = monthResults.flat();
-    
+
     console.log('📊 Found', allRecords.length, 'records for year', year);
     return allRecords;
   }
 
   async toggleAttendance(userId: string, date: string): Promise<boolean> {
     console.log('🔄 Toggling attendance for user:', userId, 'date:', date);
-    
+
     const yearMonth = this.getYearMonthKey(date);
     const [year, month] = yearMonth.split('-').map(Number);
     const monthRecords = await this.getMonthAttendance(userId, year, month);
     const exists = monthRecords.some(r => r.date === date);
-    
+
     if (exists) {
       await this.removeAttendance(userId, date);
       console.log('📅 Result: Attendance REMOVED for', date);
@@ -400,7 +402,7 @@ export class FirebaseService {
 
   async getAllAttendanceLegacy(): Promise<string[]> {
     console.log('📥 Loading all attendance records (legacy)...');
-    
+
     if (this.useLocalStorage) {
       return this.getLocalDates();
     }
@@ -408,13 +410,13 @@ export class FirebaseService {
     // Load from old flat collection for migration
     const attendanceRef = collection(this.db!, 'attendance');
     const snapshot = await getDocs(attendanceRef);
-    
+
     const dates: string[] = [];
     snapshot.forEach((doc) => {
       const data = doc.data() as AttendanceRecord;
       dates.push(data.date);
     });
-    
+
     console.log('📊 Loaded', dates.length, 'records from legacy collection');
     return dates;
   }
@@ -429,5 +431,63 @@ export class FirebaseService {
 
   isUsingLocalStorage(): boolean {
     return this.useLocalStorage;
+  }
+
+  // ========================================
+  // Migration Methods
+  // ========================================
+
+  async migrateAttendancesAddDuration(userId: string): Promise<{ migrated: number; total: number }> {
+    console.log('🔄 Starting migration: Adding durationMinutes to attendance records...');
+
+    let migrated = 0;
+    let total = 0;
+
+    if (this.useLocalStorage) {
+      const key = `attendance_${userId}`;
+      const data = localStorage.getItem(key);
+      if (data) {
+        const attendances: Record<string, AttendanceRecord> = JSON.parse(data);
+        for (const date of Object.keys(attendances)) {
+          total++;
+          if (attendances[date].durationMinutes === undefined) {
+            attendances[date].durationMinutes = undefined; // Add field as undefined
+            migrated++;
+          }
+        }
+        localStorage.setItem(key, JSON.stringify(attendances));
+      }
+      console.log(`✅ Migration complete (localStorage): ${migrated}/${total} records updated`);
+      return { migrated, total };
+    }
+
+    // Get all months for current and past years
+    const currentYear = new Date().getFullYear();
+    const years = [currentYear - 2, currentYear - 1, currentYear];
+
+    for (const year of years) {
+      for (let month = 1; month <= 12; month++) {
+        const yearMonth = `${year}-${String(month).padStart(2, '0')}`;
+        const monthRef = collection(this.db!, 'users', userId, 'attendances', yearMonth, 'days');
+
+        try {
+          const snapshot = await getDocs(monthRef);
+          for (const docSnap of snapshot.docs) {
+            total++;
+            const data = docSnap.data() as AttendanceRecord;
+            if (data.durationMinutes === undefined) {
+              await updateDoc(docSnap.ref, { durationMinutes: null });
+              migrated++;
+            }
+          }
+        } catch (error) {
+          // Month might not exist, that's fine
+          console.log(`No data for ${yearMonth}`);
+        }
+      }
+    }
+
+    console.log(`✅ Migration complete (Firebase): ${migrated}/${total} records updated`);
+    return { migrated, total };
   }
 }

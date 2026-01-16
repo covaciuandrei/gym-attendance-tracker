@@ -22,7 +22,13 @@
         "LIGHT_MODE": "Light Mode",
         "ENGLISH": "English",
         "ROMANIAN": "Romanian",
-        "LOGOUT": "Logout"
+        "LOGOUT": "Logout",
+        "MIGRATION_TITLE": "Data Migration",
+        "MIGRATION_DESC": "Run this migration to add duration support to your existing workout records. This is a one-time operation.",
+        "RUN_MIGRATION": "Run Migration",
+        "MIGRATING": "Migrating...",
+        "MIGRATION_RESULT": "Migrated {{migrated}} of {{total}} records",
+        "DISMISS": "Done"
     },
     "STATS": {
         "THIS_MONTH": "This Month",
@@ -76,7 +82,11 @@
         "NO_TYPE_OPTION": "-- No type --",
         "SELECT_TYPE_OPTION": "-- Select type --",
         "OPTIONAL": "(optional)",
-        "ADD_TYPES_HINT": "💡 Add workout types in Profile → Workout Types"
+        "ADD_TYPES_HINT": "💡 Add workout types in Profile → Workout Types",
+        "DURATION": "Duration",
+        "DURATION_PLACEHOLDER": "e.g. 60",
+        "MINUTES": "min",
+        "EDIT": "Edit"
     },
     "AUTH": {
         "WELCOME_BACK": "Welcome Back",

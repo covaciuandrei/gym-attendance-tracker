@@ -10,16 +10,10 @@
   </header>
 
   <div class="view-toggle">
-    <button 
-      class="toggle-btn" 
-      [class.active]="viewMode === 'monthly'"
-      (click)="viewMode !== 'monthly' && toggleView()">
+    <button class="toggle-btn" [class.active]="viewMode === 'monthly'" (click)="viewMode !== 'monthly' && toggleView()">
       {{ 'CALENDAR.MONTHLY' | translate }}
     </button>
-    <button 
-      class="toggle-btn" 
-      [class.active]="viewMode === 'yearly'"
-      (click)="viewMode !== 'yearly' && toggleView()">
+    <button class="toggle-btn" [class.active]="viewMode === 'yearly'" (click)="viewMode !== 'yearly' && toggleView()">
       {{ 'CALENDAR.YEARLY' | translate }}
     </button>
   </div>
@@ -30,13 +24,8 @@
       <div class="weekday" *ngFor="let day of weekDays">{{ 'WEEKDAYS.' + day | translate }}</div>
     </div>
     <div class="days-grid">
-      <div 
-        class="day-cell"
-        *ngFor="let day of days"
-        [class.other-month]="!day.isCurrentMonth"
-        [class.today]="day.isToday"
-        [class.attended]="day.attended"
-        (click)="onDayClick(day)">
+      <div class="day-cell" *ngFor="let day of days" [class.other-month]="!day.isCurrentMonth"
+        [class.today]="day.isToday" [class.attended]="day.attended" (click)="onDayClick(day)">
         <span class="day-number">{{ day.date }}</span>
         <span class="workout-icon" *ngIf="day.attended && getWorkoutIcon(day.fullDate)">
           {{ getWorkoutIcon(day.fullDate) }}
@@ -52,20 +41,16 @@
       <h3 class="month-name">{{ 'MONTHS.' + monthData.name | translate }}</h3>
       <div class="mini-weekdays">
         <span *ngFor="let day of weekDays">
-           {{ 'WEEKDAYS_MINI.' + day | translate }}
+          {{ 'WEEKDAYS_MINI.' + day | translate }}
         </span>
       </div>
       <div class="mini-days-grid">
-        <div 
-          class="mini-day"
-          *ngFor="let day of monthData.days"
-          [class.empty]="day.date === 0"
-          [class.today]="day.isToday"
-          [class.attended]="day.attended"
-          [class.has-icon]="day.attended && getWorkoutIcon(day.fullDate)"
-          (click)="day.date !== 0 && onDayClick(day)">
+        <div class="mini-day" *ngFor="let day of monthData.days" [class.empty]="day.date === 0"
+          [class.today]="day.isToday" [class.attended]="day.attended"
+          [class.has-icon]="day.attended && getWorkoutIcon(day.fullDate)" (click)="day.date !== 0 && onDayClick(day)">
           <span *ngIf="day.date !== 0 && !(day.attended && getWorkoutIcon(day.fullDate))">{{ day.date }}</span>
-          <span *ngIf="day.attended && getWorkoutIcon(day.fullDate)" class="mini-icon">{{ getWorkoutIcon(day.fullDate) }}</span>
+          <span *ngIf="day.attended && getWorkoutIcon(day.fullDate)" class="mini-icon">{{ getWorkoutIcon(day.fullDate)
+            }}</span>
         </div>
       </div>
     </div>
@@ -81,24 +66,34 @@
 <div class="popup-overlay" *ngIf="showPopup" (click)="closePopup()">
   <div class="popup" (click)="$event.stopPropagation()">
     <h3 *ngIf="selectedDate">
-      {{ getDay(selectedDate.fullDate) }} 
-      {{ 'MONTHS.' + getMonthKey(selectedDate.fullDate) | translate }} 
+      {{ getDay(selectedDate.fullDate) }}
+      {{ 'MONTHS.' + getMonthKey(selectedDate.fullDate) | translate }}
       {{ getYear(selectedDate.fullDate) }}
     </h3>
-    
+
     <div *ngIf="selectedDate?.attended">
       <p>{{ 'CALENDAR.WENT_TO_GYM' | translate }}</p>
-      
-      <!-- View Mode -->
-      <div class="workout-type-display" *ngIf="!isEditingType">
-        <ng-container *ngIf="getWorkoutIcon(selectedDate!.fullDate)">
+
+      <!-- View Mode - Tappable card -->
+      <div class="workout-type-display" *ngIf="!isEditingType" (click)="startEditType()">
+        <!-- Edit bubble indicator -->
+        <span class="edit-bubble">✏️</span>
+
+        <!-- Workout type -->
+        <div class="type-row" *ngIf="getWorkoutIcon(selectedDate!.fullDate)">
           <span class="type-icon">{{ getWorkoutIcon(selectedDate!.fullDate) }}</span>
           <span class="type-name">{{ getWorkoutTypeName(selectedDate!.fullDate) }}</span>
-        </ng-container>
-        <span class="no-type" *ngIf="!getWorkoutIcon(selectedDate!.fullDate)">{{ 'CALENDAR.NO_TYPE' | translate }}</span>
-        <button class="edit-btn" (click)="startEditType()" *ngIf="workoutTypes.length > 0">✏️</button>
+        </div>
+        <span class="no-type" *ngIf="!getWorkoutIcon(selectedDate!.fullDate)">{{ 'CALENDAR.NO_TYPE' | translate
+          }}</span>
+
+        <!-- Duration -->
+        <div class="duration-display" *ngIf="getWorkoutDuration(selectedDate!.fullDate)">
+          <span class="duration-icon">⏱️</span>
+          <span class="duration-value">{{ formatDuration(getWorkoutDuration(selectedDate!.fullDate)) }}</span>
+        </div>
       </div>
-      
+
       <!-- Edit Mode -->
       <div class="workout-type-editor" *ngIf="isEditingType">
         <label class="editor-label">{{ 'CALENDAR.SELECT_TYPE' | translate }}</label>
@@ -120,21 +115,29 @@
             </div>
           </div>
         </div>
-        
+
+        <!-- Duration Input (Edit Mode) -->
+        <label class="editor-label">{{ 'CALENDAR.DURATION' | translate }} {{ 'CALENDAR.OPTIONAL' | translate }}</label>
+        <div class="duration-input-group">
+          <input type="number" class="duration-input" [(ngModel)]="editDuration"
+            [placeholder]="'CALENDAR.DURATION_PLACEHOLDER' | translate" min="1" max="600">
+          <span class="duration-unit">{{ 'CALENDAR.MINUTES' | translate }}</span>
+        </div>
+
         <div class="edit-actions">
           <button class="btn-small btn-save" (click)="saveEditType()">{{ 'CALENDAR.SAVE' | translate }}</button>
           <button class="btn-small btn-cancel" (click)="cancelEditType()">{{ 'CALENDAR.CANCEL' | translate }}</button>
         </div>
       </div>
     </div>
-    
+
     <div *ngIf="!selectedDate?.attended">
       <p>{{ 'CALENDAR.DID_YOU_GO' | translate }}</p>
-      
+
       <!-- Workout Type Selector -->
       <div class="workout-type-selector" *ngIf="workoutTypes.length > 0">
         <label>{{ 'CALENDAR.SELECT_TYPE' | translate }} {{ 'CALENDAR.OPTIONAL' | translate }}</label>
-        
+
         <div class="custom-select" [class.open]="dropdownOpen">
           <div class="select-trigger" (click)="toggleDropdown()">
             <span *ngIf="getSelectedType()">
@@ -154,17 +157,24 @@
           </div>
         </div>
       </div>
-      
+
+      <!-- Duration Input (New Attendance) -->
+      <div class="duration-selector">
+        <label>{{ 'CALENDAR.DURATION' | translate }} {{ 'CALENDAR.OPTIONAL' | translate }}</label>
+        <div class="duration-input-group">
+          <input type="number" class="duration-input" [(ngModel)]="selectedDuration"
+            [placeholder]="'CALENDAR.DURATION_PLACEHOLDER' | translate" min="1" max="600">
+          <span class="duration-unit">{{ 'CALENDAR.MINUTES' | translate }}</span>
+        </div>
+      </div>
+
       <p class="no-types-hint" *ngIf="workoutTypes.length === 0">
         <small>{{ 'CALENDAR.ADD_TYPES_HINT' | translate }}</small>
       </p>
     </div>
-    
+
     <div class="popup-actions">
-      <button 
-        class="btn" 
-        [class.btn-danger]="selectedDate?.attended"
-        [class.btn-success]="!selectedDate?.attended"
+      <button class="btn" [class.btn-danger]="selectedDate?.attended" [class.btn-success]="!selectedDate?.attended"
         (click)="toggleAttendance()">
         {{ selectedDate?.attended ? ('CALENDAR.REMOVE' | translate) : ('CALENDAR.MARK_ATTENDED' | translate) }}
       </button>

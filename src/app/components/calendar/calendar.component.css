@@ -274,7 +274,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Popup */
@@ -376,11 +378,13 @@
 
 .options-container {
   position: absolute;
-  top: calc(100% + 8px); /* Space below input */
+  top: calc(100% + 8px);
+  /* Space below input */
   left: 0;
   right: 0;
   background: var(--card-bg);
-  border-radius: 14px; /* Fully rounded corners for the dropdown */
+  border-radius: 14px;
+  /* Fully rounded corners for the dropdown */
   border: 0.75px solid var(--border-color);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -410,8 +414,15 @@
 }
 
 @keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .option {
@@ -454,45 +465,68 @@
 
 .workout-type-display {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px;
+  padding: 16px;
   background: var(--hover-bg);
-  border-radius: 10px;
+  border-radius: 12px;
   margin-bottom: 16px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+
+.workout-type-display:hover {
+  background: var(--border-color);
+  border-color: var(--primary-light);
+}
+
+.workout-type-display:active {
+  transform: scale(0.98);
+}
+
+/* Edit bubble indicator */
+.edit-bubble {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 24px;
+  height: 24px;
+  background: var(--accent-green);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  border: 2px solid var(--card-bg);
+}
+
+.workout-type-display .type-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
 }
 
 .workout-type-display .type-icon {
   font-size: 1.5rem;
+  flex-shrink: 0;
 }
 
 .workout-type-display .type-name {
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
-  flex: 1;
 }
 
 .workout-type-display .no-type {
   font-size: 0.9rem;
   color: var(--text-secondary);
   font-style: italic;
-  flex: 1;
-}
-
-.edit-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: background 0.2s;
-}
-
-.edit-btn:hover {
-  background: var(--border-color);
 }
 
 .workout-type-editor {
@@ -527,12 +561,95 @@
   color: var(--text-secondary);
 }
 
+/* Duration Display */
+.duration-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--primary-light);
+  border-radius: 20px;
+}
+
+.duration-display .duration-icon {
+  font-size: 0.85rem;
+}
+
+.duration-display .duration-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  white-space: nowrap;
+}
+
+/* Duration Input */
+.duration-selector {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.duration-selector label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.duration-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.duration-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 14px;
+  background: var(--bg-color);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.duration-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.duration-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.duration-unit {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  min-width: 30px;
+}
+
+.editor-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  margin-top: 12px;
+  text-align: left;
+}
+
 
 .popup-actions {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 24px; /* Added spacing from content above */
+  margin-top: 24px;
+  /* Added spacing from content above */
 }
 
 .btn {
@@ -649,21 +766,25 @@
 /* Web/Desktop Icon Scaling */
 @media (min-width: 1024px) {
   .workout-icon {
-    font-size: 1.6rem; /* Compensates for 0.8x root scale to be 1.5x mobile size */
+    font-size: 1.6rem;
+    /* Compensates for 0.8x root scale to be 1.5x mobile size */
     bottom: 6px;
   }
 
   .attendance-dot {
-    width: 10px; /* Increased from 6px */
+    width: 10px;
+    /* Increased from 6px */
     height: 10px;
     bottom: 8px;
   }
 
   .mini-icon {
-    font-size: 1.15rem; /* Compensates for 0.8x root scale to be 1.5x mobile size */
+    font-size: 1.15rem;
+    /* Compensates for 0.8x root scale to be 1.5x mobile size */
   }
 
   .mini-day.has-icon {
-    font-size: 1.25rem; /* Compensates for 0.8x root scale to be 1.5x mobile size */
+    font-size: 1.25rem;
+    /* Compensates for 0.8x root scale to be 1.5x mobile size */
   }
 }
