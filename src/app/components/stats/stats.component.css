@@ -183,20 +183,68 @@
   background: linear-gradient(180deg, var(--primary-color), var(--primary-dark));
 }
 
+.bar.duration-bar.has-value {
+  background: linear-gradient(180deg, #8b5cf6, #6d28d9);
+}
+
 .bar-value {
   position: absolute;
-  top: -24px;
+  top: -28px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--primary-color);
+  white-space: nowrap;
+  padding-bottom: 2px;
 }
 
 .bar-label {
   font-size: 0.7rem;
   color: var(--text-secondary);
   font-weight: 500;
+}
+
+.bar-label.icon-label {
+  font-size: 1.2rem;
+  margin-top: 4px;
+}
+
+.bar-label.name-label {
+  font-size: 0.6rem;
+  margin-top: 2px;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Category Chart / Stacked Bars */
+.category-chart .bar-container.stacked-bars {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 2px;
+}
+
+.stacked-bar {
+  width: 100%;
+  max-width: 40px;
+  border-radius: 4px;
+  min-height: 4px;
+  position: relative;
+  transition: height 0.3s ease;
+}
+
+.stacked-bar .bar-value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Workout Summary */
@@ -411,7 +459,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Mobile Responsive */
@@ -516,5 +566,89 @@
 
   .stat-label {
     font-size: 0.8rem;
+  }
+}
+
+/* Duration View Styles */
+.duration-view {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.duration-cards {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.stat-card.duration-primary {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white;
+}
+
+.stat-card.duration-secondary {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+}
+
+.untracked-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: var(--hover-bg);
+  border: 1px dashed var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  color: var(--text-secondary);
+}
+
+.untracked-icon {
+  font-size: 1.2rem;
+}
+
+.untracked-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.section-subtitle {
+  margin: 0 0 16px 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.type-count.duration-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  min-width: 70px;
+}
+
+@media (max-width: 768px) {
+  .duration-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .type-count.duration-value {
+    font-size: 0.8rem;
+    min-width: 55px;
+  }
+
+  .untracked-badge {
+    padding: 10px 16px;
+  }
+
+  .untracked-text {
+    font-size: 0.85rem;
   }
 }

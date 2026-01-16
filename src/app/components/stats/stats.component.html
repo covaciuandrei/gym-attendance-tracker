@@ -11,17 +11,14 @@
 
   <!-- View Toggle -->
   <div class="view-toggle">
-    <button 
-      class="toggle-btn" 
-      [class.active]="viewMode === 'attendances'"
-      (click)="toggleView('attendances')">
+    <button class="toggle-btn" [class.active]="viewMode === 'attendances'" (click)="toggleView('attendances')">
       {{ 'STATS.ATTENDANCES' | translate }}
     </button>
-    <button 
-      class="toggle-btn" 
-      [class.active]="viewMode === 'workouts'"
-      (click)="toggleView('workouts')">
+    <button class="toggle-btn" [class.active]="viewMode === 'workouts'" (click)="toggleView('workouts')">
       {{ 'STATS.WORKOUTS' | translate }}
+    </button>
+    <button class="toggle-btn" [class.active]="viewMode === 'duration'" (click)="toggleView('duration')">
+      {{ 'STATS.DURATION' | translate }}
     </button>
   </div>
 
@@ -58,10 +55,7 @@
       <div class="chart">
         <div class="chart-bar" *ngFor="let data of monthlyData">
           <div class="bar-container">
-            <div 
-              class="bar" 
-              [style.height.%]="(data.count / getMaxCount()) * 100"
-              [class.has-value]="data.count > 0">
+            <div class="bar" [style.height.%]="(data.count / getMaxCount()) * 100" [class.has-value]="data.count > 0">
               <span class="bar-value" *ngIf="data.count > 0">{{ data.count }}</span>
             </div>
           </div>
@@ -73,7 +67,14 @@
 
   <!-- Workouts View -->
   <div class="workouts-view" *ngIf="viewMode === 'workouts'">
-    
+
+    <!-- Yearly Total Banner -->
+    <div class="untracked-badge">
+      <span class="untracked-icon">🏆</span>
+      <span class="untracked-text">{{ 'STATS.YEARLY_SUMMARY' | translate:{ year: currentYear, count: getTotalWorkouts()
+        } }}</span>
+    </div>
+
     <!-- Monthly Workout Stats with Picker -->
     <div class="chart-container monthly-section">
       <div class="month-picker">
@@ -81,26 +82,22 @@
         <h3 class="month-title">{{ 'MONTHS.' + monthNames[selectedWorkoutMonth] | translate }} {{ currentYear }}</h3>
         <button class="nav-btn-small" (click)="nextWorkoutMonth()">›</button>
       </div>
-      
+
       <div class="month-total">
         <span class="total-value">{{ getMonthlyWorkoutTotal() }}</span>
         <span class="total-label">{{ 'STATS.WORKOUTS_THIS_MONTH' | translate }}</span>
       </div>
-      
-      <div class="workout-type-list" *ngIf="monthlyWorkoutStats.length > 0">
-        <div class="workout-type-item" *ngFor="let stat of monthlyWorkoutStats">
-          <div class="type-info">
-            <span class="type-icon">{{ stat.icon }}</span>
-            <span class="type-name">{{ stat.name }}</span>
-          </div>
-          <div class="type-bar-container">
-            <div 
-              class="type-bar" 
-              [style.width.%]="(stat.count / getMaxMonthlyWorkoutCount()) * 100"
+
+      <div class="chart workout-type-chart" *ngIf="monthlyWorkoutStats.length > 0">
+        <div class="chart-bar" *ngFor="let stat of monthlyWorkoutStats">
+          <div class="bar-container">
+            <div class="bar has-value" [style.height.%]="(stat.count / getMaxMonthlyWorkoutCount()) * 100"
               [style.background]="stat.color">
+              <span class="bar-value">{{ stat.count }}</span>
             </div>
           </div>
-          <span class="type-count">{{ stat.count }}</span>
+          <span class="bar-label icon-label">{{ stat.icon }}</span>
+          <span class="bar-label name-label" [title]="stat.name">{{ stat.name }}</span>
         </div>
       </div>
 
@@ -111,8 +108,9 @@
 
     <!-- Yearly Summary -->
     <div class="chart-container yearly-section">
-      <h3 class="chart-title">{{ 'STATS.YEARLY_SUMMARY' | translate:{ year: currentYear, count: getTotalWorkouts() } }}</h3>
-      
+      <h3 class="chart-title">{{ 'STATS.YEARLY_SUMMARY' | translate:{ year: currentYear, count: getTotalWorkouts() } }}
+      </h3>
+
       <div class="workout-type-list compact" *ngIf="workoutTypeStats.length > 0">
         <div class="workout-type-item" *ngFor="let stat of workoutTypeStats">
           <div class="type-info">
@@ -120,9 +118,7 @@
             <span class="type-name">{{ stat.name }}</span>
           </div>
           <div class="type-bar-container">
-            <div 
-              class="type-bar" 
-              [style.width.%]="(stat.count / getMaxWorkoutCount()) * 100"
+            <div class="type-bar" [style.width.%]="(stat.count / getMaxWorkoutCount()) * 100"
               [style.background]="stat.color">
             </div>
           </div>
@@ -135,6 +131,91 @@
         <p class="hint">{{ 'STATS.START_TRACKING' | translate }}</p>
       </div>
     </div>
+
+  </div>
+
+  <!-- Duration View -->
+  <div class="duration-view" *ngIf="viewMode === 'duration'">
+
+    <!-- Summary Cards -->
+    <div class="summary-cards duration-cards">
+      <div class="stat-card duration-primary">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-content">
+          <span class="stat-value">{{ formatDuration(monthlyAvgDuration) }}</span>
+          <span class="stat-label">{{ 'STATS.AVG_THIS_MONTH' | translate }}</span>
+        </div>
+      </div>
+      <div class="stat-card duration-secondary">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <span class="stat-value">{{ formatDuration(yearlyAvgDuration) }}</span>
+          <span class="stat-label">{{ 'STATS.AVG_THIS_YEAR' | translate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Untracked Workouts Badge -->
+    <div class="untracked-badge" *ngIf="untrackedWorkoutsMonth > 0">
+      <span class="untracked-icon">📝</span>
+      <span class="untracked-text">{{ 'STATS.UNTRACKED_WORKOUTS' | translate }}: {{ untrackedWorkoutsMonth }}</span>
+    </div>
+
+    <!-- Monthly Duration Stats with Picker -->
+    <div class="chart-container monthly-section">
+      <div class="month-picker">
+        <button class="nav-btn-small" (click)="prevWorkoutMonth()">‹</button>
+        <h3 class="month-title">{{ 'MONTHS.' + monthNames[selectedWorkoutMonth] | translate }} {{ currentYear }}</h3>
+        <button class="nav-btn-small" (click)="nextWorkoutMonth()">›</button>
+      </div>
+
+      <h4 class="section-subtitle">{{ 'STATS.AVG_DURATION_PER_TYPE' | translate }}</h4>
+
+      <div class="chart workout-type-chart" *ngIf="monthlyDurationStats.length > 0">
+        <div class="chart-bar" *ngFor="let stat of monthlyDurationStats">
+          <div class="bar-container">
+            <div class="bar has-value" [style.height.%]="(stat.avgMinutes / getMaxMonthlyDurationMinutes()) * 100"
+              [style.background]="stat.color">
+              <span class="bar-value">{{ formatDuration(stat.avgMinutes) }}</span>
+            </div>
+          </div>
+          <span class="bar-label icon-label">{{ stat.icon }}</span>
+          <span class="bar-label name-label" [title]="stat.name">{{ stat.name }}</span>
+        </div>
+      </div>
+
+      <div class="no-data" *ngIf="monthlyDurationStats.length === 0">
+        <p>{{ 'STATS.NO_DURATION_DATA' | translate }} {{ 'MONTHS.' + monthNames[selectedWorkoutMonth] | translate }}</p>
+        <p class="hint">{{ 'STATS.START_TRACKING_DURATION' | translate }}</p>
+      </div>
+    </div>
+
+    <!-- Yearly Duration Summary -->
+    <div class="chart-container yearly-section">
+      <h3 class="chart-title">{{ 'STATS.YEARLY_DURATION_SUMMARY' | translate:{ year: currentYear } }}</h3>
+
+      <div class="workout-type-list compact" *ngIf="workoutTypeDurationStats.length > 0">
+        <div class="workout-type-item" *ngFor="let stat of workoutTypeDurationStats">
+          <div class="type-info">
+            <span class="type-icon">{{ stat.icon }}</span>
+            <span class="type-name">{{ stat.name }}</span>
+          </div>
+          <div class="type-bar-container">
+            <div class="type-bar" [style.width.%]="(stat.avgMinutes / getMaxDurationMinutes()) * 100"
+              [style.background]="stat.color">
+            </div>
+          </div>
+          <span class="type-count duration-value">{{ formatDuration(stat.avgMinutes) }}</span>
+        </div>
+      </div>
+
+      <div class="no-data" *ngIf="workoutTypeDurationStats.length === 0">
+        <p>{{ 'STATS.NO_DURATION_DATA' | translate }} {{ currentYear }}</p>
+        <p class="hint">{{ 'STATS.START_TRACKING_DURATION' | translate }}</p>
+      </div>
+    </div>
+
+
   </div>
 
   <!-- Loading Overlay -->

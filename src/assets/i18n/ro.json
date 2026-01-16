@@ -36,7 +36,9 @@
         "ALL_TIME": "Total",
         "ATTENDANCES": "Prezențe",
         "WORKOUTS": "Antrenamente",
+        "DURATION": "Durată",
         "MONTHLY_BREAKDOWN": "Desfășurare Lunară",
+        "MONTHLY_BY_CATEGORY": "Desfășurare Lunară pe Categorii",
         "WORKOUTS_THIS_MONTH": "antrenamente luna asta",
         "NO_WORKOUTS": "Niciun antrenament în",
         "NO_DATA": "Fără date pentru",
@@ -44,7 +46,16 @@
         "TOTAL": "Total",
         "YEARLY_SUMMARY": "Total {{year}}: {{count}} antrenamente",
         "TITLE_ATTENDANCE": "Statistici Prezență",
-        "TITLE_WORKOUTS": "Statistici Antrenamente"
+        "TITLE_WORKOUTS": "Statistici Antrenamente",
+        "TITLE_DURATION": "Statistici Durată",
+        "AVG_THIS_MONTH": "Medie Luna Asta",
+        "AVG_THIS_YEAR": "Medie Anul Ăsta",
+        "UNTRACKED_WORKOUTS": "Antrenamente fără durată",
+        "AVG_DURATION_PER_TYPE": "Durată Medie pe Tip Antrenament",
+        "NO_DURATION_DATA": "Fără date de durată pentru",
+        "START_TRACKING_DURATION": "Adaugă durata când înregistrezi antrenamente pentru a vedea statistici!",
+        "YEARLY_DURATION_SUMMARY": "Durate Medii {{year}}",
+        "MONTHLY_AVG_DURATION": "Durată Medie Lunară (min)"
     },
     "WORKOUT_TYPES": {
         "TITLE": "Tipuri Antrenament",

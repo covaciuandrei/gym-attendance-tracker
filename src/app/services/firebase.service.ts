@@ -53,6 +53,15 @@ export interface WorkoutTypeStat {
   count: number;
 }
 
+export interface WorkoutTypeDurationStat {
+  id: string;
+  name: string;
+  color: string;
+  icon?: string;
+  count: number;        // number of tracked workouts with duration
+  avgMinutes: number;   // average duration in minutes
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -345,6 +354,107 @@ export class FirebaseService {
       icon: t.icon,
       count: counts.get(t.id) || 0
     })).sort((a, b) => b.count - a.count);
+  }
+
+  // ========================================
+  // Duration Stats Methods
+  // ========================================
+
+  async getYearDurationStats(userId: string, year: number): Promise<{
+    avgMinutes: number;
+    trackedCount: number;
+    untrackedCount: number;
+  }> {
+    const records = await this.getYearAttendance(userId, year);
+
+    const trackedRecords = records.filter(r => r.durationMinutes != null && r.durationMinutes > 0);
+    const untrackedCount = records.length - trackedRecords.length;
+
+    const totalMinutes = trackedRecords.reduce((sum, r) => sum + (r.durationMinutes || 0), 0);
+    const avgMinutes = trackedRecords.length > 0 ? Math.round(totalMinutes / trackedRecords.length) : 0;
+
+    return {
+      avgMinutes,
+      trackedCount: trackedRecords.length,
+      untrackedCount
+    };
+  }
+
+  async getMonthDurationStats(userId: string, year: number, month: number): Promise<{
+    avgMinutes: number;
+    trackedCount: number;
+    untrackedCount: number;
+  }> {
+    const records = await this.getMonthAttendance(userId, year, month);
+
+    const trackedRecords = records.filter(r => r.durationMinutes != null && r.durationMinutes > 0);
+    const untrackedCount = records.length - trackedRecords.length;
+
+    const totalMinutes = trackedRecords.reduce((sum, r) => sum + (r.durationMinutes || 0), 0);
+    const avgMinutes = trackedRecords.length > 0 ? Math.round(totalMinutes / trackedRecords.length) : 0;
+
+    return {
+      avgMinutes,
+      trackedCount: trackedRecords.length,
+      untrackedCount
+    };
+  }
+
+  async getWorkoutTypeDurationStats(userId: string, year: number): Promise<WorkoutTypeDurationStat[]> {
+    const records = await this.getYearAttendance(userId, year);
+    const types = await this.getTrainingTypes(userId);
+
+    // Group by type and calculate averages
+    const durationData = new Map<string, { totalMinutes: number; count: number }>();
+
+    records.forEach(r => {
+      if (r.trainingTypeId && r.durationMinutes != null && r.durationMinutes > 0) {
+        const existing = durationData.get(r.trainingTypeId) || { totalMinutes: 0, count: 0 };
+        existing.totalMinutes += r.durationMinutes;
+        existing.count++;
+        durationData.set(r.trainingTypeId, existing);
+      }
+    });
+
+    return types.map(t => {
+      const data = durationData.get(t.id);
+      return {
+        id: t.id,
+        name: t.name,
+        color: t.color,
+        icon: t.icon,
+        count: data?.count || 0,
+        avgMinutes: data ? Math.round(data.totalMinutes / data.count) : 0
+      };
+    }).filter(t => t.count > 0).sort((a, b) => b.avgMinutes - a.avgMinutes);
+  }
+
+  async getMonthlyWorkoutTypeDurationStats(userId: string, year: number, month: number): Promise<WorkoutTypeDurationStat[]> {
+    const records = await this.getMonthAttendance(userId, year, month);
+    const types = await this.getTrainingTypes(userId);
+
+    const durationData = new Map<string, { totalMinutes: number; count: number }>();
+
+    records.forEach(r => {
+      if (r.trainingTypeId && r.durationMinutes != null && r.durationMinutes > 0) {
+        const existing = durationData.get(r.trainingTypeId) || { totalMinutes: 0, count: 0 };
+        existing.totalMinutes += r.durationMinutes;
+        existing.count++;
+        durationData.set(r.trainingTypeId, existing);
+      }
+    });
+
+    return types.map(t => {
+      const data = durationData.get(t.id);
+      return {
+        id: t.id,
+        name: t.name,
+        color: t.color,
+        icon: t.icon,
+        count: data?.count || 0,
+        avgMinutes: data ? Math.round(data.totalMinutes / data.count) : 0
+      };
+    }).filter(t => t.count > 0).sort((a, b) => b.avgMinutes - a.avgMinutes);
   }
 
   // Alias for legacy support if needed, or update consumers to use getYearAttendance

@@ -36,7 +36,9 @@
         "ALL_TIME": "All Time",
         "ATTENDANCES": "Attendances",
         "WORKOUTS": "Workouts",
+        "DURATION": "Duration",
         "MONTHLY_BREAKDOWN": "Monthly Breakdown",
+        "MONTHLY_BY_CATEGORY": "Monthly Breakdown by Category",
         "WORKOUTS_THIS_MONTH": "workouts this month",
         "NO_WORKOUTS": "No workouts in",
         "NO_DATA": "No workout data for",
@@ -44,7 +46,16 @@
         "TOTAL": "Total",
         "YEARLY_SUMMARY": "{{year}} Total: {{count}} workouts",
         "TITLE_ATTENDANCE": "Attendance Stats",
-        "TITLE_WORKOUTS": "Workout Stats"
+        "TITLE_WORKOUTS": "Workout Stats",
+        "TITLE_DURATION": "Duration Stats",
+        "AVG_THIS_MONTH": "Avg This Month",
+        "AVG_THIS_YEAR": "Avg This Year",
+        "UNTRACKED_WORKOUTS": "Untracked workouts",
+        "AVG_DURATION_PER_TYPE": "Average Duration by Workout Type",
+        "NO_DURATION_DATA": "No duration data for",
+        "START_TRACKING_DURATION": "Add duration when logging workouts to see stats here!",
+        "YEARLY_DURATION_SUMMARY": "{{year}} Average Durations",
+        "MONTHLY_AVG_DURATION": "Monthly Avg Duration (min)"
     },
     "WORKOUT_TYPES": {
         "TITLE": "Workout Types",
