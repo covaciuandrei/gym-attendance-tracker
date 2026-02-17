@@ -46,11 +46,6 @@
     <!-- MY SUPPLEMENTS VIEW -->
     <div class="tab-content" *ngIf="!showForm && viewMode === 'my_supplements'">
         <div class="catalog-view">
-            <div class="view-header">
-                <h2>My Personal List</h2>
-                <p>Supplements you have added to the system.</p>
-            </div>
-
             <div class="search-bar" *ngIf="myProducts.length > 6">
                 <input type="text" class="search-input" placeholder="Search my supplements..."
                     [(ngModel)]="mySupplementsSearch" />
@@ -111,11 +106,6 @@
     <!-- ALL SUPPLEMENTS VIEW -->
     <div class="tab-content" *ngIf="!showForm && viewMode === 'all_supplements'">
         <div class="catalog-view">
-            <div class="view-header">
-                <h2>Global Database</h2>
-                <p>All available supplements in the system.</p>
-            </div>
-
             <div class="search-bar" *ngIf="products.length > 6">
                 <input type="text" class="search-input" placeholder="Search all supplements..."
                     [(ngModel)]="allSupplementsSearch" />

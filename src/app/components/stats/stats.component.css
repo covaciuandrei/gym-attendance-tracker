@@ -429,30 +429,7 @@
   height: 16px;
 }
 
-/* Monthly Details */
-.monthly-details {
-  margin-top: 24px;
-}
 
-.motivation-card {
-  background: var(--card-bg);
-  border-radius: 20px;
-  padding: 40px 24px;
-  text-align: center;
-  box-shadow: var(--shadow);
-}
-
-.motivation-emoji {
-  font-size: 4rem;
-  margin-bottom: 16px;
-}
-
-.motivation-text {
-  font-size: 1.2rem;
-  color: var(--text-primary);
-  margin: 0;
-  font-weight: 500;
-}
 
 /* Loading */
 .loading-overlay {
@@ -569,18 +546,7 @@
     border-radius: 16px;
   }
 
-  .motivation-card {
-    padding: 30px 20px;
-    border-radius: 16px;
-  }
 
-  .motivation-emoji {
-    font-size: 3rem;
-  }
-
-  .motivation-text {
-    font-size: 1rem;
-  }
 }
 
 @media (max-width: 480px) {

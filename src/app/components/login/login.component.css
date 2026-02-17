@@ -109,6 +109,12 @@
   justify-content: flex-end;
 }
 
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .forgot-link {
   font-size: 0.875rem;
   color: var(--primary-color);
@@ -202,7 +208,7 @@
     padding: 1.5rem;
     border-radius: 1rem;
   }
-  
+
   .auth-header h1 {
     font-size: 1.5rem;
   }
