@@ -5,18 +5,15 @@
     </div>
 
     <!-- TABS -->
-    <div class="tabs" *ngIf="!showForm">
-        <button class="tab" [class.active]="viewMode === 'today'" (click)="setView('today')">
-            <span class="tab-icon">📊</span>
-            <span>Today</span>
+    <div class="view-toggle" *ngIf="!showForm">
+        <button class="toggle-btn" [class.active]="viewMode === 'today'" (click)="setView('today')">
+            Today
         </button>
-        <button class="tab" [class.active]="viewMode === 'my_supplements'" (click)="setView('my_supplements')">
-            <span class="tab-icon">👤</span>
-            <span>My Supplements</span>
+        <button class="toggle-btn" [class.active]="viewMode === 'my_supplements'" (click)="setView('my_supplements')">
+            My Supplements
         </button>
-        <button class="tab" [class.active]="viewMode === 'all_supplements'" (click)="setView('all_supplements')">
-            <span class="tab-icon">🌐</span>
-            <span>All Supplements</span>
+        <button class="toggle-btn" [class.active]="viewMode === 'all_supplements'" (click)="setView('all_supplements')">
+            All Supplements
         </button>
     </div>
 
@@ -54,8 +51,13 @@
                 <p>Supplements you have added to the system.</p>
             </div>
 
-            <div class="supplements-grid" *ngIf="myProducts.length > 0">
-                <div class="supplement-card" *ngFor="let product of myProducts">
+            <div class="search-bar" *ngIf="myProducts.length > 6">
+                <input type="text" class="search-input" placeholder="Search my supplements..."
+                    [(ngModel)]="mySupplementsSearch" />
+            </div>
+
+            <div class="supplements-grid" *ngIf="filteredMyProducts.length > 0">
+                <div class="supplement-card" *ngFor="let product of filteredMyProducts">
                     <div class="card-header">
                         <div class="sup-details">
                             <span class="brand">{{ product.brand || 'Generic' }}</span>
@@ -84,6 +86,12 @@
             </div>
 
             <!-- Empty State for My Supplements -->
+            <div *ngIf="filteredMyProducts.length === 0 && mySupplementsSearch" class="empty-supplements">
+                <div class="empty-icon">🔍</div>
+                <h3>No results</h3>
+                <p>No supplements match "{{ mySupplementsSearch }}"</p>
+            </div>
+
             <div *ngIf="myProducts.length === 0" class="empty-supplements">
                 <div class="empty-icon">👤</div>
                 <h3>No Personal Supplements</h3>
@@ -108,8 +116,13 @@
                 <p>All available supplements in the system.</p>
             </div>
 
-            <div class="supplements-grid" *ngIf="products.length > 0">
-                <div class="supplement-card" *ngFor="let product of products">
+            <div class="search-bar" *ngIf="products.length > 6">
+                <input type="text" class="search-input" placeholder="Search all supplements..."
+                    [(ngModel)]="allSupplementsSearch" />
+            </div>
+
+            <div class="supplements-grid" *ngIf="filteredAllProducts.length > 0">
+                <div class="supplement-card" *ngFor="let product of filteredAllProducts">
                     <div class="card-header">
                         <div class="sup-details">
                             <span class="brand">{{ product.brand || 'Generic' }}</span>
@@ -139,6 +152,12 @@
             </div>
 
             <!-- Empty State for Global (Unlikely but handle it) -->
+            <div *ngIf="filteredAllProducts.length === 0 && allSupplementsSearch" class="empty-supplements">
+                <div class="empty-icon">🔍</div>
+                <h3>No results</h3>
+                <p>No supplements match "{{ allSupplementsSearch }}"</p>
+            </div>
+
             <div *ngIf="products.length === 0" class="empty-supplements">
                 <div class="empty-icon">🌐</div>
                 <h3>Database Empty</h3>

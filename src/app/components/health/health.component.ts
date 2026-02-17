@@ -29,6 +29,8 @@ export class HealthComponent implements OnInit {
     showForm = false;
     productToEdit: SupplementProduct | null = null;
     viewMode: 'today' | 'my_supplements' | 'all_supplements' = 'today'; // Start with Today view
+    mySupplementsSearch = '';
+    allSupplementsSearch = '';
 
     constructor(
         private firebaseService: FirebaseService,
@@ -38,6 +40,22 @@ export class HealthComponent implements OnInit {
     get myProducts(): SupplementProduct[] {
         if (!this.userId) return [];
         return this.products.filter(p => p.createdBy === this.userId);
+    }
+
+    get filteredMyProducts(): SupplementProduct[] {
+        const q = this.mySupplementsSearch.toLowerCase().trim();
+        if (!q) return this.myProducts;
+        return this.myProducts.filter(p =>
+            p.name.toLowerCase().includes(q) || (p.brand && p.brand.toLowerCase().includes(q))
+        );
+    }
+
+    get filteredAllProducts(): SupplementProduct[] {
+        const q = this.allSupplementsSearch.toLowerCase().trim();
+        if (!q) return this.products;
+        return this.products.filter(p =>
+            p.name.toLowerCase().includes(q) || (p.brand && p.brand.toLowerCase().includes(q))
+        );
     }
 
     async ngOnInit() {
@@ -156,6 +174,8 @@ export class HealthComponent implements OnInit {
 
     setView(mode: 'today' | 'my_supplements' | 'all_supplements') {
         this.viewMode = mode;
+        this.mySupplementsSearch = '';
+        this.allSupplementsSearch = '';
     }
 
     // Helper for template
