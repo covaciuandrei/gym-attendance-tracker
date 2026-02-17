@@ -45,6 +45,15 @@
   justify-content: center;
   gap: 8px;
   margin-bottom: 24px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 4px 0;
+}
+
+.view-toggle::-webkit-scrollbar {
+  display: none;
 }
 
 .toggle-btn {
@@ -56,6 +65,8 @@
   font-weight: 500;
   transition: all 0.2s ease;
   color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .toggle-btn.active {
@@ -493,9 +504,17 @@
     font-size: 1.3rem;
   }
 
+  .view-toggle {
+    justify-content: flex-start;
+    padding: 4px 12px;
+    gap: 6px;
+    scroll-snap-type: x mandatory;
+  }
+
   .toggle-btn {
     padding: 8px 16px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    scroll-snap-align: start;
   }
 
   .summary-cards {
@@ -643,8 +662,9 @@
 
 /* Extra spacing to prevent bar-value overlap with month-total */
 .duration-view .month-total,
+.health-view .month-total,
 .workouts-view .month-total {
-  margin-bottom: 40px;
+  margin-bottom: 60px;
 }
 
 .type-count.duration-value {

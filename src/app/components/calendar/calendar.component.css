@@ -2,6 +2,8 @@
   padding: 1rem;
   max-width: 800px;
   margin: 0 auto;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .calendar-header {
@@ -83,7 +85,7 @@
 .days-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .day-cell {
@@ -97,6 +99,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .day-cell:hover {
