@@ -56,6 +56,19 @@ export class StatsComponent implements OnInit, OnDestroy {
   totalHealthLogs = 0;
   monthlyHealthData: { month: string; count: number }[] = [];
 
+  // Health Stats - Enhanced
+  selectedHealthMonth: number = new Date().getMonth(); // 0-11
+  monthlySupplementStats: { name: string; brand: string; count: number; color: string }[] = [];
+  monthlyServingsCount = 0;
+  yearlyServingsCount = 0;
+  consistencyPercentage = 0; // % of days with logged supplements
+  daysWithSupplements = 0;
+  totalDaysElapsed = 0;
+
+  // Top supplements with daily averages
+  topYearlySupp: { name: string; count: number; avgPerDay: number } | null = null;
+  topMonthlySupp: { name: string; count: number; avgPerDay: number } | null = null;
+
   constructor(
     private firebaseService: FirebaseService,
     private themeService: ThemeService,
@@ -143,7 +156,7 @@ export class StatsComponent implements OnInit, OnDestroy {
   async loadHealthStats() {
     if (!this.userId) return;
 
-    // Fetch all logs for the year (simplification: iterate 12 months)
+    // Fetch all logs for the year (iterate 12 months)
     const logsPromises = [];
     for (let m = 1; m <= 12; m++) {
       logsPromises.push(this.firebaseService.getSupplementLogs(this.userId, this.currentYear, m));
@@ -151,43 +164,48 @@ export class StatsComponent implements OnInit, OnDestroy {
     const monthlyLogs = await Promise.all(logsPromises);
     const allLogs = monthlyLogs.flat();
 
+    // Calculate yearly servings (sum of servingsTaken)
+    this.yearlyServingsCount = allLogs.reduce((sum, log) => sum + log.servingsTaken, 0);
     this.totalHealthLogs = allLogs.length;
 
-    // Calculate Monthly consistency
+    // Calculate Monthly consistency chart
     this.monthlyHealthData = this.monthNames.map((name, idx) => {
-      return { month: name, count: monthlyLogs[idx].length };
+      const monthServings = monthlyLogs[idx].reduce((sum, log) => sum + log.servingsTaken, 0);
+      return { month: name, count: monthServings };
     });
 
-    // Need products to aggregate nutrients
+    // Calculate consistency (unique days with supplements / days elapsed this year)
+    const uniqueDays = new Set(allLogs.map(log => log.date));
+    this.daysWithSupplements = uniqueDays.size;
+
+    const now = new Date();
+    const startOfYear = new Date(this.currentYear, 0, 1);
+    const endDate = this.currentYear === now.getFullYear() ? now : new Date(this.currentYear, 11, 31);
+    this.totalDaysElapsed = Math.max(1, Math.floor((endDate.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+    this.consistencyPercentage = Math.round((this.daysWithSupplements / this.totalDaysElapsed) * 100);
+
+    // Need products to aggregate nutrients and get product info
     const products = await this.firebaseService.getProducts();
     const productMap = new Map<string, any>();
     products.forEach(p => productMap.set(p.id, p));
 
     const nutrientMap = new Map<string, { name: string; amount: number; unit: string }>();
-    const productCounts = new Map<string, number>();
+    const productCounts = new Map<string, { name: string; brand: string; count: number }>();
 
     allLogs.forEach(log => {
       const product = productMap.get(log.productId);
       if (product) {
         // Track product usage
-        const currentCount = productCounts.get(product.name) || 0;
-        productCounts.set(product.name, currentCount + log.servingsTaken);
+        const existing = productCounts.get(log.productId) || { name: product.name, brand: product.brand || '', count: 0 };
+        existing.count += log.servingsTaken;
+        productCounts.set(log.productId, existing);
 
         // Aggregate nutrients
         product.ingredients.forEach((ing: any) => {
-          // We might want to resolve ingredient name from global list if needed, 
-          // but product.ingredients usually has stdId. 
-          // We need to know the 'Display Name' of the stdId.
-          // For now, let's use the stdId as name or fetch ingredients list too?
-          // The product SHOULD store the name in ingredients for display, but my interface 
-          // SupplementProduct ingredients: { stdId, amount, unit }. Name is missing!
-          // Ah, I missed adding 'name' to the product ingredient interface for cache/display?
-          // Or I fetch Global Ingredients to map stdId -> Name.
-          // I should fetch Global Ingredients.
           const total = log.servingsTaken * ing.amount;
-          const existing = nutrientMap.get(ing.stdId) || { name: ing.stdId, amount: 0, unit: ing.unit };
-          existing.amount += total;
-          nutrientMap.set(ing.stdId, existing);
+          const existingNutrient = nutrientMap.get(ing.stdId) || { name: ing.stdId, amount: 0, unit: ing.unit };
+          existingNutrient.amount += total;
+          nutrientMap.set(ing.stdId, existingNutrient);
         });
       }
     });
@@ -198,28 +216,136 @@ export class StatsComponent implements OnInit, OnDestroy {
       const ingMap = new Map(globalIngredients.map(i => [i.id, i.name]));
 
       nutrientMap.forEach((val, key) => {
-        val.name = ingMap.get(key) || val.name; // Use global name or stdId fallback
+        val.name = ingMap.get(key) || val.name;
       });
     }
 
     // Top Nutrients
     this.topNutrients = Array.from(nutrientMap.values())
       .sort((a, b) => b.amount - a.amount)
-      .slice(0, 5); // Start with top 5
+      .slice(0, 5);
 
-    // Most Taken Product
+    // Most Taken Product (yearly) with avgPerDay
     let maxProduct = '';
     let maxVal = 0;
     productCounts.forEach((val, key) => {
-      if (val > maxVal) {
-        maxVal = val;
-        maxProduct = key;
+      if (val.count > maxVal) {
+        maxVal = val.count;
+        maxProduct = val.name;
       }
     });
 
     if (maxProduct) {
       this.mostTakenProduct = { name: maxProduct, count: maxVal };
+      // Calculate average per day of month (based on days elapsed)
+      const avgPerDay = this.totalDaysElapsed > 0 ? maxVal / this.totalDaysElapsed : 0;
+      this.topYearlySupp = { name: maxProduct, count: maxVal, avgPerDay };
+    } else {
+      this.topYearlySupp = null;
     }
+
+    // Load monthly supplement breakdown
+    await this.loadMonthlySupplementStats(monthlyLogs, productMap);
+  }
+
+  async loadMonthlySupplementStats(monthlyLogs?: any[][], productMap?: Map<string, any>) {
+    if (!this.userId) return;
+
+    // If not provided, fetch fresh
+    if (!monthlyLogs || !productMap) {
+      const logs = await this.firebaseService.getSupplementLogs(
+        this.userId,
+        this.currentYear,
+        this.selectedHealthMonth + 1
+      );
+      const products = await this.firebaseService.getProducts();
+      productMap = new Map();
+      products.forEach(p => productMap!.set(p.id, p));
+      monthlyLogs = [];
+      monthlyLogs[this.selectedHealthMonth] = logs;
+    }
+
+    const selectedLogs = monthlyLogs[this.selectedHealthMonth] || [];
+
+    // Calculate monthly servings count
+    this.monthlyServingsCount = selectedLogs.reduce((sum, log) => sum + log.servingsTaken, 0);
+
+    // Aggregate by product
+    const productAggregate = new Map<string, { name: string; brand: string; count: number }>();
+    selectedLogs.forEach(log => {
+      const product = productMap!.get(log.productId);
+      if (product) {
+        const existing = productAggregate.get(log.productId) || { name: product.name, brand: product.brand || '', count: 0 };
+        existing.count += log.servingsTaken;
+        productAggregate.set(log.productId, existing);
+      }
+    });
+
+    // Generate colors for products (health-themed greens/teals)
+    const healthColors = [
+      '#10b981', '#14b8a6', '#06b6d4', '#0ea5e9', '#22c55e',
+      '#84cc16', '#34d399', '#2dd4bf', '#38bdf8', '#4ade80'
+    ];
+
+    const sortedProducts = Array.from(productAggregate.values())
+      .sort((a, b) => b.count - a.count);
+
+    this.monthlySupplementStats = sortedProducts
+      .slice(0, 8)
+      .map((stat, idx) => ({
+        ...stat,
+        color: healthColors[idx % healthColors.length]
+      }));
+
+    // Calculate top monthly supplement with avgPerDay
+    if (sortedProducts.length > 0) {
+      const topProduct = sortedProducts[0];
+      // Days in the selected month
+      const now = new Date();
+      const daysInMonth = new Date(this.currentYear, this.selectedHealthMonth + 1, 0).getDate();
+      // If current month of current year, use days elapsed so far
+      const daysElapsed = (this.currentYear === now.getFullYear() && this.selectedHealthMonth === now.getMonth())
+        ? now.getDate()
+        : daysInMonth;
+      const avgPerDay = daysElapsed > 0 ? topProduct.count / daysElapsed : 0;
+      this.topMonthlySupp = { name: topProduct.name, count: topProduct.count, avgPerDay };
+    } else {
+      this.topMonthlySupp = null;
+    }
+  }
+
+  async prevHealthMonth() {
+    this.selectedHealthMonth--;
+    if (this.selectedHealthMonth < 0) {
+      this.selectedHealthMonth = 11;
+      this.currentYear--;
+      await this.loadHealthStats();
+    } else {
+      await this.loadMonthlySupplementStats();
+    }
+  }
+
+  async nextHealthMonth() {
+    this.selectedHealthMonth++;
+    if (this.selectedHealthMonth > 11) {
+      this.selectedHealthMonth = 0;
+      this.currentYear++;
+      await this.loadHealthStats();
+    } else {
+      await this.loadMonthlySupplementStats();
+    }
+  }
+
+  getMaxSupplementCount(): number {
+    return Math.max(...this.monthlySupplementStats.map(s => s.count), 1);
+  }
+
+  getMonthlySupplementTotal(): number {
+    return this.monthlySupplementStats.reduce((sum, current) => sum + current.count, 0);
+  }
+
+  getMaxHealthCount(): number {
+    return Math.max(...this.monthlyHealthData.map(d => d.count), 1);
   }
 
   // ... existing methods ...

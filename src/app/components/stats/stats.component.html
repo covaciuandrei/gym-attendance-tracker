@@ -28,54 +28,102 @@
   <div class="stats-content" *ngIf="!isLoading">
 
     <!-- Health Stats -->
-    <div *ngIf="viewMode === 'health'" class="animate-fade-in">
+    <div class="health-view" *ngIf="viewMode === 'health'">
+
+      <!-- Summary Cards -->
       <div class="summary-cards">
-        <div class="card summary-card">
-          <span class="card-icon">💊</span>
-          <div class="card-data">
-            <span class="value">{{ totalHealthLogs }}</span>
-            <span class="label">Total Servings (Year)</span>
+        <div class="stat-card health-primary">
+          <div class="stat-icon">💊</div>
+          <div class="stat-content">
+            <span class="stat-value" *ngIf="topMonthlySupp">{{ topMonthlySupp.name }}</span>
+            <span class="stat-value" *ngIf="!topMonthlySupp">-</span>
+            <span class="stat-label">Top This Month</span>
+            <span class="stat-sub" *ngIf="topMonthlySupp">{{ topMonthlySupp.count }}x ({{ topMonthlySupp.avgPerDay |
+              number:'1.1-1' }}/day)</span>
           </div>
         </div>
-
-        <div class="card summary-card" *ngIf="mostTakenProduct">
-          <span class="card-icon">🏆</span>
-          <div class="card-data">
-            <span class="value">{{ mostTakenProduct.name }}</span>
-            <span class="label">Most Taken ({{ mostTakenProduct.count }})</span>
+        <div class="stat-card health-secondary">
+          <div class="stat-icon">📅</div>
+          <div class="stat-content">
+            <span class="stat-value" *ngIf="topYearlySupp">{{ topYearlySupp.name }}</span>
+            <span class="stat-value" *ngIf="!topYearlySupp">-</span>
+            <span class="stat-label">Top This Year</span>
+            <span class="stat-sub" *ngIf="topYearlySupp">{{ topYearlySupp.count }}x ({{ topYearlySupp.avgPerDay |
+              number:'1.1-1' }}/day)</span>
+          </div>
+        </div>
+        <div class="stat-card health-tertiary">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <span class="stat-value">{{ consistencyPercentage }}%</span>
+            <span class="stat-label">Consistency</span>
           </div>
         </div>
       </div>
 
-      <div class="card chart-card">
-        <h3>Top Nutrients</h3>
-        <div class="workout-type-list compact" *ngIf="topNutrients.length > 0">
-          <div class="workout-type-item" *ngFor="let nut of topNutrients">
-            <div class="type-info">
-              <span class="type-name">{{ nut.name }}</span>
+
+      <!-- HEALTH -->
+      <!-- Monthly Section with Picker -->
+      <div class="chart-container monthly-section">
+        <div class="month-picker">
+          <button class="nav-btn-small" (click)="prevHealthMonth()">‹</button>
+          <h3 class="month-title">{{ 'MONTHS.' + monthNames[selectedHealthMonth] | translate }} {{ currentYear }}</h3>
+          <button class="nav-btn-small" (click)="nextHealthMonth()">›</button>
+        </div>
+
+        <div class="month-total">
+          <span class="total-value">{{ monthlyServingsCount }}</span>
+          <span class="total-label">servings this month</span>
+        </div>
+
+        <div class="chart workout-type-chart" *ngIf="monthlySupplementStats.length > 0">
+          <div class="chart-bar" *ngFor="let stat of monthlySupplementStats">
+            <div class="bar-container">
+              <div class="bar has-value" [style.height.%]="(stat.count / getMaxSupplementCount()) * 100"
+                [style.background]="stat.color">
+                <span class="bar-value">{{ stat.count }}</span>
+              </div>
             </div>
-            <span class="type-count">{{ nut.amount | number:'1.0-1' }} {{ nut.unit }}</span>
+            <span class="bar-label icon-label" style="font-size: 0.5em;">💊</span>
+            <span class="bar-label name-label" [title]="stat.name">{{ stat.name }}</span>
           </div>
         </div>
-        <div class="no-data" *ngIf="topNutrients.length === 0">
+
+        <div class="no-data" *ngIf="monthlySupplementStats.length === 0">
+          <p>No supplements logged this month</p>
+          <p class="hint">Start tracking your supplements in the Health tab</p>
+        </div>
+      </div>
+
+      <!-- Yearly Summary -->
+      <div class="chart-container yearly-section">
+        <h3 class="chart-title">{{ currentYear }} Summary</h3>
+
+        <!-- Most Taken Product -->
+        <div class="top-item-card" *ngIf="mostTakenProduct">
+          <span class="top-item-icon">🏆</span>
+          <div class="top-item-info">
+            <span class="top-item-name">{{ mostTakenProduct.name }}</span>
+            <span class="top-item-label">Most Taken Supplement</span>
+          </div>
+          <span class="top-item-badge">{{ mostTakenProduct.count }}x</span>
+        </div>
+
+        <!-- Top Nutrients Section -->
+        <h4 class="section-subtitle" *ngIf="topNutrients.length > 0">Top Nutrients</h4>
+        <div class="nutrient-list" *ngIf="topNutrients.length > 0">
+          <div class="nutrient-item" *ngFor="let nut of topNutrients; let i = index">
+            <span class="nutrient-rank">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '💎' }}</span>
+            <span class="nutrient-name">{{ nut.name }}</span>
+            <span class="nutrient-amount">{{ nut.amount | number:'1.0-1' }}{{ nut.unit }}</span>
+          </div>
+        </div>
+
+        <div class="no-data" *ngIf="topNutrients.length === 0 && !mostTakenProduct">
           <p>No nutrient data available yet.</p>
         </div>
       </div>
 
-      <div class="card chart-card">
-        <h3>Monthly Consistency</h3>
-        <div class="bar-chart">
-          <div class="bar-group" *ngFor="let data of monthlyHealthData">
-            <div class="bar-container">
-              <div class="bar" [style.height.%]="(data.count / (getMaxCount() || 1)) * 100"
-                [title]="data.count + ' servings'">
-                <span class="bar-value" *ngIf="data.count > 0">{{ data.count }}</span>
-              </div>
-            </div>
-            <span class="month-label">{{ 'MONTHS_MINI.' + data.month | translate }}</span>
-          </div>
-        </div>
-      </div>
     </div>
     <!-- Attendances View -->
     <div class="attendances-view" *ngIf="viewMode === 'attendances'">
@@ -131,6 +179,8 @@
           } }}</span>
       </div>
 
+
+      <!--WORKOUTS -->
       <!-- Monthly Workout Stats with Picker -->
       <div class="chart-container monthly-section">
         <div class="month-picker">
@@ -226,7 +276,10 @@
           <button class="nav-btn-small" (click)="nextWorkoutMonth()">›</button>
         </div>
 
-        <h4 class="section-subtitle">{{ 'STATS.AVG_DURATION_PER_TYPE' | translate }}</h4>
+        <div class="month-total">
+          <span class="total-value">{{ formatDuration(monthlyAvgDuration) }}</span>
+          <span class="total-label">avg duration this month</span>
+        </div>
 
         <div class="chart workout-type-chart" *ngIf="monthlyDurationStats.length > 0">
           <div class="chart-bar" *ngFor="let stat of monthlyDurationStats">
