@@ -9,4 +9,3 @@ dist
 .editorconfig
 .env
 .env.*
-!.env.example

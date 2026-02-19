@@ -15,5 +15,3 @@ services:
     ports:
       - "8080:80"
     restart: unless-stopped
-    env_file:
-      - .env
