@@ -112,6 +112,47 @@ npm start
 ```
 Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
+## 🐳 Docker Deployment
+
+### Prerequisites
+
+-   [Docker](https://docs.docker.com/get-docker/) (v20+)
+-   [Docker Compose](https://docs.docker.com/compose/install/) (v2+)
+
+### Setup & Run
+
+1.  **Ensure your `.env` file is configured** (see [Environment Configuration](#4-environment-configuration) above).
+    Docker Compose reads your `.env` file and passes the Firebase values as build arguments — the `.env` file itself is **never copied into the image**.
+
+2.  **Build and start the container**
+    ```bash
+    docker compose up --build -d
+    ```
+
+3.  **Access the app**
+    Open [http://localhost:8080](http://localhost:8080) in your browser.
+
+4.  **Health check**
+    ```bash
+    curl http://localhost:8080/health
+    # Returns: healthy
+    ```
+
+5.  **Stop the container**
+    ```bash
+    docker compose down
+    ```
+
+### Useful Commands
+
+| Command | Description |
+|---------|-------------|
+| `docker compose up -d` | Start in background |
+| `docker compose up --build -d` | Rebuild and start |
+| `docker compose logs -f` | Follow container logs |
+| `docker compose down` | Stop and remove container |
+| `docker exec -it gym-tracker-app sh` | Shell into container |
+
 ## 📱 App Structure
 
 ```

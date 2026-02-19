@@ -5,6 +5,8 @@ dist
 .vscode
 .idea
 *.md
-!README.md
 .gitignore
 .editorconfig
+.env
+.env.*
+!.env.example
