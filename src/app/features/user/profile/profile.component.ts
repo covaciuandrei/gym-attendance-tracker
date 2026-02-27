@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { AuthService, AuthUser } from '../../services/auth.service';
+import { AuthService, AuthUser } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-profile',

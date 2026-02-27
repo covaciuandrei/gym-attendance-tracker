@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
-import { AuthService } from '../../services/auth.service';
-import { AttendanceRecord, FirebaseService, WorkoutTypeDurationStat, WorkoutTypeStat } from '../../services/firebase.service';
-import { ThemeService } from '../../services/theme.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { AttendanceRecord, FirebaseService, WorkoutTypeDurationStat, WorkoutTypeStat } from '../../../core/services/firebase.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-stats',

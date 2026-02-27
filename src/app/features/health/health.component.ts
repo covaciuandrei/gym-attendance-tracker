@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { FirebaseService, SupplementProduct, SupplementLog } from '../../services/firebase.service';
+import { FirebaseService, SupplementProduct, SupplementLog } from '../../core/services/firebase.service';
 import { SupplementFormComponent } from './supplement-form/supplement-form.component';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
 
 interface GroupedLog {
     productId: string;

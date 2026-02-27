@@ -18,7 +18,7 @@ import {
   startAt,
   endAt
 } from 'firebase/firestore';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 export interface AttendanceRecord {
   date: string; // Format: YYYY-MM-DD

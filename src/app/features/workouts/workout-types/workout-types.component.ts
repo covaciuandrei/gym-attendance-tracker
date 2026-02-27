@@ -3,8 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { AuthService } from '../../services/auth.service';
-import { FirebaseService, TrainingType } from '../../services/firebase.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { FirebaseService, TrainingType } from '../../../core/services/firebase.service';
 
 @Component({
   selector: 'app-workout-types',

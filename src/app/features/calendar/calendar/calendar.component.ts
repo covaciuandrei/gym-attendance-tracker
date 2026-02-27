@@ -4,8 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
 import { RouterModule } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
-import { AttendanceRecord, FirebaseService, TrainingType, SupplementProduct } from '../../services/firebase.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { AttendanceRecord, FirebaseService, TrainingType, SupplementProduct } from '../../../core/services/firebase.service';
 
 interface DayCell {
   date: number;

@@ -3,8 +3,8 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import { AuthService } from '../../services/auth.service';
-import { FirebaseService } from '../../services/firebase.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { FirebaseService } from '../../../core/services/firebase.service';
 
 @Component({
   selector: 'app-login',

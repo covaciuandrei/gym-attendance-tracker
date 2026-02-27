@@ -18,7 +18,7 @@ import {
     verifyPasswordResetCode
 } from 'firebase/auth';
 import { BehaviorSubject } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 export interface AuthUser {
   uid: string;

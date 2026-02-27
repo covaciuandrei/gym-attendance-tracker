@@ -3,9 +3,9 @@ import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { filter } from 'rxjs/operators';
-import { AuthService } from './services/auth.service';
-import { LanguageService } from './services/language.service';
-import { ThemeService } from './services/theme.service';
+import { AuthService } from './core/services/auth.service';
+import { LanguageService } from './core/services/language.service';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',

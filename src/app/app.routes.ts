@@ -1,19 +1,19 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './guards/auth.guard';
+import { authGuard, guestGuard } from './core/guards/auth.guard';
 
 // Auth pages (public)
-import { AuthActionComponent } from './components/auth-action/auth-action.component';
-import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
+import { AuthActionComponent } from './features/auth/auth-action/auth-action.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
+import { LoginComponent } from './features/auth/login/login.component';
+import { RegisterComponent } from './features/auth/register/register.component';
 
 // Protected pages
-import { CalendarComponent } from './components/calendar/calendar.component';
-import { ProfileComponent } from './components/profile/profile.component';
-import { SettingsComponent } from './components/settings/settings.component';
-import { StatsComponent } from './components/stats/stats.component';
-import { WorkoutTypesComponent } from './components/workout-types/workout-types.component';
-import { HealthComponent } from './components/health/health.component';
+import { CalendarComponent } from './features/calendar/calendar/calendar.component';
+import { HealthComponent } from './features/health/health.component';
+import { ProfileComponent } from './features/user/profile/profile.component';
+import { SettingsComponent } from './features/user/settings/settings.component';
+import { StatsComponent } from './features/workouts/stats/stats.component';
+import { WorkoutTypesComponent } from './features/workouts/workout-types/workout-types.component';
 
 export const routes: Routes = [
   // Public auth routes (redirect to app if logged in)

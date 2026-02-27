@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
-import { FirebaseService, Ingredient } from '../../../services/firebase.service';
+import { FirebaseService, Ingredient } from '../../../core/services/firebase.service';
 
 @Component({
     selector: 'app-supplement-form',
