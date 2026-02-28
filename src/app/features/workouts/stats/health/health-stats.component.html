@@ -36,7 +36,7 @@
         <div class="stat-content">
           <span class="stat-value" *ngIf="topMonthlySupp">{{ topMonthlySupp.name }}</span>
           <span class="stat-value" *ngIf="!topMonthlySupp">-</span>
-          <span class="stat-label">Top This Month</span>
+          <span class="stat-label">{{ 'STATS.TOP_THIS_MONTH' | translate }}</span>
           <span class="stat-sub" *ngIf="topMonthlySupp">
             {{ topMonthlySupp.count }}x ({{ topMonthlySupp.avgPerDay | number:'1.1-1' }}/day)
           </span>
@@ -47,7 +47,7 @@
         <div class="stat-content">
           <span class="stat-value" *ngIf="topYearlySupp">{{ topYearlySupp.name }}</span>
           <span class="stat-value" *ngIf="!topYearlySupp">-</span>
-          <span class="stat-label">Top This Year</span>
+          <span class="stat-label">{{ 'STATS.TOP_THIS_YEAR' | translate }}</span>
           <span class="stat-sub" *ngIf="topYearlySupp">
             {{ topYearlySupp.count }}x ({{ topYearlySupp.avgPerDay | number:'1.1-1' }}/day)
           </span>
@@ -58,7 +58,7 @@
         <div class="stat-content">
           <span class="stat-value">{{ consistencyPercentage }}%</span>
           <span class="stat-label" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-            Consistency 
+            {{ 'STATS.CONSISTENCY' | translate }} 
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="12" y1="16" x2="12" y2="12"></line>
@@ -66,7 +66,7 @@
             </svg>
           </span>
           <span class="stat-sub" *ngIf="showConsistencyInfo" style="font-size: 0.7rem; white-space: normal; line-height: 1.2; margin-top: 4px; animation: fadeIn 0.2s ease;">
-            Days you took supplements vs. total days elapsed this year
+            {{ 'STATS.CONSISTENCY_INFO' | translate }}
           </span>
         </div>
       </div>
@@ -82,7 +82,7 @@
 
       <div class="month-total">
         <span class="total-value">{{ monthlyServingsCount }}</span>
-        <span class="total-label">servings this month</span>
+        <span class="total-label">{{ 'STATS.SERVINGS_THIS_MONTH' | translate }}</span>
       </div>
 
       <div class="chart workout-type-chart" *ngIf="monthlySupplementStats.length > 0">
@@ -100,25 +100,25 @@
       </div>
 
       <div class="no-data" *ngIf="monthlySupplementStats.length === 0">
-        <p>No supplements logged this month</p>
-        <p class="hint">Start tracking your supplements in the Health tab</p>
+        <p>{{ 'STATS.NO_SUPPS_THIS_MONTH' | translate }}</p>
+        <p class="hint">{{ 'STATS.START_TRACKING_SUPPS' | translate }}</p>
       </div>
     </div>
 
     <!-- Yearly Summary -->
     <div class="chart-container yearly-section" style="margin-bottom: 24px;">
-      <h3 class="chart-title">{{ currentYear }} Summary</h3>
+      <h3 class="chart-title">{{ 'STATS.YEARLY_SUMMARY_GENERAL' | translate:{ year: currentYear } }}</h3>
 
       <div class="top-item-card" *ngIf="mostTakenProduct">
         <span class="top-item-icon">🏆</span>
         <div class="top-item-info">
           <span class="top-item-name">{{ mostTakenProduct.name }}</span>
-          <span class="top-item-label">Most Taken Supplement</span>
+          <span class="top-item-label">{{ 'STATS.MOST_TAKEN_SUPP' | translate }}</span>
         </div>
         <span class="top-item-badge">{{ mostTakenProduct.count }}x</span>
       </div>
 
-      <h4 class="section-subtitle" *ngIf="topNutrients.length > 0">Top Nutrients</h4>
+      <h4 class="section-subtitle" *ngIf="topNutrients.length > 0">{{ 'STATS.TOP_NUTRIENTS' | translate }}</h4>
       <div class="nutrient-list" *ngIf="topNutrients.length > 0">
         <div class="nutrient-item" *ngFor="let nut of topNutrients; let i = index">
           <span class="nutrient-rank">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '💎' }}</span>
@@ -128,7 +128,7 @@
       </div>
 
       <div class="no-data" *ngIf="topNutrients.length === 0 && !mostTakenProduct">
-        <p>No nutrient data available yet.</p>
+        <p>{{ 'STATS.NO_NUTRIENT_DATA' | translate }}</p>
       </div>
     </div>
   </ng-container>

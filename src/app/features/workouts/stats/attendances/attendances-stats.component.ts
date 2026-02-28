@@ -209,17 +209,17 @@ export class AttendancesStatsComponent implements OnInit, OnDestroy {
   }
 
   getStreakMessage(weeks: number): string {
-    if (weeks === 0)  return 'Start your journey! 💪';
-    if (weeks === 1)  return 'First week down! 🎉';
-    if (weeks === 2)  return 'Building momentum!';
-    if (weeks <= 4)   return 'One month strong! 📅';
-    if (weeks <= 8)   return 'You\'re on fire! 🔥';
-    if (weeks <= 12)  return 'Consistency king! 👑';
-    if (weeks <= 20)  return 'Unstoppable! 💎';
-    if (weeks <= 30)  return 'Half-year beast! 🦁';
-    if (weeks <= 40)  return 'Legend mode! 🏆';
-    if (weeks <= 52)  return 'Almost a full year! 🌟';
-    return 'Absolute GOAT! 🐐';
+    if (weeks === 0)  return 'STATS.STREAK_0';
+    if (weeks === 1)  return 'STATS.STREAK_1';
+    if (weeks === 2)  return 'STATS.STREAK_2';
+    if (weeks <= 4)   return 'STATS.STREAK_4';
+    if (weeks <= 8)   return 'STATS.STREAK_8';
+    if (weeks <= 12)  return 'STATS.STREAK_12';
+    if (weeks <= 20)  return 'STATS.STREAK_20';
+    if (weeks <= 30)  return 'STATS.STREAK_30';
+    if (weeks <= 40)  return 'STATS.STREAK_40';
+    if (weeks <= 52)  return 'STATS.STREAK_52';
+    return 'STATS.STREAK_MAX';
   }
 
   isFavoriteDay(day: string): boolean {

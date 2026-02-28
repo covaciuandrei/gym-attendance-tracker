@@ -71,10 +71,10 @@
         <div class="stat-content">
           <span class="stat-value">{{ currentStreak.count }}</span>
           <span class="stat-label">
-            Week Streak
-            <span class="stat-sub-inline">({{ getStreakMessage(currentStreak.count) }})</span>
+            {{ 'STATS.WEEK_STREAK' | translate }}
+            <span class="stat-sub-inline">({{ getStreakMessage(currentStreak.count) | translate }})</span>
           </span>
-          <span class="stat-sub desktop-only">{{ getStreakMessage(currentStreak.count) }}</span>
+          <span class="stat-sub desktop-only">{{ getStreakMessage(currentStreak.count) | translate }}</span>
         </div>
       </div>
 
@@ -84,16 +84,16 @@
         <div class="stat-content" style="justify-content: center;">
           <span class="stat-value">{{ bestStreak.count }}</span>
           <span class="stat-label">
-            Best Streak
-            <span class="stat-sub-inline" *ngIf="!showBestStreakDates && bestStreak.count > 0">(Tap to see dates)</span>
+            {{ 'STATS.BEST_STREAK' | translate }}
+            <span class="stat-sub-inline" *ngIf="!showBestStreakDates && bestStreak.count > 0">({{ 'STATS.TAP_TO_SEE_DATES' | translate }})</span>
             <span class="stat-sub-inline" *ngIf="showBestStreakDates && bestStreak.count > 0">({{ formatDateRange(bestStreak.startDate, bestStreak.endDate) }})</span>
-            <span class="stat-sub-inline" *ngIf="bestStreak.count === 0">(No streak yet)</span>
+            <span class="stat-sub-inline" *ngIf="bestStreak.count === 0">({{ 'STATS.NO_STREAK_YET' | translate }})</span>
           </span>
-          <span class="stat-sub tap-hint desktop-only" *ngIf="!showBestStreakDates && bestStreak.count > 0">Tap to see dates</span>
+          <span class="stat-sub tap-hint desktop-only" *ngIf="!showBestStreakDates && bestStreak.count > 0">{{ 'STATS.TAP_TO_SEE_DATES' | translate }}</span>
           <span class="stat-sub streak-dates desktop-only" *ngIf="showBestStreakDates && bestStreak.count > 0">
             {{ formatDateRange(bestStreak.startDate, bestStreak.endDate) }}
           </span>
-          <span class="stat-sub desktop-only" *ngIf="bestStreak.count === 0">No streak yet</span>
+          <span class="stat-sub desktop-only" *ngIf="bestStreak.count === 0">{{ 'STATS.NO_STREAK_YET' | translate }}</span>
         </div>
       </div>
 
@@ -102,8 +102,8 @@
         <div class="stat-icon">⭐</div>
         <div class="stat-content">
           <span class="stat-value">{{ favoriteDayNames.join(' & ') || '—' }}</span>
-          <span class="stat-label">Favorite Day</span>
-          <span class="stat-sub" *ngIf="favoriteDayCount > 0">{{ favoriteDayCount }}x this year</span>
+          <span class="stat-label">{{ 'STATS.FAVORITE_DAY' | translate }}</span>
+          <span class="stat-sub" *ngIf="favoriteDayCount > 0">{{ 'STATS.X_THIS_YEAR' | translate:{ count: favoriteDayCount } }}</span>
         </div>
       </div>
 
@@ -112,9 +112,9 @@
     <!-- Weekday Distribution Chart -->
     <div class="chart-container weekday-chart-container">
       <div class="chart-header">
-        <h3 class="chart-title">📊 Days You Hit the Gym</h3>
+        <h3 class="chart-title">📊 {{ 'STATS.DAYS_YOU_HIT_GYM' | translate }}</h3>
         <span class="fav-legend" *ngIf="favoriteDayNames.length > 0">
-          <span class="fav-dot"></span> Favorite day{{ favoriteDayNames.length > 1 ? 's' : '' }}
+          <span class="fav-dot"></span> {{ favoriteDayNames.length > 1 ? ('STATS.FAVORITE_DAYS_LEGEND' | translate) : ('STATS.FAVORITE_DAY_LEGEND' | translate) }}
         </span>
       </div>
       <div class="chart weekday-chart">
@@ -128,7 +128,7 @@
             </div>
           </div>
           <span class="bar-label weekday-label" [class.favorite-label]="isFavoriteDay(data.day)">
-            {{ data.day }}
+            {{ 'WEEKDAYS_SHORT.' + data.day.toUpperCase() | translate }}
           </span>
         </div>
       </div>

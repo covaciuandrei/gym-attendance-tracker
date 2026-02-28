@@ -62,7 +62,7 @@
 
       <div class="month-total">
         <span class="total-value">{{ formatDuration(monthlyAvgDuration) }}</span>
-        <span class="total-label">avg duration this month</span>
+        <span class="total-label">{{ 'STATS.AVG_DURATION_THIS_MONTH' | translate }}</span>
       </div>
 
       <div class="chart" *ngIf="monthlyDurationStats.length > 0">
@@ -79,8 +79,8 @@
       </div>
 
       <div class="no-data" *ngIf="monthlyDurationStats.length === 0">
-        <p>No duration data for {{ 'MONTHS.' + monthNames[selectedMonth] | translate }}</p>
-        <p class="hint">Add duration when logging workouts to see stats here!</p>
+        <p>{{ 'STATS.NO_DURATION_DATA' | translate }} {{ 'MONTHS.' + monthNames[selectedMonth] | translate }}</p>
+        <p class="hint">{{ 'STATS.START_TRACKING_DURATION' | translate }}</p>
       </div>
     </div>
 
@@ -105,8 +105,8 @@
       </div>
 
       <div class="no-data" *ngIf="workoutTypeDurationStats.length === 0">
-        <p>No duration data for {{ currentYear }}</p>
-        <p class="hint">Add duration when logging workouts to see stats here!</p>
+        <p>{{ 'STATS.NO_DURATION_DATA' | translate }} {{ currentYear }}</p>
+        <p class="hint">{{ 'STATS.START_TRACKING_DURATION' | translate }}</p>
       </div>
     </div>
   </ng-container>
