@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { TranslateModule } from '@ngx-translate/core';
 import { filter } from 'rxjs/operators';
 import { AuthService } from './core/services/auth.service';
@@ -26,7 +27,8 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private themeService: ThemeService,
-    private languageService: LanguageService
+    private languageService: LanguageService,
+    private swUpdate: SwUpdate
   ) {}
 
   ngOnInit() {
@@ -42,6 +44,17 @@ export class AppComponent implements OnInit {
     ).subscribe(() => {
       this.updateNavVisibility();
     });
+
+    // Handle PWA updates
+    if (this.swUpdate.isEnabled) {
+      this.swUpdate.versionUpdates.pipe(
+        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
+      ).subscribe(() => {
+        if (confirm('A new version of the app is available. Update now?')) {
+          window.location.reload();
+        }
+      });
+    }
   }
 
   private updateNavVisibility() {

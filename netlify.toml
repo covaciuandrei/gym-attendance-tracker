@@ -9,3 +9,18 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    cache-control = "max-age=31536000, public, immutable"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    cache-control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/ngsw.json"
+  [headers.values]
+    cache-control = "public, max-age=0, must-revalidate"
