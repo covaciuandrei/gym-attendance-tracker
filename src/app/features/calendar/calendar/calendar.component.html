@@ -1,12 +1,8 @@
 <div class="calendar-container">
   <header class="calendar-header">
-    <button class="nav-btn" (click)="previousMonth()">
-      <span>‹</span>
-    </button>
+    <button class="nav-btn" (click)="previousMonth()">‹</button>
     <h2 class="title">{{ 'MONTHS.' + monthNames[currentMonth] | translate }} {{ currentYear }}</h2>
-    <button class="nav-btn" (click)="nextMonth()">
-      <span>›</span>
-    </button>
+    <button class="nav-btn" (click)="nextMonth()">›</button>
   </header>
 
   <div class="view-toggle">

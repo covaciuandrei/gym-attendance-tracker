@@ -14,29 +14,31 @@
 }
 
 .title {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
 
 .nav-btn {
-  background: transparent;
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
   font-size: 1.5rem;
   cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
 }
 
 .nav-btn:hover {
-  background: var(--surface-hover);
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
 }
 
 /* View Toggle */
@@ -388,6 +390,7 @@
 
 .popup h3 {
   margin-top: 0;
+  margin-bottom: 8px;
   color: var(--primary-color);
   font-size: 1.5rem;
 }
@@ -798,5 +801,20 @@ label {
     width: 18px;
     height: 18px;
     background-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar-container { padding: 12px; }
+  .title { font-size: 1.4rem; }
+  .nav-btn { width: 40px; height: 40px; font-size: 1.3rem; }
+  .view-toggle {
+    justify-content: flex-start;
+    padding: 4px 12px;
+    gap: 6px;
+  }
+  .toggle-btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
   }
 }

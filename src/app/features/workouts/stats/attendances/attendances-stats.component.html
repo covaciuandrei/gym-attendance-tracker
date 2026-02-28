@@ -68,7 +68,7 @@
       <!-- Current streak -->
       <div class="stat-card streak-card" [class.active-streak]="currentStreak.count > 0">
         <div class="stat-icon">🔥</div>
-        <div class="stat-content">
+        <div class="stat-content" style="justify-content: center;">
           <span class="stat-value">{{ currentStreak.count }}</span>
           <span class="stat-label">
             {{ 'STATS.WEEK_STREAK' | translate }}
@@ -100,10 +100,13 @@
       <!-- Favorite day -->
       <div class="stat-card fav-day-card">
         <div class="stat-icon">⭐</div>
-        <div class="stat-content">
+        <div class="stat-content" style="justify-content: center;">
           <span class="stat-value">{{ favoriteDayNames.join(' & ') || '—' }}</span>
-          <span class="stat-label">{{ 'STATS.FAVORITE_DAY' | translate }}</span>
-          <span class="stat-sub" *ngIf="favoriteDayCount > 0">{{ 'STATS.X_THIS_YEAR' | translate:{ count: favoriteDayCount } }}</span>
+          <span class="stat-label">
+            {{ 'STATS.FAVORITE_DAY' | translate }}
+            <span class="stat-sub-inline" *ngIf="favoriteDayCount > 0">({{ 'STATS.X_THIS_YEAR' | translate:{ count: favoriteDayCount } }})</span>
+          </span>
+          <span class="stat-sub desktop-only" *ngIf="favoriteDayCount > 0">{{ 'STATS.X_THIS_YEAR' | translate:{ count: favoriteDayCount } }}</span>
         </div>
       </div>
 

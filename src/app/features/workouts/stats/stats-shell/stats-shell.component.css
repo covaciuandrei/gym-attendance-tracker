@@ -61,7 +61,7 @@
   padding: 10px 24px;
   border: 1px solid var(--border-color);
   background: var(--card-bg);
-  border-radius: 25px;
+  border-radius: 16px;
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s ease;

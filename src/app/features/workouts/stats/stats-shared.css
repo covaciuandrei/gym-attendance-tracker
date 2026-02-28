@@ -22,7 +22,7 @@
 
 .stat-card {
   background: var(--card-bg);
-  border-radius: 20px;
+  border-radius: 16px;
   padding: 24px;
   display: flex;
   flex-direction: column;
