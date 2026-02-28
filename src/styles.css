@@ -7,7 +7,15 @@
   --success-color: #6366f1;
   --success-dark: #4f46e5;
 
-  --accent-green: #10b981;
+  --accent-green: #097853;
+  --workout-color: #3b82f6;
+  --workout-color-dark: #2563eb;
+
+  /* Calendar Activity States (Semantic Palette) */
+  --cal-workout: #3b82f6;     /* Bright Blue */
+  --cal-supp: #10b981;        /* Bright Green */
+  --cal-both: #06b6d4;        /* Bright Teal */
+  --cal-text-active: #ffffff; /* White text for contrast */
 
   --bg-color: #f8fafc;
   --card-bg: #ffffff;
@@ -39,6 +47,12 @@
     --primary-light: rgba(99, 102, 241, 0.2);
     --overlay-bg: rgba(30, 41, 59, 0.85);
 
+    /* Calendar Activity States Dark Mode (Vibrant) */
+    --cal-workout: #3b82f6;   /* Bright Blue */
+    --cal-supp: #10b981;      /* Bright Emerald */
+    --cal-both: #06b6d4;      /* Bright Cyan/Teal */
+    --cal-text-active: #ffffff;
+
     /* Semantic Surfaces Dark */
     --surface-card: #1e293b;
     --surface-ground: #0f172a;
@@ -59,6 +73,12 @@ body.dark-mode {
   --hover-bg: #334155;
   --primary-light: rgba(99, 102, 241, 0.2);
   --overlay-bg: rgba(30, 41, 59, 0.85);
+
+  /* Calendar Activity States Dark Mode (Vibrant) */
+  --cal-workout: #3b82f6;
+  --cal-supp: #10b981;
+  --cal-both: #06b6d4;
+  --cal-text-active: #ffffff;
 
   --surface-card: #1e293b;
   --surface-ground: #0f172a;

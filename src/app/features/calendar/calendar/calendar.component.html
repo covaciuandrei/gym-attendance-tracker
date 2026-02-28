@@ -1,12 +1,8 @@
 <div class="calendar-container">
   <header class="calendar-header">
-    <button class="nav-btn" (click)="previousMonth()">
-      <span>‹</span>
-    </button>
+    <button class="nav-btn" (click)="previousMonth()">‹</button>
     <h2 class="title">{{ 'MONTHS.' + monthNames[currentMonth] | translate }} {{ currentYear }}</h2>
-    <button class="nav-btn" (click)="nextMonth()">
-      <span>›</span>
-    </button>
+    <button class="nav-btn" (click)="nextMonth()">›</button>
   </header>
 
   <div class="view-toggle">
@@ -19,7 +15,7 @@
   </div>
 
   <!-- Monthly View -->
-  <div class="monthly-view" *ngIf="viewMode === 'monthly'">
+  <div class="monthly-view" *ngIf="!isLoading && viewMode === 'monthly'">
     <div class="weekdays">
       <div class="weekday" *ngFor="let day of weekDays">{{ 'WEEKDAYS.' + day | translate }}</div>
     </div>
@@ -40,7 +36,7 @@
   </div>
 
   <!-- Yearly View -->
-  <div class="yearly-view" *ngIf="viewMode === 'yearly'">
+  <div class="yearly-view" *ngIf="!isLoading && viewMode === 'yearly'">
     <div class="month-card" *ngFor="let monthData of monthsData">
       <h3 class="month-name">{{ 'MONTHS.' + monthData.name | translate }}</h3>
       <div class="mini-weekdays">
@@ -65,9 +61,27 @@
     </div>
   </div>
 
-  <!-- Loading Overlay -->
-  <div class="loading-overlay" *ngIf="isLoading">
-    <div class="spinner"></div>
+  <!-- Monthly Skeleton -->
+  <div class="monthly-view skeleton-pulse" *ngIf="isLoading && viewMode === 'monthly'">
+    <div class="weekdays">
+      <div class="weekday" *ngFor="let day of weekDays">{{ 'WEEKDAYS.' + day | translate }}</div>
+    </div>
+    <div class="days-grid">
+      <div class="day-cell skeleton-cell" *ngFor="let _ of skeletonDays"></div>
+    </div>
+  </div>
+
+  <!-- Yearly Skeleton -->
+  <div class="yearly-view skeleton-pulse" *ngIf="isLoading && viewMode === 'yearly'">
+    <div class="month-card" *ngFor="let _ of skeletonMonths">
+      <div class="skeleton-title"></div>
+      <div class="mini-weekdays">
+        <span *ngFor="let day of weekDays">{{ 'WEEKDAYS_MINI.' + day | translate }}</span>
+      </div>
+      <div class="mini-days-grid">
+        <div class="mini-day skeleton-cell" *ngFor="let _ of skeletonMiniDays"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -264,9 +278,14 @@
         </div>
       </div>
 
+      <!-- Validation Message -->
+      <div *ngIf="showSupplementError" style="color: #ef4444; font-size: 0.85rem; margin-top: 1rem; text-align: center; animation: shake 0.4s ease-in-out;">
+        ⚠️ Please select a supplement from the list first.
+      </div>
+
       <!-- Actions -->
-      <div class="popup-actions" style="margin-top: 1.5rem;">
-        <button class="btn btn-success" [disabled]="!selectedProductId" (click)="addProductLog()">
+      <div class="popup-actions" style="margin-top: 1rem;">
+        <button class="btn btn-success" (click)="addProductLog()">
           Add Supplement
         </button>
         <button class="btn btn-secondary" (click)="closePopup()">Cancel</button>

@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
-import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { AttendanceRecord, FirebaseService, TrainingType, SupplementProduct } from '../../../core/services/firebase.service';
+import { AttendanceRecord, FirebaseService, SupplementProduct, TrainingType } from '../../../core/services/firebase.service';
 
 interface DayCell {
   date: number;
@@ -51,6 +51,11 @@ export class CalendarComponent implements OnInit, OnDestroy {
 
   isLoading = false;
 
+  // Skeleton Arrays
+  skeletonDays = Array(42).fill(0);
+  skeletonMonths = Array(12).fill(0);
+  skeletonMiniDays = Array(35).fill(0);
+
   // Workout types
   workoutTypes: TrainingType[] = [];
   selectedTypeId: string = '';
@@ -64,6 +69,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
   // Products
   products: SupplementProduct[] = [];
   selectedProductId: string = '';
+  showSupplementError = false;
 
   // Custom Dropdown State
   dropdownOpen = false;
@@ -143,11 +149,13 @@ export class CalendarComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     try {
       let records: AttendanceRecord[];
-      if (this.viewMode === 'monthly') {
-        records = await this.loadMonthRange();
-      } else {
-        records = await this.firebaseService.getYearAttendance(this.userId, this.currentYear);
-      }
+      const [results] = await Promise.all([
+        this.viewMode === 'monthly' 
+          ? this.loadMonthRange() 
+          : this.firebaseService.getYearAttendance(this.userId, this.currentYear),
+        new Promise(resolve => setTimeout(resolve, 400)) // Match stats page waiting time
+      ]);
+      records = results as AttendanceRecord[];
 
       // Build both set and map
       this.attendedDates = new Set(records.map(r => r.date));
@@ -360,6 +368,7 @@ export class CalendarComponent implements OnInit, OnDestroy {
     this.selectedDuration = null; // Reset duration
     this.editDuration = null; // Reset edit duration
     this.currentSupplementPage = 0; // Reset carousel page
+    this.showSupplementError = false; // Reset error
   }
 
   startEditType() {
@@ -373,40 +382,49 @@ export class CalendarComponent implements OnInit, OnDestroy {
   async saveEditType() {
     if (!this.selectedDate || !this.userId) return;
 
+    // Snapshot state before closing popup
+    const dateStr = this.selectedDate.fullDate;
+    const typeId = this.editTypeId;
+    const duration = this.editDuration;
+
+    this.closePopup();
     this.isLoading = true;
+    const minWait = new Promise(resolve => setTimeout(resolve, 400));
+
     try {
       // Update the attendance with the new workout type and duration
       await this.firebaseService.markAttendance(
         this.userId,
-        this.selectedDate.fullDate,
-        this.editTypeId || undefined,
+        dateStr,
+        typeId || undefined,
         undefined,
-        this.editDuration ?? undefined
+        duration ?? undefined
       );
 
       // Update local cache
-      const record = this.attendanceMap.get(this.selectedDate.fullDate);
+      const record = this.attendanceMap.get(dateStr);
       if (record) {
-        record.trainingTypeId = this.editTypeId || undefined;
-        record.durationMinutes = this.editDuration ?? undefined;
-        this.attendanceMap.set(this.selectedDate.fullDate, record);
+        record.trainingTypeId = typeId || undefined;
+        record.durationMinutes = duration ?? undefined;
+        this.attendanceMap.set(dateStr, record);
       }
 
       // Update icon cache
-      if (this.editTypeId) {
-        const workoutType = this.workoutTypes.find(t => t.id === this.editTypeId);
+      if (typeId) {
+        const workoutType = this.workoutTypes.find(t => t.id === typeId);
         if (workoutType?.icon) {
-          this.iconCache.set(this.selectedDate.fullDate, workoutType.icon);
+          this.iconCache.set(dateStr, workoutType.icon);
         }
       } else {
-        this.iconCache.delete(this.selectedDate.fullDate);
+        this.iconCache.delete(dateStr);
       }
 
-      this.isEditingType = false;
       this.generateCalendar();
     } catch (error) {
       console.error('Error updating workout type:', error);
     }
+    
+    await minWait;
     this.isLoading = false;
   }
 
@@ -417,41 +435,48 @@ export class CalendarComponent implements OnInit, OnDestroy {
   async toggleAttendance() {
     if (!this.selectedDate || !this.userId) return;
 
+    // Snapshot state before closing popup
+    const dateStr = this.selectedDate.fullDate;
+    const isAttended = this.selectedDate.attended;
+    const typeId = this.selectedTypeId;
+    const duration = this.selectedDuration;
+
+    this.closePopup();
     this.isLoading = true;
+    const minWait = new Promise(resolve => setTimeout(resolve, 400));
+
     try {
-      if (this.selectedDate.attended) {
+      if (isAttended) {
         // Remove attendance
-        await this.firebaseService.removeAttendance(this.userId, this.selectedDate.fullDate);
-        this.attendedDates.delete(this.selectedDate.fullDate);
-        this.attendanceMap.delete(this.selectedDate.fullDate);
-        this.iconCache.delete(this.selectedDate.fullDate);
-        this.selectedDate.attended = false;
+        await this.firebaseService.removeAttendance(this.userId, dateStr);
+        this.attendedDates.delete(dateStr);
+        this.attendanceMap.delete(dateStr);
+        this.iconCache.delete(dateStr);
       } else {
         // Add attendance with optional workout type and duration
         await this.firebaseService.markAttendance(
           this.userId,
-          this.selectedDate.fullDate,
-          this.selectedTypeId || undefined,
+          dateStr,
+          typeId || undefined,
           undefined,
-          this.selectedDuration ?? undefined
+          duration ?? undefined
         );
-        this.attendedDates.add(this.selectedDate.fullDate);
-        this.selectedDate.attended = true;
+        this.attendedDates.add(dateStr);
 
         // Update local cache immediately
         const record = {
-          date: this.selectedDate.fullDate,
+          date: dateStr,
           timestamp: new Date(),
-          trainingTypeId: this.selectedTypeId || undefined,
-          durationMinutes: this.selectedDuration ?? undefined
+          trainingTypeId: typeId || undefined,
+          durationMinutes: duration ?? undefined
         };
-        this.attendanceMap.set(this.selectedDate.fullDate, record);
+        this.attendanceMap.set(dateStr, record as any);
 
         // Update icon cache if workout type selected
-        if (this.selectedTypeId) {
-          const workoutType = this.workoutTypes.find(t => t.id === this.selectedTypeId);
+        if (typeId) {
+          const workoutType = this.workoutTypes.find(t => t.id === typeId);
           if (workoutType?.icon) {
-            this.iconCache.set(this.selectedDate.fullDate, workoutType.icon);
+            this.iconCache.set(dateStr, workoutType.icon);
           }
         }
       }
@@ -460,8 +485,9 @@ export class CalendarComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Error toggling attendance:', error);
     }
+    
+    await minWait;
     this.isLoading = false;
-    this.closePopup();
   }
 
   getDisplayTitle(): string {
@@ -580,17 +606,31 @@ export class CalendarComponent implements OnInit, OnDestroy {
   }
 
   async addProductLog() {
-    if (!this.selectedDate || !this.selectedProductId || !this.userId) return;
+    if (!this.selectedProductId) {
+      this.showSupplementError = true;
+      return;
+    }
+    
+    if (!this.selectedDate || !this.userId) return;
+
+    // Snapshot state before closing popup
+    const dateStr = this.selectedDate.fullDate;
+    const productId = this.selectedProductId;
+    
+    this.closePopup();
+
     this.isLoading = true;
+    const minWait = new Promise(resolve => setTimeout(resolve, 400));
+    
     try {
-      const product = this.products.find(p => p.id === this.selectedProductId);
+      const product = this.products.find(p => p.id === productId);
       const servings = product?.servingsPerDayDefault || 1;
 
       if (product) {
         await this.firebaseService.logSupplement(
           this.userId,
-          this.selectedDate.fullDate,
-          this.selectedProductId,
+          dateStr,
+          productId,
           servings,
           { name: product.name, brand: product.brand }
         );
@@ -598,11 +638,11 @@ export class CalendarComponent implements OnInit, OnDestroy {
 
       // Refresh logs
       await this.loadSupplementLogs();
-      this.selectedProductId = ''; // Reset selection
-      this.closePopup(); // Close popup after adding
     } catch (error) {
       console.error('Error adding log:', error);
     }
+    
+    await minWait;
     this.isLoading = false;
   }
 
@@ -613,30 +653,25 @@ export class CalendarComponent implements OnInit, OnDestroy {
   selectProduct(productId: string) {
     this.selectedProductId = productId;
     this.productDropdownOpen = false;
+    this.showSupplementError = false;
   }
 
   async removeProductLog(logId: string) {
-    console.log('removeProductLog called with logId:', logId);
-    if (!this.selectedDate || !this.userId) {
-      console.log('Missing selectedDate or userId');
-      return;
-    }
-
-    // Skip confirm for now to test
-    // if (!confirm('Delete this entry?')) return;
+    if (!this.selectedDate || !this.userId) return;
 
     this.isLoading = true;
+    const minWait = new Promise(resolve => setTimeout(resolve, 400));
+    
     try {
-      console.log('Calling removeSupplementLog with:', this.userId, logId, this.selectedDate.fullDate);
       await this.firebaseService.removeSupplementLog(this.userId, logId, this.selectedDate.fullDate);
-      console.log('Successfully removed, refreshing logs...');
-
+      
       // Refresh logs
       await this.loadSupplementLogs();
-      console.log('Logs refreshed');
     } catch (error) {
       console.error('Error removing log:', error);
     }
+    
+    await minWait;
     this.isLoading = false;
   }
 

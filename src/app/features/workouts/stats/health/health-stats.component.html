@@ -1,0 +1,136 @@
+<div class="stats-view">
+
+  <!-- Skeleton -->
+  <div class="skeleton-loader" *ngIf="isLoading">
+    <div class="summary-cards">
+      <div class="skeleton-card" *ngFor="let _ of [1,2,3]">
+        <div class="skeleton-icon skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-value skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-label skeleton-pulse"></div>
+      </div>
+    </div>
+    <div class="skeleton-chart-container" style="margin-top:32px">
+      <div class="skeleton-month-picker">
+        <div class="skeleton-nav-btn skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-title skeleton-pulse" style="width:140px"></div>
+        <div class="skeleton-nav-btn skeleton-pulse"></div>
+      </div>
+      <div class="skeleton-line skeleton-line-value skeleton-pulse" style="width:40px; margin: 16px auto 4px;"></div>
+      <div class="skeleton-line skeleton-line-label skeleton-pulse" style="width:140px; margin: 0 auto 20px;"></div>
+      <div class="skeleton-chart">
+        <div class="skeleton-bar skeleton-pulse" *ngFor="let h of [70,45,90,55,80,40,60]" [style.height.%]="h"></div>
+      </div>
+    </div>
+    <div class="skeleton-chart-container" style="margin-top:20px">
+      <div class="skeleton-line skeleton-line-title skeleton-pulse" style="width:40%; margin-bottom:20px"></div>
+      <div class="skeleton-bar-row skeleton-pulse" *ngFor="let _ of [1,2,3,4,5]"></div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <ng-container *ngIf="!isLoading">
+    <!-- 3 Summary Cards -->
+    <div class="summary-cards">
+      <div class="stat-card health-primary">
+        <div class="stat-icon">💊</div>
+        <div class="stat-content">
+          <span class="stat-value" *ngIf="topMonthlySupp">{{ topMonthlySupp.name }}</span>
+          <span class="stat-value" *ngIf="!topMonthlySupp">-</span>
+          <span class="stat-label">{{ 'STATS.TOP_THIS_MONTH' | translate }}</span>
+          <span class="stat-sub" *ngIf="topMonthlySupp">
+            {{ topMonthlySupp.count }}x ({{ topMonthlySupp.avgPerDay | number:'1.1-1' }}/day)
+          </span>
+        </div>
+      </div>
+      <div class="stat-card health-secondary">
+        <div class="stat-icon">📅</div>
+        <div class="stat-content">
+          <span class="stat-value" *ngIf="topYearlySupp">{{ topYearlySupp.name }}</span>
+          <span class="stat-value" *ngIf="!topYearlySupp">-</span>
+          <span class="stat-label">{{ 'STATS.TOP_THIS_YEAR' | translate }}</span>
+          <span class="stat-sub" *ngIf="topYearlySupp">
+            {{ topYearlySupp.count }}x ({{ topYearlySupp.avgPerDay | number:'1.1-1' }}/day)
+          </span>
+        </div>
+      </div>
+      <div class="stat-card health-tertiary" (click)="showConsistencyInfo = !showConsistencyInfo" style="cursor: pointer;">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-content">
+          <span class="stat-value">{{ consistencyPercentage }}%</span>
+          <span class="stat-label" style="display: flex; align-items: center; justify-content: center; gap: 4px;">
+            {{ 'STATS.CONSISTENCY' | translate }} 
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="16" x2="12" y2="12"></line>
+              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+          </span>
+          <span class="stat-sub" *ngIf="showConsistencyInfo" style="font-size: 0.7rem; white-space: normal; line-height: 1.2; margin-top: 4px; animation: fadeIn 0.2s ease;">
+            {{ 'STATS.CONSISTENCY_INFO' | translate }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Supplement Chart -->
+    <div class="chart-container monthly-section">
+      <div class="month-picker">
+        <button class="nav-btn-small" (click)="prevHealthMonth()">‹</button>
+        <h3 class="month-title">{{ 'MONTHS.' + monthNames[selectedHealthMonth] | translate }} {{ currentYear }}</h3>
+        <button class="nav-btn-small" (click)="nextHealthMonth()">›</button>
+      </div>
+
+      <div class="month-total">
+        <span class="total-value">{{ monthlyServingsCount }}</span>
+        <span class="total-label">{{ 'STATS.SERVINGS_THIS_MONTH' | translate }}</span>
+      </div>
+
+      <div class="chart workout-type-chart" *ngIf="monthlySupplementStats.length > 0">
+        <div class="chart-bar" *ngFor="let stat of monthlySupplementStats">
+          <div class="bar-container">
+            <div class="bar has-value"
+                 [style.height.%]="(stat.count / getMaxSupplementCount()) * 100"
+                 [style.background]="stat.color">
+              <span class="bar-value">{{ stat.count }}</span>
+            </div>
+          </div>
+          <span class="bar-label icon-label" style="font-size: 0.5em;">💊</span>
+          <span class="bar-label name-label" [title]="stat.name">{{ stat.name }}</span>
+        </div>
+      </div>
+
+      <div class="no-data" *ngIf="monthlySupplementStats.length === 0">
+        <p>{{ 'STATS.NO_SUPPS_THIS_MONTH' | translate }}</p>
+        <p class="hint">{{ 'STATS.START_TRACKING_SUPPS' | translate }}</p>
+      </div>
+    </div>
+
+    <!-- Yearly Summary -->
+    <div class="chart-container yearly-section" style="margin-bottom: 24px;">
+      <h3 class="chart-title">{{ 'STATS.YEARLY_SUMMARY_GENERAL' | translate:{ year: currentYear } }}</h3>
+
+      <div class="top-item-card" *ngIf="mostTakenProduct">
+        <span class="top-item-icon">🏆</span>
+        <div class="top-item-info">
+          <span class="top-item-name">{{ mostTakenProduct.name }}</span>
+          <span class="top-item-label">{{ 'STATS.MOST_TAKEN_SUPP' | translate }}</span>
+        </div>
+        <span class="top-item-badge">{{ mostTakenProduct.count }}x</span>
+      </div>
+
+      <h4 class="section-subtitle" *ngIf="topNutrients.length > 0">{{ 'STATS.TOP_NUTRIENTS' | translate }}</h4>
+      <div class="nutrient-list" *ngIf="topNutrients.length > 0">
+        <div class="nutrient-item" *ngFor="let nut of topNutrients; let i = index">
+          <span class="nutrient-rank">{{ i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '💎' }}</span>
+          <span class="nutrient-name">{{ nut.name }}</span>
+          <span class="nutrient-amount">{{ nut.amount | number:'1.0-1' }}{{ nut.unit }}</span>
+        </div>
+      </div>
+
+      <div class="no-data" *ngIf="topNutrients.length === 0 && !mostTakenProduct">
+        <p>{{ 'STATS.NO_NUTRIENT_DATA' | translate }}</p>
+      </div>
+    </div>
+  </ng-container>
+
+</div>

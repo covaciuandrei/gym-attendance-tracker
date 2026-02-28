@@ -34,7 +34,7 @@ export class WorkoutTypesComponent implements OnInit {
 
   // Predefined colors
   colors = [
-    '#6366f1', '#8b5cf6', '#ec4899', '#ef4444', '#f97316',
+    '#6366f1', '#8b5cf6', '#ec4899', '#ef4444', '#097853',
     '#eab308', '#22c55e', '#14b8a6', '#0ea5e9', '#3b82f6'
   ];
 

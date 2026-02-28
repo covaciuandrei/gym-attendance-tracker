@@ -321,7 +321,7 @@ h4 {
 }
 
 .migration-section h4 {
-  color: #f97316;
+  color: var(--workout-color);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -368,7 +368,7 @@ h4 {
   flex: 1;
   min-width: 150px;
   padding: 12px 20px;
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  background: linear-gradient(135deg, var(--workout-color) 0%, var(--workout-color-dark) 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -380,7 +380,7 @@ h4 {
 
 .btn-migration:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
 }
 
 .btn-migration:disabled {

@@ -14,29 +14,31 @@
 }
 
 .title {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 600;
   color: var(--text-primary);
   margin: 0;
 }
 
 .nav-btn {
-  background: transparent;
+  background: var(--card-bg);
   border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
   font-size: 1.5rem;
   cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s;
 }
 
 .nav-btn:hover {
-  background: var(--surface-hover);
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
 }
 
 /* View Toggle */
@@ -116,33 +118,32 @@
   border: 2px solid var(--primary-color);
 }
 
-/* State 1: Only Workout -> Orange */
 .day-cell.attended:not(.has-supplement) {
-  background: #f97316;
-  border: 1px solid #f97316;
-  color: white;
+  background: var(--cal-workout);
+  border: 1px solid var(--cal-workout);
+  color: var(--cal-text-active);
 }
 
 .day-cell.attended:not(.has-supplement) .attendance-dot {
-  background-color: white;
+  background-color: var(--cal-text-active);
 }
 
-/* State 2: Only Supplement -> Deep Green */
+/* State 2: Only Supplement */
 .day-cell.has-supplement:not(.attended) {
-  background: var(--accent-green);
-  border: 1px solid var(--accent-green);
-  color: white;
+  background: var(--cal-supp);
+  border: 1px solid var(--cal-supp);
+  color: var(--cal-text-active);
 }
 
-/* State 3: Both -> Deep Blue */
+/* State 3: Both */
 .day-cell.attended.has-supplement {
-  background: var(--primary-color);
-  border: 1px solid var(--primary-color);
-  color: white;
+  background: var(--cal-both);
+  border: 1px solid var(--cal-both);
+  color: var(--cal-text-active);
 }
 
 .day-cell.attended.has-supplement .attendance-dot {
-  background-color: white;
+  background-color: var(--cal-text-active);
 }
 
 /* Indicators Container */
@@ -151,13 +152,18 @@
   gap: 2px;
   justify-content: center;
   align-items: center;
-  margin-top: 4px;
 }
 
 /* Workout Icon */
 .workout-icon {
-  font-size: 1.2rem;
-  display: block;
+  font-size: 0.8rem;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: transparent;
   line-height: 1;
 }
 
@@ -170,9 +176,16 @@
   display: block;
 }
 
-/* Supplement Dot */
+/* Supplement Icon */
 .supplement-dot {
-  font-size: 0.6rem;
+  font-size: 0.7rem;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: transparent;
   line-height: 1;
 }
 
@@ -237,31 +250,31 @@
 
 /* State 1: Only Workout -> Orange */
 .mini-day.attended:not(.has-supplement) {
-  background: #f97316;
-  border: 1px solid #f97316;
-  color: white;
+  background: var(--cal-workout);
+  border: 1px solid var(--cal-workout);
+  color: var(--cal-text-active);
 }
 
 .mini-day.attended:not(.has-supplement) .mini-attendance-dot {
-  background-color: white;
+  background-color: var(--cal-text-active);
 }
 
-/* State 2: Only Supplement -> Deep Green */
+/* State 2: Only Supplement */
 .mini-day.has-supplement:not(.attended) {
-  background: var(--accent-green);
-  border: 1px solid var(--accent-green);
-  color: white;
+  background: var(--cal-supp);
+  border: 1px solid var(--cal-supp);
+  color: var(--cal-text-active);
 }
 
-/* State 3: Both -> Deep Blue */
+/* State 3: Both */
 .mini-day.attended.has-supplement {
-  background: var(--primary-color);
-  border: 1px solid var(--primary-color);
-  color: white;
+  background: var(--cal-both);
+  border: 1px solid var(--cal-both);
+  color: var(--cal-text-active);
 }
 
 .mini-day.attended.has-supplement .mini-attendance-dot {
-  background-color: white;
+  background-color: var(--cal-text-active);
 }
 
 /* Mini Indicators */
@@ -274,7 +287,14 @@
 }
 
 .mini-workout-icon {
-  font-size: 0.75rem;
+  font-size: 0.5rem;
+  width: 11px;
+  height: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: transparent;
   line-height: 1;
 }
 
@@ -287,45 +307,49 @@
 }
 
 .mini-supplement-icon {
-  font-size: 0.6rem;
-  line-height: 1;
-}
-
-/* Loading Overlay */
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  font-size: 0.45rem;
+  width: 11px;
+  height: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
-  border-radius: 12px;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  background-color: transparent;
+  line-height: 1;
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
+/* ===========================
+   Skeleton Loading
+   =========================== */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
 
-  100% {
-    transform: rotate(360deg);
-  }
+.skeleton-pulse {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-cell {
+  background: var(--border-color);
+  opacity: 0.6;
+}
+
+.skeleton-title {
+  height: 20px;
+  width: 100px;
+  background: var(--border-color);
+  border-radius: 4px;
+  margin: 0 auto 12px auto;
 }
 
 /* Popup Styles */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -366,6 +390,7 @@
 
 .popup h3 {
   margin-top: 0;
+  margin-bottom: 8px;
   color: var(--primary-color);
   font-size: 1.5rem;
 }
@@ -744,4 +769,52 @@ label {
   background-color: var(--primary-color);
   width: 24px;
   border-radius: 4px;
+}
+
+/* ===========================
+   Responsive Icon Scaling
+   =========================== */
+@media (min-width: 768px) {
+  .workout-icon {
+    font-size: 1.3rem;
+    width: 32px;
+    height: 32px;
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+
+  .supplement-dot {
+    font-size: 1.15rem;
+    width: 32px;
+    height: 32px;
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+
+  .mini-workout-icon {
+    font-size: 0.85rem;
+    width: 18px;
+    height: 18px;
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+
+  .mini-supplement-icon {
+    font-size: 0.75rem;
+    width: 18px;
+    height: 18px;
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+@media (max-width: 768px) {
+  .calendar-container { padding: 12px; }
+  .title { font-size: 1.4rem; }
+  .nav-btn { width: 40px; height: 40px; font-size: 1.3rem; }
+  .view-toggle {
+    justify-content: flex-start;
+    padding: 4px 12px;
+    gap: 6px;
+  }
+  .toggle-btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
 }
