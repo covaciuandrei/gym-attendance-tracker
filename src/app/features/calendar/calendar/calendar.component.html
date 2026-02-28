@@ -282,9 +282,14 @@
         </div>
       </div>
 
+      <!-- Validation Message -->
+      <div *ngIf="showSupplementError" style="color: #ef4444; font-size: 0.85rem; margin-top: 1rem; text-align: center; animation: shake 0.4s ease-in-out;">
+        ⚠️ Please select a supplement from the list first.
+      </div>
+
       <!-- Actions -->
-      <div class="popup-actions" style="margin-top: 1.5rem;">
-        <button class="btn btn-success" [disabled]="!selectedProductId" (click)="addProductLog()">
+      <div class="popup-actions" style="margin-top: 1rem;">
+        <button class="btn btn-success" (click)="addProductLog()">
           Add Supplement
         </button>
         <button class="btn btn-secondary" (click)="closePopup()">Cancel</button>
