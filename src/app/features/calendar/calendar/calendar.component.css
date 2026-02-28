@@ -116,10 +116,9 @@
   border: 2px solid var(--primary-color);
 }
 
-/* State 1: Only Workout -> Orange */
 .day-cell.attended:not(.has-supplement) {
-  background: #f97316;
-  border: 1px solid #f97316;
+  background: var(--cal-workout);
+  border: 1px solid var(--cal-workout);
   color: white;
 }
 
@@ -127,17 +126,17 @@
   background-color: white;
 }
 
-/* State 2: Only Supplement -> Deep Green */
+/* State 2: Only Supplement */
 .day-cell.has-supplement:not(.attended) {
-  background: var(--accent-green);
-  border: 1px solid var(--accent-green);
+  background: var(--cal-supp);
+  border: 1px solid var(--cal-supp);
   color: white;
 }
 
-/* State 3: Both -> Deep Blue */
+/* State 3: Both */
 .day-cell.attended.has-supplement {
-  background: var(--primary-color);
-  border: 1px solid var(--primary-color);
+  background: var(--cal-both);
+  border: 1px solid var(--cal-both);
   color: white;
 }
 
@@ -237,8 +236,8 @@
 
 /* State 1: Only Workout -> Orange */
 .mini-day.attended:not(.has-supplement) {
-  background: #f97316;
-  border: 1px solid #f97316;
+  background: var(--cal-workout);
+  border: 1px solid var(--cal-workout);
   color: white;
 }
 
@@ -246,17 +245,17 @@
   background-color: white;
 }
 
-/* State 2: Only Supplement -> Deep Green */
+/* State 2: Only Supplement */
 .mini-day.has-supplement:not(.attended) {
-  background: var(--accent-green);
-  border: 1px solid var(--accent-green);
+  background: var(--cal-supp);
+  border: 1px solid var(--cal-supp);
   color: white;
 }
 
-/* State 3: Both -> Deep Blue */
+/* State 3: Both */
 .mini-day.attended.has-supplement {
-  background: var(--primary-color);
-  border: 1px solid var(--primary-color);
+  background: var(--cal-both);
+  border: 1px solid var(--cal-both);
   color: white;
 }
 

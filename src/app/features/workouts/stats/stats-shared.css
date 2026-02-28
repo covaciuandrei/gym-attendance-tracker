@@ -100,9 +100,9 @@
   gap: 6px;
   font-size: 0.78rem;
   font-weight: 600;
-  color: #f97316;
-  background: rgba(249, 115, 22, 0.1);
-  border: 1px solid rgba(249, 115, 22, 0.25);
+  color: var(--workout-color);
+  background: rgba(59, 130, 246, 0.1); /* fallback to workout-color light blue */
+  border: 1px solid rgba(59, 130, 246, 0.25);
   border-radius: 20px;
   padding: 4px 12px;
   white-space: nowrap;
@@ -112,7 +112,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #f97316;
+  background: var(--workout-color);
   flex-shrink: 0;
 }
 
@@ -460,9 +460,9 @@
 }
 
 .stat-card.streak-card.active-streak {
-  background: linear-gradient(135deg, #f97316, #ea580c);
+  background: linear-gradient(135deg, var(--workout-color), var(--workout-color-dark));
   color: white;
-  box-shadow: 0 8px 24px rgba(249,115,22,0.35);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35); /* fallback blue glow */
 }
 
 .stat-card.best-streak-card {
@@ -515,8 +515,8 @@
 }
 
 .bar.weekday-bar.has-value.favorite-bar {
-  background: linear-gradient(180deg, #f97316, #ea580c);
-  box-shadow: 0 -4px 12px rgba(249,115,22,0.4);
+  background: linear-gradient(180deg, var(--workout-color), var(--workout-color-dark));
+  box-shadow: 0 -4px 12px rgba(59, 130, 246, 0.4);
 }
 
 .bar-label.weekday-label {
@@ -526,7 +526,7 @@
 }
 
 .bar-label.weekday-label.favorite-label {
-  color: #f97316;
+  color: var(--workout-color);
   font-weight: 700;
 }
 

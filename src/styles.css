@@ -7,7 +7,14 @@
   --success-color: #6366f1;
   --success-dark: #4f46e5;
 
-  --accent-green: #10b981;
+  --accent-green: #097853;
+  --workout-color: #3b82f6;
+  --workout-color-dark: #2563eb;
+
+  /* Calendar Activity States (Custom Stat Cards Match) */
+  --cal-workout: #3b82f6;     /* Week Streak (Blue) */
+  --cal-supp: #6366f1;        /* This Month (Indigo) */
+  --cal-both: #a855f7;        /* Best Streak (Purple) */
 
   --bg-color: #f8fafc;
   --card-bg: #ffffff;
@@ -39,6 +46,11 @@
     --primary-light: rgba(99, 102, 241, 0.2);
     --overlay-bg: rgba(30, 41, 59, 0.85);
 
+    /* Calendar Activity States Dark Mode (Custom Stat Cards Match) */
+    --cal-workout: #3b82f6;   /* Week Streak (Blue) */
+    --cal-supp: #6366f1;      /* This Month (Indigo) */
+    --cal-both: #a855f7;      /* Best Streak (Purple) */
+
     /* Semantic Surfaces Dark */
     --surface-card: #1e293b;
     --surface-ground: #0f172a;
@@ -59,6 +71,11 @@ body.dark-mode {
   --hover-bg: #334155;
   --primary-light: rgba(99, 102, 241, 0.2);
   --overlay-bg: rgba(30, 41, 59, 0.85);
+
+  /* Calendar Activity States Dark Mode (Custom Stat Cards Match) */
+  --cal-workout: #3b82f6;
+  --cal-supp: #6366f1;
+  --cal-both: #a855f7;
 
   --surface-card: #1e293b;
   --surface-ground: #0f172a;
