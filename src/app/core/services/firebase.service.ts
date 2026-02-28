@@ -8,15 +8,12 @@ import {
   getDoc,
   getDocs,
   getFirestore,
+  increment,
+  orderBy,
+  query,
   setDoc,
   Timestamp,
-  updateDoc,
-  query,
-  where,
-  orderBy,
-  limit,
-  startAt,
-  endAt
+  updateDoc
 } from 'firebase/firestore';
 import { environment } from '../../../environments/environment';
 
@@ -291,6 +288,12 @@ export class FirebaseService {
       durationMinutes: durationMinutes || null,
       notes: notes || null
     });
+
+    // Atomically increment total attendance counter on user stats
+    const userStatsRef = doc(this.db!, 'users', userId);
+    await updateDoc(userStatsRef, { 'stats.totalAttendances': increment(1) }).catch(() =>
+      setDoc(userStatsRef, { stats: { totalAttendances: 1 } }, { merge: true })
+    );
     console.log('✅ Attendance marked (Firebase):', date);
   }
 
@@ -310,6 +313,10 @@ export class FirebaseService {
     const yearMonth = this.getYearMonthKey(date);
     const docRef = doc(this.db!, 'users', userId, 'attendances', yearMonth, 'days', date);
     await deleteDoc(docRef);
+
+    // Atomically decrement total attendance counter on user stats
+    const userStatsRef = doc(this.db!, 'users', userId);
+    await updateDoc(userStatsRef, { 'stats.totalAttendances': increment(-1) }).catch(() => {});
     console.log('✅ Attendance removed (Firebase):', date);
   }
 
@@ -333,7 +340,6 @@ export class FirebaseService {
     });
 
     console.log('📊 Found', records.length, 'records for', yearMonth);
-    return records;
     return records;
   }
 
@@ -362,14 +368,33 @@ export class FirebaseService {
     return 0;
   }
 
+  async getTotalAttendanceCountForUser(userId: string): Promise<number> {
+    if (this.useLocalStorage) {
+      const key = `attendance_${userId}`;
+      const data = localStorage.getItem(key);
+      const attendances: Record<string, AttendanceRecord> = data ? JSON.parse(data) : {};
+      return Object.keys(attendances).length;
+    }
+    // Read from denormalized counter on user doc (updated atomically on each mark/remove)
+    const userRef = doc(this.db!, 'users', userId);
+    const snap = await getDoc(userRef);
+    if (snap.exists()) {
+      const data = snap.data();
+      const count = data?.['stats']?.['totalAttendances'];
+      if (typeof count === 'number') return count;
+    }
+    // Fallback: not yet initialized, return 0
+    return 0;
+  }
+
   async getCurrentYearCount(): Promise<number> {
     // Placeholder
     return 0;
   }
 
-  async getWorkoutTypeStats(userId: string, year: number): Promise<WorkoutTypeStat[]> {
-    const records = await this.getYearAttendance(userId, year);
-    const types = await this.getTrainingTypes(userId);
+  async getWorkoutTypeStats(userId: string, year: number, prefetchedRecords?: AttendanceRecord[], prefetchedTypes?: TrainingType[]): Promise<WorkoutTypeStat[]> {
+    const records = prefetchedRecords || await this.getYearAttendance(userId, year);
+    const types = prefetchedTypes || await this.getTrainingTypes(userId);
 
     // Count per type
     const counts = new Map<string, number>();
@@ -412,12 +437,12 @@ export class FirebaseService {
   // Duration Stats Methods
   // ========================================
 
-  async getYearDurationStats(userId: string, year: number): Promise<{
+  async getYearDurationStats(userId: string, year: number, prefetchedRecords?: AttendanceRecord[]): Promise<{
     avgMinutes: number;
     trackedCount: number;
     untrackedCount: number;
   }> {
-    const records = await this.getYearAttendance(userId, year);
+    const records = prefetchedRecords || await this.getYearAttendance(userId, year);
 
     const trackedRecords = records.filter(r => r.durationMinutes != null && r.durationMinutes > 0);
     const untrackedCount = records.length - trackedRecords.length;
@@ -452,9 +477,9 @@ export class FirebaseService {
     };
   }
 
-  async getWorkoutTypeDurationStats(userId: string, year: number): Promise<WorkoutTypeDurationStat[]> {
-    const records = await this.getYearAttendance(userId, year);
-    const types = await this.getTrainingTypes(userId);
+  async getWorkoutTypeDurationStats(userId: string, year: number, prefetchedRecords?: AttendanceRecord[], prefetchedTypes?: TrainingType[]): Promise<WorkoutTypeDurationStat[]> {
+    const records = prefetchedRecords || await this.getYearAttendance(userId, year);
+    const types = prefetchedTypes || await this.getTrainingTypes(userId);
 
     // Group by type and calculate averages
     const durationData = new Map<string, { totalMinutes: number; count: number }>();

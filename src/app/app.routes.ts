@@ -12,8 +12,14 @@ import { CalendarComponent } from './features/calendar/calendar/calendar.compone
 import { HealthComponent } from './features/health/health.component';
 import { ProfileComponent } from './features/user/profile/profile.component';
 import { SettingsComponent } from './features/user/settings/settings.component';
-import { StatsComponent } from './features/workouts/stats/stats.component';
 import { WorkoutTypesComponent } from './features/workouts/workout-types/workout-types.component';
+
+// Stats sub-routes
+import { AttendancesStatsComponent } from './features/workouts/stats/attendances/attendances-stats.component';
+import { DurationStatsComponent } from './features/workouts/stats/duration/duration-stats.component';
+import { HealthStatsComponent } from './features/workouts/stats/health/health-stats.component';
+import { StatsShellComponent } from './features/workouts/stats/stats-shell/stats-shell.component';
+import { WorkoutsStatsComponent } from './features/workouts/stats/workouts/workouts-stats.component';
 
 export const routes: Routes = [
   // Public auth routes (redirect to app if logged in)
@@ -26,7 +32,18 @@ export const routes: Routes = [
 
   // Protected routes (require authentication)
   { path: 'calendar', component: CalendarComponent, canActivate: [authGuard] },
-  { path: 'stats', component: StatsComponent, canActivate: [authGuard] },
+  {
+    path: 'stats',
+    component: StatsShellComponent,
+    canActivate: [authGuard],
+    children: [
+      { path: '', redirectTo: 'attendances', pathMatch: 'full' },
+      { path: 'attendances', component: AttendancesStatsComponent },
+      { path: 'workouts',    component: WorkoutsStatsComponent },
+      { path: 'duration',    component: DurationStatsComponent },
+      { path: 'health',      component: HealthStatsComponent },
+    ]
+  },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'workout-types', component: WorkoutTypesComponent, canActivate: [authGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },

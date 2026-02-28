@@ -1,0 +1,114 @@
+<div class="stats-view">
+
+  <!-- Skeleton -->
+  <div class="skeleton-loader" *ngIf="isLoading">
+    <div class="summary-cards duration-cards">
+      <div class="skeleton-card" *ngFor="let _ of [1,2]">
+        <div class="skeleton-icon skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-value skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-label skeleton-pulse"></div>
+      </div>
+    </div>
+    <div class="skeleton-chart-container" style="margin-top:32px">
+      <div class="skeleton-month-picker">
+        <div class="skeleton-nav-btn skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-title skeleton-pulse" style="width:140px"></div>
+        <div class="skeleton-nav-btn skeleton-pulse"></div>
+      </div>
+      <div class="skeleton-line skeleton-line-value skeleton-pulse" style="width:80px; margin: 16px auto 4px;"></div>
+      <div class="skeleton-line skeleton-line-label skeleton-pulse" style="width:140px; margin: 0 auto 20px;"></div>
+      <div class="skeleton-chart">
+        <div class="skeleton-bar skeleton-pulse" *ngFor="let h of [65,40,80,55,70]" [style.height.%]="h"></div>
+      </div>
+    </div>
+    <div class="skeleton-chart-container" style="margin-top:20px">
+      <div class="skeleton-line skeleton-line-title skeleton-pulse" style="width:50%; margin-bottom:20px"></div>
+      <div class="skeleton-bar-row skeleton-pulse" *ngFor="let _ of [1,2,3]"></div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <ng-container *ngIf="!isLoading">
+    <!-- 2 summary cards -->
+    <div class="summary-cards duration-cards">
+      <div class="stat-card duration-primary">
+        <div class="stat-icon">⏱️</div>
+        <div class="stat-content">
+          <span class="stat-value">{{ formatDuration(monthlyAvgDuration) }}</span>
+          <span class="stat-label">{{ 'STATS.AVG_THIS_MONTH' | translate }}</span>
+        </div>
+      </div>
+      <div class="stat-card duration-secondary">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <span class="stat-value">{{ formatDuration(yearlyAvgDuration) }}</span>
+          <span class="stat-label">{{ 'STATS.AVG_THIS_YEAR' | translate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="untracked-badge" *ngIf="untrackedWorkoutsMonth > 0">
+      <span class="untracked-icon">📝</span>
+      <span class="untracked-text">{{ 'STATS.UNTRACKED_WORKOUTS' | translate }}: {{ untrackedWorkoutsMonth }}</span>
+    </div>
+
+    <!-- Monthly Section -->
+    <div class="chart-container monthly-section">
+      <div class="month-picker">
+        <button class="nav-btn-small" (click)="prevMonth()">‹</button>
+        <h3 class="month-title">{{ 'MONTHS.' + monthNames[selectedMonth] | translate }} {{ currentYear }}</h3>
+        <button class="nav-btn-small" (click)="nextMonth()">›</button>
+      </div>
+
+      <div class="month-total">
+        <span class="total-value">{{ formatDuration(monthlyAvgDuration) }}</span>
+        <span class="total-label">avg duration this month</span>
+      </div>
+
+      <div class="chart" *ngIf="monthlyDurationStats.length > 0">
+        <div class="chart-bar" *ngFor="let stat of monthlyDurationStats">
+          <div class="bar-container">
+            <div class="bar duration-bar has-value"
+                 [style.height.%]="(stat.avgMinutes / getMaxMonthlyDurationMinutes()) * 100">
+              <span class="bar-value">{{ formatDuration(stat.avgMinutes) }}</span>
+            </div>
+          </div>
+          <span class="bar-label icon-label">{{ stat.icon }}</span>
+          <span class="bar-label name-label" [title]="stat.name">{{ stat.name }}</span>
+        </div>
+      </div>
+
+      <div class="no-data" *ngIf="monthlyDurationStats.length === 0">
+        <p>No duration data for {{ 'MONTHS.' + monthNames[selectedMonth] | translate }}</p>
+        <p class="hint">Add duration when logging workouts to see stats here!</p>
+      </div>
+    </div>
+
+    <!-- Yearly Average Durations -->
+    <div class="chart-container yearly-section" style="margin-bottom: 24px;">
+      <h3 class="chart-title">{{ currentYear }} Average Durations</h3>
+
+      <div class="workout-type-list compact" *ngIf="workoutTypeDurationStats.length > 0">
+        <div class="workout-type-item" *ngFor="let stat of workoutTypeDurationStats">
+          <div class="type-info">
+            <span class="type-icon">{{ stat.icon }}</span>
+            <span class="type-name">{{ stat.name }}</span>
+          </div>
+          <div class="type-bar-container">
+            <div class="type-bar"
+                 [style.width.%]="(stat.avgMinutes / getMaxDurationMinutes()) * 100"
+                 [style.background]="stat.color">
+            </div>
+          </div>
+          <span class="type-count">{{ formatDuration(stat.avgMinutes) }}</span>
+        </div>
+      </div>
+
+      <div class="no-data" *ngIf="workoutTypeDurationStats.length === 0">
+        <p>No duration data for {{ currentYear }}</p>
+        <p class="hint">Add duration when logging workouts to see stats here!</p>
+      </div>
+    </div>
+  </ng-container>
+
+</div>

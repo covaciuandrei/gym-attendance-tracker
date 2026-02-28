@@ -1,0 +1,92 @@
+<div class="stats-view">
+
+  <!-- Skeleton -->
+  <div class="skeleton-loader" *ngIf="isLoading">
+    <div class="skeleton-banner skeleton-pulse"></div>
+    <div class="skeleton-chart-container">
+      <div class="skeleton-month-picker">
+        <div class="skeleton-nav-btn skeleton-pulse"></div>
+        <div class="skeleton-line skeleton-line-title skeleton-pulse" style="width:140px"></div>
+        <div class="skeleton-nav-btn skeleton-pulse"></div>
+      </div>
+      <div class="skeleton-line skeleton-line-value skeleton-pulse" style="width:60px; margin: 16px auto 4px;"></div>
+      <div class="skeleton-line skeleton-line-label skeleton-pulse" style="width:120px; margin: 0 auto 20px;"></div>
+      <div class="skeleton-chart">
+        <div class="skeleton-bar skeleton-pulse" *ngFor="let h of [55,80,40,70,60]" [style.height.%]="h"></div>
+      </div>
+    </div>
+    <div class="skeleton-chart-container" style="margin-top:20px">
+      <div class="skeleton-line skeleton-line-title skeleton-pulse" style="width:50%; margin-bottom:20px"></div>
+      <div class="skeleton-bar-row skeleton-pulse" *ngFor="let _ of [1,2,3,4,5]"></div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <ng-container *ngIf="!isLoading">
+    <div class="untracked-badge">
+      <span class="untracked-icon">🏆</span>
+      <span class="untracked-text">{{ 'STATS.YEARLY_SUMMARY' | translate:{ year: currentYear, count: getTotalWorkouts() } }}</span>
+    </div>
+
+    <!-- Monthly Section -->
+    <div class="chart-container monthly-section">
+      <div class="month-picker">
+        <button class="nav-btn-small" (click)="prevMonth()">‹</button>
+        <h3 class="month-title">{{ 'MONTHS.' + monthNames[selectedWorkoutMonth] | translate }} {{ currentYear }}</h3>
+        <button class="nav-btn-small" (click)="nextMonth()">›</button>
+      </div>
+
+      <div class="month-total">
+        <span class="total-value">{{ getMonthlyWorkoutTotal() }}</span>
+        <span class="total-label">{{ 'STATS.WORKOUTS_THIS_MONTH' | translate }}</span>
+      </div>
+
+      <div class="chart workout-type-chart" *ngIf="monthlyWorkoutStats.length > 0">
+        <div class="chart-bar" *ngFor="let stat of monthlyWorkoutStats">
+          <div class="bar-container">
+            <div class="bar has-value"
+                 [style.height.%]="(stat.count / getMaxMonthlyWorkoutCount()) * 100"
+                 [style.background]="stat.color">
+              <span class="bar-value">{{ stat.count }}</span>
+            </div>
+          </div>
+          <span class="bar-label icon-label">{{ stat.icon }}</span>
+          <span class="bar-label name-label" [title]="stat.name">{{ stat.name }}</span>
+        </div>
+      </div>
+
+      <div class="no-data" *ngIf="monthlyWorkoutStats.length === 0">
+        <p>{{ 'STATS.NO_WORKOUTS' | translate }} {{ 'MONTHS.' + monthNames[selectedWorkoutMonth] | translate }}</p>
+      </div>
+    </div>
+
+    <!-- Yearly Summary -->
+    <div class="chart-container yearly-section" style="margin-bottom: 24px;">
+      <h3 class="chart-title">
+        {{ 'STATS.YEARLY_SUMMARY' | translate:{ year: currentYear, count: getTotalWorkouts() } }}
+      </h3>
+
+      <div class="workout-type-list compact" *ngIf="workoutTypeStats.length > 0">
+        <div class="workout-type-item" *ngFor="let stat of workoutTypeStats">
+          <div class="type-info">
+            <span class="type-icon">{{ stat.icon }}</span>
+            <span class="type-name">{{ stat.name }}</span>
+          </div>
+          <div class="type-bar-container">
+            <div class="type-bar"
+                 [style.width.%]="(stat.count / getMaxWorkoutCount()) * 100"
+                 [style.background]="stat.color">
+            </div>
+          </div>
+          <span class="type-count">{{ stat.count }}</span>
+        </div>
+      </div>
+
+      <div class="no-data" *ngIf="workoutTypeStats.length === 0">
+        <p>{{ 'STATS.NO_DATA' | translate }} {{ currentYear }}</p>
+        <p class="hint">{{ 'STATS.START_TRACKING' | translate }}</p>
+      </div>
+    </div>
+  </ng-container>
+
+</div>
