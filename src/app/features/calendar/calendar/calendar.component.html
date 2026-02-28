@@ -19,7 +19,7 @@
   </div>
 
   <!-- Monthly View -->
-  <div class="monthly-view" *ngIf="viewMode === 'monthly'">
+  <div class="monthly-view" *ngIf="!isLoading && viewMode === 'monthly'">
     <div class="weekdays">
       <div class="weekday" *ngFor="let day of weekDays">{{ 'WEEKDAYS.' + day | translate }}</div>
     </div>
@@ -40,7 +40,7 @@
   </div>
 
   <!-- Yearly View -->
-  <div class="yearly-view" *ngIf="viewMode === 'yearly'">
+  <div class="yearly-view" *ngIf="!isLoading && viewMode === 'yearly'">
     <div class="month-card" *ngFor="let monthData of monthsData">
       <h3 class="month-name">{{ 'MONTHS.' + monthData.name | translate }}</h3>
       <div class="mini-weekdays">
@@ -65,9 +65,27 @@
     </div>
   </div>
 
-  <!-- Loading Overlay -->
-  <div class="loading-overlay" *ngIf="isLoading">
-    <div class="spinner"></div>
+  <!-- Monthly Skeleton -->
+  <div class="monthly-view skeleton-pulse" *ngIf="isLoading && viewMode === 'monthly'">
+    <div class="weekdays">
+      <div class="weekday" *ngFor="let day of weekDays">{{ 'WEEKDAYS.' + day | translate }}</div>
+    </div>
+    <div class="days-grid">
+      <div class="day-cell skeleton-cell" *ngFor="let _ of skeletonDays"></div>
+    </div>
+  </div>
+
+  <!-- Yearly Skeleton -->
+  <div class="yearly-view skeleton-pulse" *ngIf="isLoading && viewMode === 'yearly'">
+    <div class="month-card" *ngFor="let _ of skeletonMonths">
+      <div class="skeleton-title"></div>
+      <div class="mini-weekdays">
+        <span *ngFor="let day of weekDays">{{ 'WEEKDAYS_MINI.' + day | translate }}</span>
+      </div>
+      <div class="mini-days-grid">
+        <div class="mini-day skeleton-cell" *ngFor="let _ of skeletonMiniDays"></div>
+      </div>
+    </div>
   </div>
 </div>
 

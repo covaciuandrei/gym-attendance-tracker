@@ -290,38 +290,29 @@
   line-height: 1;
 }
 
-/* Loading Overlay */
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  border-radius: 12px;
+/* ===========================
+   Skeleton Loading
+   =========================== */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid var(--primary-color);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+.skeleton-pulse {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
+.skeleton-cell {
+  background: var(--border-color);
+  opacity: 0.6;
+}
 
-  100% {
-    transform: rotate(360deg);
-  }
+.skeleton-title {
+  height: 20px;
+  width: 100px;
+  background: var(--border-color);
+  border-radius: 4px;
+  margin: 0 auto 12px auto;
 }
 
 /* Popup Styles */

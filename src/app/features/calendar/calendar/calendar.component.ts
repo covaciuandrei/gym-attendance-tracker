@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
-import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { AttendanceRecord, FirebaseService, TrainingType, SupplementProduct } from '../../../core/services/firebase.service';
+import { AttendanceRecord, FirebaseService, SupplementProduct, TrainingType } from '../../../core/services/firebase.service';
 
 interface DayCell {
   date: number;
@@ -50,6 +50,11 @@ export class CalendarComponent implements OnInit, OnDestroy {
   selectedTab: 'workout' | 'health' = 'workout';
 
   isLoading = false;
+
+  // Skeleton Arrays
+  skeletonDays = Array(42).fill(0);
+  skeletonMonths = Array(12).fill(0);
+  skeletonMiniDays = Array(35).fill(0);
 
   // Workout types
   workoutTypes: TrainingType[] = [];
@@ -143,11 +148,13 @@ export class CalendarComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     try {
       let records: AttendanceRecord[];
-      if (this.viewMode === 'monthly') {
-        records = await this.loadMonthRange();
-      } else {
-        records = await this.firebaseService.getYearAttendance(this.userId, this.currentYear);
-      }
+      const [results] = await Promise.all([
+        this.viewMode === 'monthly' 
+          ? this.loadMonthRange() 
+          : this.firebaseService.getYearAttendance(this.userId, this.currentYear),
+        new Promise(resolve => setTimeout(resolve, 400)) // Match stats page waiting time
+      ]);
+      records = results as AttendanceRecord[];
 
       // Build both set and map
       this.attendedDates = new Set(records.map(r => r.date));
