@@ -20,7 +20,9 @@
 
 > **Prompt 0: Analyze My Architecture & Original App**
 > 
-> You are an Expert Senior Flutter Architect. Your ultimate goal is to migrate my existing Angular web application (`gym-presence-tracker`) into a pixel-perfect Flutter mobile app. 
+> You are an Expert Senior Flutter Architect. Your ultimate goal is to migrate my existing Angular web application (`gym-presence-tracker`) into a pixel-perfect Flutter mobile app for **both iOS and Android**. 
+> 
+> My environment is fully working with **Flutter 3.41.0 and Java JDK 17**. Ensure all dependencies and solutions you provide are compatible with this setup.
 > 
 > I have provided a folder containing a starter Flutter project (`Flutter-starting-project`) into which I've copied the `src` folder of my Angular app and the `lib` folder of my `teamlyst` app.
 > 1. The source code for my existing Angular app (`src`). This is the app you are rebuilding in Flutter. Analyze its features, Firebase structure, and UI deeply.
@@ -49,7 +51,8 @@
 >    - `UserModel`: `id`, `email`, `displayName`, `themePreference`.
 >    - `TrainingType`: `id`, `name`, `color`, `icon`.
 >    - `AttendanceDay`: `date`, `timestamp`, `trainingTypeId`, `notes`.
-> 3. Write the Unit Tests for the JSON serialization of these models.
+> 3. Write the Unit Tests for the JSON serialization of these models.  
+>    *Note: I am completely new to testing in Flutter. Please explain exactly what these tests are doing and provide the exact terminal command I need to run to execute them.*
 > When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `feature/data-layer` before I give you Phase 2.
 
 ---
@@ -64,6 +67,7 @@
 > 2. Create a `WorkoutRepository` to handle full CRUD operations for the `/users/{userId}/trainingTypes/{typeId}` subcollection. Use `snapshots()` to return Streams where appropriate.
 > 3. Create an `AttendanceRepository` to handle read/writes for `/users/{userId}/attendances/{yearMonth}/days/{date}`.
 > 4. Write comprehensive Unit Tests for these Repositories using `mocktail` to mock the Firestore/Auth instances. Ensure error handling is covered.
+>    *Again, please explain the mocking concepts (`mocktail`) briefly so I understand how these tests work, and remind me the command to run them.*
 > When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `feature/state-management` before I give you Phase 3.
 
 ---
@@ -79,6 +83,7 @@
 > 3. Create `CalendarCubit`: Consumes the `AttendanceRepository` and emits a `BaseState<List<AttendanceDay>>`.
 > 4. Create `StatsCubit`: Aggregates the attendance data to calculate total workouts and frequency breakdowns.
 > 5. Write Unit Tests for all Cubits using `bloc_test`. Mock the repositories and verify that the Cubits emit `loading` -> `success` states in the correct order.
+>    *Explain how `bloc_test` works compared to standard unit tests, and how I can run these specific tests.*
 > When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `chore/theme-and-routing` before I give you Phase 4.
 
 ---
