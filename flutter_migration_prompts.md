@@ -26,8 +26,8 @@
 > 
 > **Your task for this prompt:**
 > 1. Analyze the starter app's routing setup (`auto_route`), dependency injection setup (`get_it` and `injectable`), and State Management approach (`flutter_bloc`, `BaseCubit`, `BaseState`).
-> 2. Deeply analyze the `teamlyst_reference` codebase. I want you to understand how I implemented core features, complex UI patterns, dialogs, bottom sheets, and advanced state management interactions in a production app. Pay close attention to how features are structured and connected.
-> 3. Understand that the new Flutter app you are building MUST mimic the features from the Angular app, using the clean architectural foundation of the starter app, but executing the complex feature logic and UI patterns exactly as you discovered them in `teamlyst_reference`.
+> 2. Deeply analyze the `teamlyst_reference` codebase. I want you to understand how I implemented core features, complex business logic, and advanced state management interactions in a production app. Pay close attention to how features and data are structured and connected. **Do NOT copy my UI patterns from teamlyst.**
+> 3. Understand that the new Flutter app you are building MUST mimic the features and **exact UI design** from the Angular app. You must use the clean architectural foundation of the starter app, and you may execute complex feature logic (like Cubit flows and Repositories) by drawing inspiration from `teamlyst_reference`.
 > 4. Acknowledge our Git Workflow: We will use feature branches and PRs for every phase.
 > 
 > Reply with a brief summary of the key architectural rules you discovered in my Flutter code, and a brief summary of the app we are migrating. **Do not write any code for the new app yet.** Tell me when you are ready for me to create the branch `feat/domain-models` and begin Phase 1.
