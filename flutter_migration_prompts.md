@@ -9,7 +9,7 @@
 > 6. Provide this entire `gym-tracker` folder to Sonnet 4.6 *first*.
 > 7. Then, begin with the prompts below, sending them **one by one**.
 > **Important Rule for the AI (Automated Git/PR Workflow):** You have access to my terminal, `git`, and the GitHub CLI (`gh`). After finishing the code and tests for *every single phase*, you must:
-> 1. Stage and commit the code (`git add . && git commit -m "feat/chore: description"`).
+> 1. Stage and commit the code (`git add . && git commit -m "feature/chore: description"`).
 > 2. Push the branch to origin (`git push -u origin <branch-name>`).
 > 3. Create a Pull Request automatically using `gh pr create --title "<Phase Title>" --body "<Summary of what was built>"`.
 > 4. Stop and provide me the link to the PR. Wait for me to review and merge it. Do not proceed to the next phase until I confirm the PR is merged and give you the next prompt.
@@ -34,7 +34,7 @@
 > 4. Acknowledge our Git Workflow: We will use feature branches and PRs for every phase.
 > Reply with a brief summary of the key architectural rules you discovered in my Flutter code, and a brief summary of the app we are migrating. **Do not write any code for the new app yet.**
 > 
-> Check out a new branch called `feat/domain-models` and wait for me to give you the Prompt for Phase 1.
+> Check out a new branch called `feature/domain-models` and wait for me to give you the Prompt for Phase 1.
 
 ---
 
@@ -50,7 +50,7 @@
 >    - `TrainingType`: `id`, `name`, `color`, `icon`.
 >    - `AttendanceDay`: `date`, `timestamp`, `trainingTypeId`, `notes`.
 > 3. Write the Unit Tests for the JSON serialization of these models.
-> When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `feat/data-layer` before I give you Phase 2.
+> When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `feature/data-layer` before I give you Phase 2.
 
 ---
 
@@ -64,7 +64,7 @@
 > 2. Create a `WorkoutRepository` to handle full CRUD operations for the `/users/{userId}/trainingTypes/{typeId}` subcollection. Use `snapshots()` to return Streams where appropriate.
 > 3. Create an `AttendanceRepository` to handle read/writes for `/users/{userId}/attendances/{yearMonth}/days/{date}`.
 > 4. Write comprehensive Unit Tests for these Repositories using `mocktail` to mock the Firestore/Auth instances. Ensure error handling is covered.
-> When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `feat/state-management` before I give you Phase 3.
+> When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `feature/state-management` before I give you Phase 3.
 
 ---
 
@@ -93,7 +93,7 @@
 > 2. Setup the `l10n.yaml` and `app_en.arb` file with the exact translation keys needed for the Login, Calendar, Stats, and Workout components (refer to the Angular `en.json`). Create a `LocaleHelper`.
 > 3. Create the `AppRouter` using `auto_route` establishing routes for Splash, Login, Main navigation (Calendar/Stats), and Profile.
 > 4. Provide the `main.dart` entry point that ties localization, routing, and DI together.
-> When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `feat/auth-profile-ui` before I give you Phase 5.
+> When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `feature/auth-profile-ui` before I give you Phase 5.
 
 ---
 
@@ -107,7 +107,7 @@
 > 2. Build the `SplashPage` tracking the `AuthCubit` to redirect accurately.
 > 3. Build the `LoginPage` and `RegisterPage` UI, mimicking the Angular web design but optimized for mobile. Tie them to the `AuthCubit`. 
 > 4. Build the `ProfilePage` UI allowing theme toggling and logout.
-> When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `feat/calendar-workout-ui` before I give you Phase 6.
+> When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `feature/calendar-workout-ui` before I give you Phase 6.
 > 
 
 ---
@@ -120,7 +120,7 @@
 > 2. Build the `HomePage` containing the `table_calendar` widget.
 > 3. Listen to both `WorkoutCubit` and `CalendarCubit`. Use the `table_calendar` `markerBuilder` to beautifully render the `TrainingType.icon` (emoji) inside the calendar cells for days with attendance records, just like the web version.
 > 4. Create the bottom sheet that opens `onDaySelected` to mark attendance securely.
-> When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `feat/stats-and-polish` before I give you Phase 7.
+> When finished, automatically commit, push, and open the PR for this phase using the `gh` tool. Wait for my confirmation that the PR is merged. Check out `main`, pull the latest changes, and switch to a new branch for `feature/stats-and-polish` before I give you Phase 7.
 
 ---
 
