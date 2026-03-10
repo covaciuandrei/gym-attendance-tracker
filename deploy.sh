@@ -5,21 +5,24 @@ set -e
 
 echo "🚀 Starting Deployment for Gym Tracker..."
 
-# 1. Pull the latest code from GitHub
-echo "📥 Pulling latest changes from main..."
+# 1. Fix Ownership Trust (prevents the 'dubious ownership' error)
+git config --global --add safe.directory /var/www/gym-tracker
+
+# 2. Wipe any local changes and Pull
+# This handles the modified package-lock.json automatically
+echo "📥 Resetting local changes and pulling from main..."
+git reset --hard
 git pull origin main
 
-# 2. Install dependencies (if any new ones were added)
+# 3. Install dependencies
 echo "📦 Installing dependencies..."
 npm install
 
-# 3. Build the project
-# This runs 'npm run config' (to set envs) then 'ng build'
+# 4. Build the project
 echo "🏗️  Building Angular application..."
 npm run build
 
-# 4. Ensure permissions are correct for Nginx
-# Even if the build creates new files, this keeps them readable
+# 5. Ensure permissions are correct for Nginx
 echo "🔑 Setting permissions..."
 sudo chown -R www-data:www-data /var/www/gym-tracker/dist
 sudo chmod -R 755 /var/www/gym-tracker/dist

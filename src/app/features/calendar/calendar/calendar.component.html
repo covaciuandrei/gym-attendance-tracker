@@ -1,5 +1,4 @@
 <div class="calendar-container">
-  <h1 class="main-title">ceva</h1>
   <header class="calendar-header">
     <button class="nav-btn" (click)="previousMonth()">‹</button>
     <h2 class="title">{{ 'MONTHS.' + monthNames[currentMonth] | translate }} {{ currentYear }}</h2>
@@ -280,7 +279,8 @@
       </div>
 
       <!-- Validation Message -->
-      <div *ngIf="showSupplementError" style="color: #ef4444; font-size: 0.85rem; margin-top: 1rem; text-align: center; animation: shake 0.4s ease-in-out;">
+      <div *ngIf="showSupplementError"
+        style="color: #ef4444; font-size: 0.85rem; margin-top: 1rem; text-align: center; animation: shake 0.4s ease-in-out;">
         ⚠️ Please select a supplement from the list first.
       </div>
 
