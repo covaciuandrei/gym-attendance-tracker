@@ -13,6 +13,19 @@
   margin-bottom: 2rem;
 }
 
+.main-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, var(--primary-color), #60a5fa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: lowercase;
+  letter-spacing: -1px;
+}
+
 .title {
   font-size: 1.8rem;
   font-weight: 600;
