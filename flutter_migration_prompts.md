@@ -1,13 +1,13 @@
 # AI Prompt Sequence: Gym Tracker Flutter Migration (Logic-First & TDD)
 
 > **User Instructions for File Setup & Git Workflow**:
-> 1. Clone your `Flutter-starting-project` repository and rename it to `gym-tracker`.
-> 2. Initialize a fresh git repository if needed (`rm -rf .git && git init`).
-> 3. Copy the `src` folder from your **Angular Gym Presence Tracker Project** into this `gym-tracker` folder (to provide the actual app logic, UI, and business requirements).
-> 4. Copy **only the most complex/relevant feature folders** from the `lib` folder of your **Teamlyst Project** into a new subfolder called `teamlyst_reference` within the `gym-tracker` folder. Avoid copying the entire lib — trim it to features that are genuinely complex (e.g., auth flows, repository patterns, cubit implementations). This keeps the context window focused.
-> 5. Create your initial commit: `git add . && git commit -m "chore: initial commit with starter template, angular reference, and teamlyst reference"`
-> 6. Provide this entire `gym-tracker` folder to Sonnet 4.6 *first*.
-> 7. Then, begin with the prompts below, sending them **one by one**.
+> 1. Create a new root directory for this session (e.g., `gym-tracker-migration`).
+> 2. Inside this directory, create a folder named `teamlyst` and a folder named `flutter starting project`.
+>    - For `flutter starting project`: Copy ONLY the `lib` folder. **EXCLUDE** `app_router.gr.dart` and `injection.config.dart` (since they are auto-generated).
+>    - For `teamlyst`: Copy ONLY the `lib` folder, but **EXCLUDE** `app_router.gr.dart` and `injection.config.dart` from the `core` folder. Also, **EXCLUDE** `fonts` and `images` from the `assets` folder. **IMPORTANT:** Only keep the structure and files for the **prod env**, and completely exclude any dev environment files.
+> 3. Also copy the `src` folder from your **Angular Gym Presence Tracker Project** into this root directory. This provides the actual app logic, UI, and business requirements.
+> 4. Provide this entire root directory to Sonnet 4.6 *first*.
+> 5. Then, begin with the prompts below, sending them **one by one**.
 
 > **Important Rule for the AI (Automated Git/PR Workflow):** You have access to my terminal, `git`, and the GitHub CLI (`gh`). After finishing the code and tests for *every single phase*, you must:
 > 1. Stage and commit the code (`git add . && git commit -m "feature/chore: description"`).
@@ -21,32 +21,33 @@
 
 ## Phase 0: Training & Context Analysis
 
-> **Prompt 0: Analyze My Architecture & Original App**
+> **Prompt 0: Project Initialization & Architecture Analysis**
 >
 > You are an Expert Senior Flutter Architect. Your ultimate goal is to migrate my existing Angular web application (`gym-presence-tracker`) into a pixel-perfect Flutter mobile app for **both iOS and Android**.
 >
 > My environment is fully working with **Flutter 3.41.0 and Java JDK 17**. Ensure all dependencies and solutions you provide are compatible with this setup.
 >
-> I have provided a folder containing a starter Flutter project into which I've copied the `src` folder of my Angular app and the `lib` folder (trimmed) of my `teamlyst` app.
-> 1. The source code for my existing Angular app (`src`). This is the app you are rebuilding in Flutter. Analyze its features, Firebase structure, and UI deeply.
-> 2. The codebase of the starter Flutter app. This app already has `pubspec.yaml`, `get_it`, `auto_route`, and `BaseCubit` set up, and dictates *exactly* how I write Flutter code.
-> 3. The `teamlyst_reference` folder. I have included this because many of the core features and more complex implementations are built very well here. Use this as a reference guide if you need inspiration for implementing core features beyond the basic boilerplate.
+> I have provided a workspace containing three reference folders:
+> - The `src` folder of my Angular app.
+> - The restricted `lib` folder of the `teamlyst` project (prod environment only).
+> - The restricted `lib` folder of the `flutter starting project`.
 >
 > **Your task for this prompt:**
-> 1. Analyze the starter app's routing setup (`auto_route`), dependency injection setup (`get_it` and `injectable`), and State Management approach (`flutter_bloc`, `BaseCubit`, `BaseState`).
-> 2. Deeply analyze the `teamlyst_reference` codebase. I want you to understand how I implemented core features, complex business logic, and advanced state management interactions in a production app. Pay close attention to how features and data are structured and connected. **Do NOT copy my UI patterns from teamlyst.**
-> 3. Understand that the new Flutter app you are building MUST mimic the features and **exact UI design** from the Angular app. You must use the clean architectural foundation of the starter app, and you may execute complex feature logic (like Cubit flows and Repositories) by drawing inspiration from `teamlyst_reference`.
-> 4. Pay special attention to the Angular app's Firestore data structure, specifically the attendance path: `/users/{userId}/attendances/{yearMonth}/days/{date}`. This nested structure must be preserved exactly in the Flutter repositories — do not flatten or simplify it.
-> 5. Acknowledge our Git Workflow: We will use feature branches and PRs for every phase. Also confirm that `gh auth status` returns an authenticated state.
+> 1. Start from scratch a new flutter project. Create it, remove its git (`rm -rf .git`), rename it to `gym_tracker`, and run a new `git init`. Create an initial commit.
+> 2. Analyze the `lib` folders of both the `teamlyst` project and the `flutter starting project`. I want you to understand how I implement core features, complex business logic, routing (`auto_route`), dependency injection (`get_it`), and state management (`flutter_bloc`, `BaseCubit`). 
+> 3. Copy the `clean_rebuild.sh` and `generate_assets.sh` scripts from the `teamlyst` project into the root of the new `gym_tracker` project.
+> 4. Deeply analyze the original Angular app (`src`). Understand its features, UI structure, and Firebase schema. The new Flutter app MUST mimic the features and **exact UI design** from the Angular app.
+> 5. Pay special attention to the Angular app's Firestore data structure, specifically the attendance path: `/users/{userId}/attendances/{yearMonth}/days/{date}`. This nested structure must be preserved exactly in the Flutter repositories — do not flatten or simplify it.
+> 6. Acknowledge our Git Workflow: We will use feature branches and PRs for every phase in this newly initialized `gym_tracker` repository. Confirm that `gh auth status` returns an authenticated state.
 >
 > Reply with:
-> - A brief summary of the key architectural rules you discovered in my Flutter code.
+> - A brief summary of the key architectural rules you discovered from my Flutter projects.
 > - A brief summary of the app we are migrating, including its full Firestore schema.
-> - Confirmation that the `gh` CLI is authenticated and ready.
+> - Confirmation that the shell scripts were copied and the project was initialized successfully.
 >
-> **Do not write any code for the new app yet.**
+> **Do not write any new app code yet.** Only setup the project internally and copy the scripts.
 >
-> Check out a new branch called `feature/domain-models` and wait for me to give you the Prompt for Phase 1.
+> Check out a new branch called `feature/domain-models` inside `gym_tracker` and wait for me to give you the Prompt for Phase 1.
 
 ---
 
@@ -54,7 +55,7 @@
 
 > **Prompt 1: Project Initialization & Domain Models**
 >
-> Excellent. As you saw, the boilerplate (like `pubspec.yaml`, `get_it`, `auto_route`, and `BaseCubit`) is already set up in the starter project. Let's start building the Gym Tracker app using a Logic-First (TDD) approach based on the rules you analyzed. We will build the UI *last*.
+> Excellent. Now that the project is initialized from scratch, apply the boilerplate patterns you analyzed (like `pubspec.yaml`, `get_it`, `auto_route`, and `BaseCubit`) into the new `gym_tracker` project. Let's start building the Gym Tracker app using a Logic-First (TDD) approach based on those rules. We will build the UI *last*.
 >
 > 1. Add any additional dependencies needed for the migration to `pubspec.yaml` (e.g., `firebase_core`, `cloud_firestore`, `firebase_auth`, `mocktail`, `flutter_test`, `json_serializable`, `json_annotation`, `build_runner`).
 > 2. Generate the pure Domain Models (DTOs) for the Gym Tracker tracking logic using `equatable` and `json_serializable`:
