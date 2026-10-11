@@ -104,5 +104,14 @@
         <div class="card"><p class="hint">{{ 'NUTRITION.GOALS.FILL_PROFILE' | translate }}</p></div>
       }
     </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-primary btn-block" (click)="save()" [disabled]="!dirty() || saving()">
+        @if (saving()) {
+          <span class="spinner"></span>
+        }
+        {{ 'NUTRITION.COMMON.SAVE' | translate }}
+      </button>
+    </div>
   </div>
 </div>

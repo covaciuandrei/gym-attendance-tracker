@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { unsavedChangesGuard } from '../../core/guards/unsaved-changes.guard';
 import { NutritionCalendarComponent } from './calendar/nutrition-calendar.component';
 import { NutritionDayComponent } from './day/nutrition-day.component';
 import { EntryEditorComponent } from './entry/entry-editor.component';
@@ -14,7 +15,7 @@ export const NUTRITION_ROUTES: Routes = [
       { path: '', pathMatch: 'full', component: NutritionCalendarComponent },
       { path: 'day/:date', component: NutritionDayComponent },
       { path: 'day/:date/entry/:id', component: EntryEditorComponent },
-      { path: 'goals', component: NutritionGoalsComponent },
+      { path: 'goals', component: NutritionGoalsComponent, canDeactivate: [unsavedChangesGuard] },
     ],
   },
 ];

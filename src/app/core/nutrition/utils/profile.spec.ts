@@ -1,4 +1,4 @@
-import { sanitizeProfile } from './profile';
+import { DEFAULT_PROFILE, sameProfile, sanitizeProfile } from './profile';
 
 describe('sanitizeProfile', () => {
   it('keeps valid values', () => {
@@ -30,5 +30,18 @@ describe('sanitizeProfile', () => {
   it('limits the weekly change to +-1 kg', () => {
     expect(sanitizeProfile({ weeklyChangeKg: -5 }).weeklyChangeKg).toBe(-1);
     expect(sanitizeProfile({ weeklyChangeKg: 3 }).weeklyChangeKg).toBe(1);
+  });
+});
+
+describe('sameProfile', () => {
+  it('is true for the same values, even in different objects', () => {
+    expect(sameProfile(DEFAULT_PROFILE, { ...DEFAULT_PROFILE })).toBeTrue();
+    expect(sameProfile(sanitizeProfile({ age: 30, weightKg: 72.04 }), sanitizeProfile({ age: 30, weightKg: 72 }))).toBeTrue();
+  });
+
+  it('is false as soon as one value differs', () => {
+    expect(sameProfile(DEFAULT_PROFILE, { ...DEFAULT_PROFILE, sex: 'male' })).toBeFalse();
+    expect(sameProfile(DEFAULT_PROFILE, { ...DEFAULT_PROFILE, age: 30 })).toBeFalse();
+    expect(sameProfile(DEFAULT_PROFILE, { ...DEFAULT_PROFILE, customTargetKcal: 2000 })).toBeFalse();
   });
 });

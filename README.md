@@ -188,7 +188,7 @@ The **Food** tab (second tab of the bottom navigation, shown to accounts the adm
 -   **Today card and calendar**: a calorie ring with macro bars for today, and a monthly/yearly calendar coloured by how close each day is to your target.
 -   **Meals**: any number of meals per day, each with an optional photo, a note, a meal type and a time. *Add again* re-logs a meal you ate before.
 -   **AI estimate**: *Estimate with AI* sends the photo and/or note to Gemini and returns the foods, grams, calories and macros, with a confidence level and the assumptions it made. The note wins over the photo ("half of it", "200 g rice"). Every value stays editable, and changing a portion scales its nutrients proportionally.
--   **Goals**: sex, age, height, weight and (optionally) body fat give your maintenance calories (Katch-McArdle when body fat is set, Mifflin-St Jeor otherwise), a daily target for your goal and macro targets.
+-   **Goals**: sex, age, height, weight and (optionally) body fat give your maintenance calories (Katch-McArdle when body fat is set, Mifflin-St Jeor otherwise), a daily target for your goal and macro targets. The numbers update as you type, but your changes only apply once you press **Save**; leaving the page with unsaved changes asks first.
 -   **Stats**: 7/30-day averages, daily calories against the target and the macro split (**Stats → Nutrition**).
 
 All of it lives under the signed-in user (see *Database Schema* below), so the Firestore rule from the Firebase setup already protects it. Who may use the food tracker at all is decided separately, by the admin (next section).

@@ -396,7 +396,8 @@
             "COMPARE": "Mifflin-St Jeor ar da {{value}} kcal.",
             "MACRO_TARGETS": "Macro zilnice",
             "LOW_WARNING": "Această țintă este foarte mică. Ia în calcul un ritm mai lent.",
-            "FILL_PROFILE": "Completează sexul, vârsta, înălțimea și greutatea (sau greutatea și grăsimea corporală) ca să vezi cifrele."
+            "FILL_PROFILE": "Completează sexul, vârsta, înălțimea și greutatea (sau greutatea și grăsimea corporală) ca să vezi cifrele.",
+            "SAVED": "Obiective salvate"
         },
         "ACTIVITY": {
             "SEDENTARY": "Sedentar (birou, puțin sport)",

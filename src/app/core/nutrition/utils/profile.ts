@@ -37,3 +37,8 @@ export function sanitizeProfile(raw: Partial<Profile> | null | undefined): Profi
     customTargetKcal: inRange(p.customTargetKcal, 800, 8000),
   };
 }
+
+/** True when both profiles hold exactly the same values. */
+export function sameProfile(a: Profile, b: Profile): boolean {
+  return (Object.keys(a) as (keyof Profile)[]).every((key) => a[key] === b[key]);
+}

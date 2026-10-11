@@ -396,7 +396,8 @@
             "COMPARE": "Mifflin-St Jeor would give {{value}} kcal.",
             "MACRO_TARGETS": "Daily macros",
             "LOW_WARNING": "This target is very low. Consider a slower pace.",
-            "FILL_PROFILE": "Fill in sex, age, height and weight (or weight and body fat) to see your numbers."
+            "FILL_PROFILE": "Fill in sex, age, height and weight (or weight and body fat) to see your numbers.",
+            "SAVED": "Goals saved"
         },
         "ACTIVITY": {
             "SEDENTARY": "Sedentary (desk job, little exercise)",

@@ -6,11 +6,11 @@ import { DEFAULT_PROFILE, sanitizeProfile } from '../utils/profile';
 import { NutritionDataService } from './nutrition-data.service';
 
 const CACHE_PREFIX = 'nt.profile.';
-const SAVE_DELAY_MS = 700;
 
 /**
  * Body stats and goals of the signed-in user. They are kept in Firestore, mirrored in localStorage so the numbers
  * show up instantly (and offline) on this device, and never leak to the next person who signs in on it.
+ * They only change when the user saves them on the goals page.
  */
 @Injectable({ providedIn: 'root' })
 export class NutritionProfileService {
@@ -24,22 +24,16 @@ export class NutritionProfileService {
   readonly targetKcal = computed(() => this.plan()?.target ?? null);
 
   private uid: string | null = null;
-  private dirty = false;
-  private timer: ReturnType<typeof setTimeout> | null = null;
+  /** Counts saves, so a slow read that started earlier can't overwrite what was just saved. */
+  private saves = 0;
 
   constructor() {
     this.auth.currentUser$.subscribe((user) => this.onUser(user?.uid ?? null));
-    window.addEventListener('pagehide', () => void this.flush());
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) void this.flush();
-    });
   }
 
   private onUser(uid: string | null): void {
     if (uid === this.uid) return;
     this.uid = uid;
-    this.dirty = false;
-    this.clearTimer();
     this.loaded.set(false);
     this.profile.set({ ...DEFAULT_PROFILE });
     if (!uid) return;
@@ -49,10 +43,11 @@ export class NutritionProfileService {
   }
 
   private async refresh(uid: string): Promise<void> {
+    const savesBefore = this.saves;
     try {
       const remote = await this.data.loadProfile();
-      // Ignore the answer if the user changed meanwhile, or already started editing.
-      if (this.uid !== uid || this.dirty || !remote) return;
+      // Ignore the answer if the user changed meanwhile, or saved something newer than what was read.
+      if (this.uid !== uid || this.saves !== savesBefore || !remote) return;
       const clean = sanitizeProfile(remote);
       this.profile.set(clean);
       this.writeCache(uid, clean);
@@ -63,32 +58,26 @@ export class NutritionProfileService {
     }
   }
 
-  update(patch: Partial<Profile>): void {
+  /**
+   * Writes the profile to the account and, once the write is accepted, makes it the one the whole app uses.
+   * Resolves false, with nothing changed, when it could not be written.
+   */
+  async save(next: Partial<Profile>): Promise<boolean> {
     const uid = this.uid;
-    if (!uid) return;
-    const next = sanitizeProfile({ ...this.profile(), ...patch });
-    this.profile.set(next);
-    this.writeCache(uid, next);
-    this.dirty = true;
-    this.clearTimer();
-    this.timer = setTimeout(() => void this.flush(), SAVE_DELAY_MS);
-  }
-
-  async flush(): Promise<void> {
-    this.clearTimer();
-    if (!this.dirty || !this.uid) return;
-    this.dirty = false;
+    if (!uid) return false;
+    const clean = sanitizeProfile(next);
     try {
-      await this.data.saveProfile(this.profile());
+      await this.data.saveProfile(clean);
     } catch (error) {
-      this.dirty = true;
       console.warn('Could not save the nutrition profile', error);
+      return false;
     }
-  }
-
-  private clearTimer(): void {
-    if (this.timer) clearTimeout(this.timer);
-    this.timer = null;
+    if (this.uid === uid) {
+      this.saves++;
+      this.profile.set(clean);
+      this.writeCache(uid, clean);
+    }
+    return true;
   }
 
   private readCache(uid: string): Profile {

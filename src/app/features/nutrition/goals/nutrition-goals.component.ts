@@ -1,9 +1,13 @@
-import { Component, OnDestroy, effect, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { HasUnsavedChanges } from '../../../core/guards/unsaved-changes.guard';
 import { ActivityLevel, Profile, Sex } from '../../../core/nutrition/models';
 import { NutritionProfileService } from '../../../core/nutrition/services/nutrition-profile.service';
+import { ToastService } from '../../../core/nutrition/services/toast.service';
+import { computePlan } from '../../../core/nutrition/utils/nutrition';
+import { sameProfile, sanitizeProfile } from '../../../core/nutrition/utils/profile';
 import { LanguageService } from '../../../core/services/language.service';
 import { NumberInputDirective } from '../shared/number-input/number-input.directive';
 
@@ -29,11 +33,12 @@ const RATES = [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5];
   templateUrl: './nutrition-goals.component.html',
   styleUrls: ['./nutrition-goals.component.css'],
 })
-export class NutritionGoalsComponent implements OnDestroy {
+export class NutritionGoalsComponent implements HasUnsavedChanges {
   private profileService = inject(NutritionProfileService);
   private language = inject(LanguageService);
+  private toast = inject(ToastService);
+  private translate = inject(TranslateService);
 
-  readonly plan = this.profileService.plan;
   readonly rates = RATES;
   readonly activities: { value: ActivityLevel; key: string }[] = [
     { value: 'sedentary', key: 'NUTRITION.ACTIVITY.SEDENTARY' },
@@ -44,18 +49,23 @@ export class NutritionGoalsComponent implements OnDestroy {
   ];
 
   form: FormState = this.toForm(this.profileService.profile());
-  /** Once the user types, a profile arriving from the server must not overwrite what they are editing. */
-  private edited = false;
+  /** What the user typed, cleaned up the way it is saved. Null until they change something. */
+  private readonly typed = signal<Profile | null>(null);
+  /** The numbers follow what is typed, so a change can be tried out before it is saved. */
+  readonly plan = computed(() => computePlan(this.typed() ?? this.profileService.profile()));
+  /** True while the form holds changes that are not saved yet. */
+  readonly dirty = computed(() => {
+    const typed = this.typed();
+    return typed !== null && !sameProfile(typed, this.profileService.profile());
+  });
+  readonly saving = signal(false);
 
   constructor() {
+    // Until the user changes something the form follows the saved profile, e.g. when it arrives from the server.
     effect(() => {
-      const profile = this.profileService.profile();
-      if (!this.edited) this.form = this.toForm(profile);
+      const saved = this.profileService.profile();
+      if (this.typed() === null) this.form = this.toForm(saved);
     });
-  }
-
-  ngOnDestroy(): void {
-    void this.profileService.flush();
   }
 
   private toForm(p: Profile): FormState {
@@ -88,18 +98,40 @@ export class NutritionGoalsComponent implements OnDestroy {
   }
 
   onProfileChange(): void {
-    this.edited = true;
     const f = this.form;
-    this.profileService.update({
-      sex: f.sex,
-      age: f.age,
-      heightCm: f.heightCm,
-      weightKg: f.weightKg,
-      bodyFatPct: f.bodyFatPct,
-      activity: f.activity,
-      weeklyChangeKg: Number(f.rate),
-      customTargetKcal: f.customTarget,
-    });
+    this.typed.set(
+      sanitizeProfile({
+        sex: f.sex,
+        age: f.age,
+        heightCm: f.heightCm,
+        weightKg: f.weightKg,
+        bodyFatPct: f.bodyFatPct,
+        activity: f.activity,
+        weeklyChangeKg: Number(f.rate),
+        customTargetKcal: f.customTarget,
+      }),
+    );
+  }
+
+  async save(): Promise<void> {
+    const typed = this.typed();
+    if (!typed || this.saving()) return;
+    this.saving.set(true);
+    try {
+      if (await this.profileService.save(typed)) {
+        this.typed.set(null);
+        this.toast.show(`✓ ${this.translate.instant('NUTRITION.GOALS.SAVED')}`);
+      } else {
+        this.toast.show(this.translate.instant('NUTRITION.ENTRY.SAVE_FAILED'));
+      }
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  /** Leaving with unsaved changes needs the user's yes. */
+  canLeave(): boolean {
+    return !this.dirty() || confirm(this.translate.instant('NUTRITION.ENTRY.DISCARD_CONFIRM'));
   }
 
   goalKey(rate: number): string {
