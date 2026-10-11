@@ -18,9 +18,15 @@ export class StatsShellComponent implements OnInit, OnDestroy {
     { path: 'workouts',    labelKey: 'STATS.TAB_WORKOUTS',    label: 'Workouts' },
     { path: 'duration',    labelKey: 'STATS.TAB_DURATION',    label: 'Duration' },
     { path: 'health',      labelKey: 'STATS.TAB_HEALTH',      label: 'Health' },
+    { path: 'nutrition',   labelKey: 'STATS.TAB_NUTRITION',   label: 'Nutrition' },
   ];
 
   constructor(private router: Router, private route: ActivatedRoute) {}
+
+  /** The nutrition tab shows rolling windows (7/30 days), so the year selector doesn't apply to it. */
+  get showYearNav(): boolean {
+    return !this.router.url.split('?')[0].endsWith('/nutrition');
+  }
 
   ngOnInit() {
     // Read year from query param if present

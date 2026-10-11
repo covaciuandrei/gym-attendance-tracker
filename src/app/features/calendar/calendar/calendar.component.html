@@ -99,6 +99,7 @@
         (click)="selectedTab = 'workout'">Workout</button>
       <button class="tab-btn" [class.active]="selectedTab === 'health'" (click)="selectedTab = 'health'">Health
         💊</button>
+      <a class="tab-btn link" *ngIf="selectedDate" [routerLink]="['/nutrition', 'day', selectedDate.fullDate]">Food 🍽️</a>
     </div>
 
     <!-- Workout Section -->

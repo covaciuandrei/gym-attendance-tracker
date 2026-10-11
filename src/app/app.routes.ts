@@ -42,12 +42,23 @@ export const routes: Routes = [
       { path: 'workouts',    component: WorkoutsStatsComponent },
       { path: 'duration',    component: DurationStatsComponent },
       { path: 'health',      component: HealthStatsComponent },
+      {
+        path: 'nutrition',
+        loadComponent: () => import('./features/nutrition/stats/nutrition-stats.component').then(m => m.NutritionStatsComponent)
+      },
     ]
   },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'workout-types', component: WorkoutTypesComponent, canActivate: [authGuard] },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
   { path: 'health', component: HealthComponent, canActivate: [authGuard] },
+
+  // Nutrition (calorie tracker): loaded on demand, so it isn't part of the initial bundle
+  {
+    path: 'nutrition',
+    canActivate: [authGuard],
+    loadChildren: () => import('./features/nutrition/nutrition.routes').then(m => m.NUTRITION_ROUTES)
+  },
 
   // Default redirect
   { path: '', redirectTo: '/calendar', pathMatch: 'full' },

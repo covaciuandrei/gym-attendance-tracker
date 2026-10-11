@@ -56,17 +56,24 @@
 .nav-label {
   font-size: 0.75rem;
   font-weight: 500;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-@media (max-width: 480px) {
+/* Five tabs: share the width instead of using fixed gaps, so they fit narrow phones. */
+@media (max-width: 640px) {
   .bottom-nav {
-    gap: 20px;
-    padding: 10px 16px;
+    gap: 2px;
+    padding: 10px 8px;
     padding-bottom: max(10px, env(safe-area-inset-bottom));
   }
 
   .nav-item {
-    padding: 8px 16px;
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 8px 2px;
   }
 
   .nav-icon {

@@ -22,6 +22,8 @@ export class AppComponent implements OnInit {
 
   // Routes where bottom nav should be hidden
   private noNavRoutes = ['/login', '/register', '/forgot-password', '/auth/action'];
+  // The meal editor needs the whole screen
+  private noNavPatterns = [/^\/nutrition\/day\/[^/]+\/entry\//];
 
   constructor(
     private authService: AuthService,
@@ -59,7 +61,8 @@ export class AppComponent implements OnInit {
 
   private updateNavVisibility() {
     const currentPath = this.router.url.split('?')[0];
-    const isNoNavRoute = this.noNavRoutes.some(route => currentPath.startsWith(route));
+    const isNoNavRoute = this.noNavRoutes.some(route => currentPath.startsWith(route))
+      || this.noNavPatterns.some(pattern => pattern.test(currentPath));
     this.showNav = this.isAuthenticated && !isNoNavRoute;
   }
 }
