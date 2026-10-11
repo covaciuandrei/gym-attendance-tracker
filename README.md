@@ -73,6 +73,31 @@ A modern, mobile-responsive web application designed to help you and your friend
         match /users/{userId}/{document=**} {
           allow read, write: if request.auth != null && request.auth.uid == userId;
         }
+
+        // Food tracker access (see "Who can use the food tracker" below): one entry per account.
+        // The admin is the account with the custom claim `admin: true`.
+        function isAdmin() {
+          return request.auth != null && request.auth.token.get('admin', false) == true;
+        }
+
+        match /nutritionAccess/{uid} {
+          allow get: if request.auth != null && (request.auth.uid == uid || isAdmin());
+          allow list: if isAdmin();
+
+          // an account may register itself once, switched off
+          allow create: if request.auth != null
+            && request.auth.uid == uid
+            && request.auth.token.email_verified == true
+            && request.resource.data.keys().hasOnly(['email', 'displayName', 'enabled', 'createdAt'])
+            && request.resource.data.keys().hasAll(['email', 'enabled', 'createdAt'])
+            && request.resource.data.enabled == false
+            && request.resource.data.email == request.auth.token.email
+            && request.resource.data.createdAt == request.time
+            && (!('displayName' in request.resource.data)
+                || (request.resource.data.displayName is string && request.resource.data.displayName.size() <= 100));
+
+          allow create, update, delete: if isAdmin();
+        }
       }
     }
     ```
@@ -158,7 +183,7 @@ Navigate to `http://localhost:4200/`. The application will automatically reload 
 
 ## 🍽️ Food & calorie tracker
 
-The **Food** tab (second tab of the bottom navigation) is a calorie tracker inside the same account:
+The **Food** tab (second tab of the bottom navigation, shown to accounts the admin has switched on) is a calorie tracker inside the same account:
 
 -   **Today card and calendar**: a calorie ring with macro bars for today, and a monthly/yearly calendar coloured by how close each day is to your target.
 -   **Meals**: any number of meals per day, each with an optional photo, a note, a meal type and a time. *Add again* re-logs a meal you ate before.
@@ -167,24 +192,34 @@ The **Food** tab (second tab of the bottom navigation) is a calorie tracker insi
 -   **Stats**: 7/30-day averages, daily calories against the target, macro split and a weight log (**Stats → Nutrition**).
 -   **Backup**: export/import (with photos) and *Delete all nutrition data* on the Goals page. Meals logged in the former standalone calorie-tracker app on the same origin are offered for a one-time import.
 
-All of it lives under the signed-in user (see *Database Schema* below), so the Firestore rule from the Firebase setup already protects it; no extra rules are needed.
+All of it lives under the signed-in user (see *Database Schema* below), so the Firestore rule from the Firebase setup already protects it. Who may use the food tracker at all is decided separately, by the admin (next section).
+
+### Who can use the food tracker
+
+The food tracker is **off for every account until the admin switches it on**. The admin is the account that carries the Firebase custom claim `admin: true`.
+
+-   **Admin**: **Settings → Food tracker access** lists every account with a switch. Switching an account on or off takes effect in its open app immediately (the Food tab appears or disappears) and in the AI within about 30 seconds. The admin always has access and sees no switch for its own account.
+-   **New accounts** register themselves in the list on their first sign-in, switched off. Accounts that existed before the feature were added once with a script, also switched off.
+-   **Switched-off accounts** see no Food tab, no Nutrition tab in Stats, no Nutrition goals and no Food link in the calendar, and the Food pages send them back to the calendar. The AI endpoint refuses them (403).
+-   **Where it is stored**: `nutritionAccess/{uid}` in Firestore (`email`, `displayName`, `enabled`, `createdAt`, and `updatedAt` / `updatedBy` after the admin changes it). Accounts can read only their own entry and cannot change it; only the admin can (see the rules above).
+-   **Making an account the admin** (one time, with the Firebase Admin SDK or the Admin REST API): `setCustomUserClaims(uid, { admin: true })`. The claim is part of the signed ID token, so it cannot be forged; the account sees it after its token refreshes (opening Settings forces that). No email address is written in the code.
+
+The switches decide what the app offers and who can spend the Gemini key. Entries a switched-off account writes inside its own `users/{uid}` space are not blocked by the rules, but nothing in the app lets it get to them and it has no AI.
 
 ### AI API (`api/`)
 
 `/api/analyze` and `/api/health` are Azure Functions (Node) deployed next to the frontend on Azure Static Web Apps. The Gemini key stays on the server and never reaches the browser.
 
 -   **Sign-in required**: the app sends the Firebase ID token in an `X-Firebase-Token` header (Azure replaces `Authorization`). The API verifies the RS256 signature against Google's public keys, the project, the expiry and that the email is verified.
--   **Limits**: 30 estimates per 10 minutes and 200 per day for each user; repeated bad tokens are throttled per IP. Models are tried in order (`gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`, `gemini-3.6-flash`, `gemini-3.8-flash`) within a 38 s budget.
+-   **Switched on by the admin**: after that, the API reads the account's own `nutritionAccess` entry from Firestore with that same token (so Firestore's rules decide, and no service account is needed). The admin claim skips this step. Answers are remembered for 30 s (on) or 10 s (off), so nobody can turn the API into a read loop. If Firestore cannot be reached the request fails with 503, never open.
+-   **Limits**: 30 estimates per 10 minutes and 200 per day for each user, kept in memory per function instance (a guard against runaway loops; the switch above is the real access control); repeated bad tokens are throttled per IP. Models are tried in order (`gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`, `gemini-3.6-flash`, `gemini-3.8-flash`) within a 38 s budget.
 -   **Settings** (Azure app settings, or `.env.local` for local development):
 
 | Setting | Required | Purpose |
 |---------|----------|---------|
 | `GEMINI_API_KEY` | yes | Google AI Studio key (a free-tier key is enough for personal use) |
 | `FIREBASE_PROJECT_ID` | yes | Project whose sign-in tokens are accepted |
-| `ALLOWED_EMAILS` | no | Comma-separated list; when set, only these accounts can use the AI |
 | `GEMINI_MODELS` | no | Comma-separated model list that replaces the default fallback chain |
-
-Anyone can register in the app, so set `ALLOWED_EMAILS` if you do not want other accounts to spend your Gemini quota.
 
 ### Local development
 
@@ -225,6 +260,7 @@ npm run deploy -- --settings   # also push GEMINI_API_KEY, FIREBASE_PROJECT_ID (
 /profile        - User profile & menu
 /workout-types  - Manage training categories
 /settings       - App settings
+/settings/access - Switch the food tracker on or off per account (admin only)
 /nutrition      - Food home: Today card and calendar (protected)
 /nutrition/day/:date           - Meals of one day (protected)
 /nutrition/day/:date/entry/:id - Meal editor, `new` adds a meal (protected)
@@ -257,6 +293,9 @@ The app uses a multi-tenant Firestore structure:
 
 /users/{userId}/bodyWeights/{date}
   - kg, updatedAt
+
+/nutritionAccess/{userId}
+  - email, displayName, enabled, createdAt (updatedAt, updatedBy once the admin changed it)
 ```
 
 This structure ensures:
