@@ -32,7 +32,7 @@ A modern, mobile-responsive web application designed to help you and your friend
 -   **Authentication**: Firebase Auth
 -   **State Management**: RxJS
 -   **AI**: Google Gemini, called through a small Azure Functions API (`api/`) that checks the Firebase sign-in
--   **Hosting**: Azure Static Web Apps (frontend + API). nginx, Docker and Netlify also work, without the AI endpoint
+-   **Hosting**: Azure Static Web Apps (frontend + API) at https://tracker.andreicovaciu.dev, deployed from `main` by GitHub Actions. nginx, Docker and Netlify also work, without the AI endpoint
 
 ## 🚀 Getting Started
 
@@ -232,18 +232,22 @@ The AI estimate needs the API: `npm start` runs it next to the dev server, and o
 
 ## ☁️ Azure Static Web Apps deployment
 
-The frontend and the AI API are published together to an Azure Static Web App (the Free plan is enough).
+The frontend and the AI API are published together to an Azure Static Web App (`swa-calorie-tracker` in the resource group `rg-calorie-tracker`; the Free plan is enough). The production site is **https://tracker.andreicovaciu.dev**.
 
-```bash
-az login
-npm run deploy                 # build, then publish the frontend and the API
-npm run deploy -- --settings   # also push GEMINI_API_KEY, FIREBASE_PROJECT_ID (and the optional settings) from .env.local / .env
-```
+**Only `main` deploys.** Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): it tests the API, builds the app, publishes the frontend and the API, then checks that the live site serves the new build and that `/api/health` reports the API as configured. No other branch deploys, so merge a branch into `main` to ship it. A run can also be started by hand from the *Actions* tab (on `main`).
 
--   The script targets the app `swa-calorie-tracker` in resource group `rg-calorie-tracker`; override them with `SWA_NAME` and `SWA_RESOURCE_GROUP`.
--   The Firebase web config comes from `.env` at build time, exactly like `npm run build`.
+One-time setup (done for this repository):
+
+-   **Repository secrets** (Settings → Secrets and variables → Actions):
+    -   `AZURE_STATIC_WEB_APPS_API_TOKEN`: `az staticwebapp secrets list --name swa-calorie-tracker --resource-group rg-calorie-tracker --query properties.apiKey -o tsv`
+    -   the Firebase web config, baked into the bundle at build time like `npm run build` does from `.env`: `FIREBASE_API_KEY`, `FIREBASE_AUTH_DOMAIN`, `FIREBASE_PROJECT_ID`, `FIREBASE_STORAGE_BUCKET`, `FIREBASE_MESSAGING_SENDER_ID`, `FIREBASE_APP_ID`, `FIREBASE_MEASUREMENT_ID` (`gh secret set --env-file .env`)
+-   **API settings** live in the Static Web App, not in GitHub: `az staticwebapp appsettings set --name swa-calorie-tracker --resource-group rg-calorie-tracker --setting-names GEMINI_API_KEY=... FIREBASE_PROJECT_ID=...` (and the optional `GEMINI_MODELS`).
+-   **Custom domain**: a `tracker` CNAME at the DNS provider pointing to the app's `*.azurestaticapps.net` host name, then `az staticwebapp hostname set --name swa-calorie-tracker --resource-group rg-calorie-tracker --hostname tracker.andreicovaciu.dev`. Azure validates the CNAME and issues the certificate.
+-   Add the host name to **Firebase Console → Authentication → Settings → Authorized domains**.
+
+Good to know:
+
 -   Routing, the SPA fallback and cache headers live in `src/staticwebapp.config.json`; the API runs on Node 22.
--   Add the site's host name (and any custom domain) to **Firebase Console → Authentication → Settings → Authorized domains**.
 -   Verification and password-reset emails use the Firebase action URL, so they work from any host. If you point the template at your own domain instead, the app handles the link at `/auth/action`.
 -   The nginx (`deploy.sh`), Docker and Netlify setups serve the frontend only. There is no `/api` there, so the AI estimate is unavailable and meals are logged by hand.
 

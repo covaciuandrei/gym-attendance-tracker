@@ -1,0 +1,100 @@
+# Production deploys come from main and only from main: every push to main builds the app and publishes the frontend
+# and the AI API to the Azure Static Web App behind https://tracker.andreicovaciu.dev.
+# Required repository secrets: AZURE_STATIC_WEB_APPS_API_TOKEN and the FIREBASE_* values (see the README).
+name: Deploy to Azure Static Web Apps
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One deploy at a time. A running deploy is never cancelled halfway; the next one waits.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build and deploy
+    # A manual run started from any other branch does nothing.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://tracker.andreicovaciu.dev
+    env:
+      SITE_URL: https://tracker.andreicovaciu.dev
+      # The Firebase web config is baked into the bundle at build time, like `npm run build` does from .env locally.
+      FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+      FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
+      FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+      FIREBASE_STORAGE_BUCKET: ${{ secrets.FIREBASE_STORAGE_BUCKET }}
+      FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}
+      FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+      FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Check the secrets
+        run: |
+          missing=0
+          for name in FIREBASE_API_KEY FIREBASE_AUTH_DOMAIN FIREBASE_PROJECT_ID FIREBASE_STORAGE_BUCKET FIREBASE_MESSAGING_SENDER_ID FIREBASE_APP_ID; do
+            if [ -z "${!name}" ]; then echo "::error::The repository secret $name is not set"; missing=1; fi
+          done
+          if [ -z "$DEPLOY_TOKEN" ]; then echo "::error::The repository secret AZURE_STATIC_WEB_APPS_API_TOKEN is not set"; missing=1; fi
+          exit $missing
+        env:
+          DEPLOY_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test the API
+        run: npm run test:api
+
+      - name: Build the app
+        run: npm run build
+
+      - name: Deploy the frontend and the API
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: upload
+          # Already built above. The API has no dependencies, so there is nothing to build for it either.
+          skip_app_build: true
+          skip_api_build: true
+          app_location: dist/gym-attendance-tracker/browser
+          api_location: api
+          # Only main goes to production; any other branch would become a preview environment.
+          production_branch: main
+
+      - name: Wait for the live site to serve this build
+        run: |
+          expected=$(grep -o 'main-[A-Za-z0-9]*\.js' dist/gym-attendance-tracker/browser/index.html | head -1)
+          echo "Looking for $expected on $SITE_URL"
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$SITE_URL/?check=$attempt" | grep -q "$expected"; then
+              echo "$SITE_URL is serving $expected"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::$SITE_URL is not serving $expected five minutes after the deploy"
+          exit 1
+
+      - name: Check the live API
+        run: |
+          health=$(curl -fsS "$SITE_URL/api/health")
+          echo "$health"
+          echo "$health" | grep -q '"ok":true' && echo "$health" | grep -q '"configured":true'

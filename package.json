@@ -9,8 +9,7 @@
     "watch": "npm run config && ng build --watch --configuration development",
     "test": "npm run config && ng test",
     "dev:api": "node scripts/dev-api.mjs",
-    "test:api": "node --test api/test/*.test.js",
-    "deploy": "node scripts/deploy.mjs"
+    "test:api": "node --test api/test/*.test.js"
   },
   "private": true,
   "dependencies": {
