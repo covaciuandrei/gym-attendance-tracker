@@ -38,7 +38,7 @@ jobs:
       FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_MEASUREMENT_ID }}
     steps:
       - name: Check out the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check the secrets
         run: |
@@ -52,7 +52,7 @@ jobs:
           DEPLOY_TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
@@ -71,13 +71,10 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           action: upload
-          # Already built above. The API has no dependencies, so there is nothing to build for it either.
+          # The app is already built above; the API has no dependencies and is published as it is.
           skip_app_build: true
-          skip_api_build: true
           app_location: dist/gym-attendance-tracker/browser
           api_location: api
-          # Only main goes to production; any other branch would become a preview environment.
-          production_branch: main
 
       - name: Wait for the live site to serve this build
         run: |
