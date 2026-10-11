@@ -24,6 +24,18 @@ describe('mapFailure', () => {
     expect(mapFailure(400, 'empty_input')).toBe('invalid_input');
     expect(mapFailure(502, 'ai_unavailable')).toBe('unavailable');
     expect(mapFailure(404, undefined)).toBe('unavailable');
-    expect(mapFailure(500, undefined)).toBe('unknown');
+  });
+
+  it('treats a failing or missing server as unavailable, not as an unknown problem', () => {
+    // The dev server proxy answers 500 with no body while the local API is not running.
+    expect(mapFailure(500, undefined)).toBe('unavailable');
+    expect(mapFailure(504, undefined)).toBe('unavailable');
+    // A gateway error page is not our API saying it is unconfigured.
+    expect(mapFailure(503, undefined)).toBe('unavailable');
+  });
+
+  it('keeps "unknown" for answers it does not recognise', () => {
+    expect(mapFailure(302, undefined)).toBe('unknown');
+    expect(mapFailure(418, undefined)).toBe('unknown');
   });
 });

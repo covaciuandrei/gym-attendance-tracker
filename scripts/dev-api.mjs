@@ -96,6 +96,12 @@ const server = http.createServer(async (req, res) => {
 });
 
 const port = Number(process.env.API_PORT || 7071);
+server.on('error', (err) => {
+  if (err.code !== 'EADDRINUSE') throw err;
+  // `npm start` launches this too, so a copy that is already running is not an error.
+  console.log(`Dev API: port ${port} is already in use, assuming it is already running.`);
+  process.exit(0);
+});
 server.listen(port, () => {
   const configured = Boolean(process.env.GEMINI_API_KEY && process.env.FIREBASE_PROJECT_ID);
   console.log(`Dev API on http://localhost:${port}  (configured: ${configured}, ${emulator ? 'Auth emulator tokens' : 'real Firebase tokens'})`);

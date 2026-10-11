@@ -223,12 +223,12 @@ The switches decide what the app offers and who can spend the Gemini key. Entrie
 ### Local development
 
 ```bash
-npm run dev:api      # runs the real API code on http://localhost:7071 (needs GEMINI_API_KEY in .env.local)
-npm start            # ng serve; /api is proxied to the dev API (proxy.conf.json)
+npm start            # ng serve plus the local AI API (http://localhost:7071); /api is proxied to it (proxy.conf.json)
+npm run dev:api      # the local AI API on its own (needs GEMINI_API_KEY in .env.local)
 npm run test:api     # API unit tests (node:test, no dependencies)
 ```
 
-The AI estimate needs the API, so it only works while `npm run dev:api` is running and on the Azure deployment. Logging meals by hand works everywhere.
+The AI estimate needs the API: `npm start` runs it next to the dev server, and on the Azure deployment it is always there. If the API is not running, the estimate says the AI service is unavailable. Logging meals by hand works everywhere.
 
 ## ☁️ Azure Static Web Apps deployment
 

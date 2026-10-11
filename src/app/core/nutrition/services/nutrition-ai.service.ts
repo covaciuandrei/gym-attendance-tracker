@@ -45,11 +45,12 @@ export function mapFailure(status: number, error: string | undefined): AiErrorCo
     if (error === 'too_many_attempts') return 'too_many_attempts';
     return error === 'rate_limited' ? 'rate_limited' : 'busy';
   }
-  if (status === 503) return error === 'auth_unavailable' || error === 'access_unavailable' ? 'unavailable' : 'not_configured';
+  if (status === 503 && error === 'not_configured') return 'not_configured';
   if (status === 413) return 'too_large';
   if (status === 422) return error === 'ai_blocked' ? 'blocked' : 'rejected';
   if (status === 400) return 'invalid_input';
-  if (status === 502 || status === 404 || status === 504) return 'unavailable';
+  // No API at this address (404), or it, or a gateway in front of it, is down or failing (5xx).
+  if (status === 404 || status >= 500) return 'unavailable';
   return 'unknown';
 }
 
@@ -76,7 +77,12 @@ export class NutritionAiService {
     if (res.status === 401) res = await this.post(body, true);
 
     const json = await this.readJson(res);
-    if (!res.ok) throw new AiError(mapFailure(res.status, json?.error));
+    if (!res.ok) {
+      // Our API always answers with a JSON error code. Anything else came from something in front of it, or nothing
+      // is serving /api at all (locally: the dev API isn't running).
+      if (typeof json?.error !== 'string') console.warn(`The AI request got HTTP ${res.status} without an API error. Is the API running? Locally: npm start, or npm run dev:api.`);
+      throw new AiError(mapFailure(res.status, json?.error));
+    }
     if (!json || typeof json !== 'object' || !Array.isArray(json.items)) throw new AiError('unknown');
     return json as AnalysisResult;
   }
