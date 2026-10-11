@@ -57,7 +57,18 @@ test.beforeEach(() => resetKeyCache());
 
 test('accepts a valid Firebase ID token and returns the identity', async () => {
   const user = await verify(signToken(key), jwksFetch([key]));
-  assert.deepEqual(user, { uid: 'user-1', email: 'Someone@Example.com', emailVerified: true });
+  assert.deepEqual(user, { uid: 'user-1', email: 'Someone@Example.com', emailVerified: true, admin: false });
+});
+
+test('the admin claim counts only when it is exactly true, and cannot be added to a signed token', async () => {
+  assert.equal((await verify(signToken(key, { admin: true }), jwksFetch([key]))).admin, true);
+  for (const value of ['true', 1, 'yes', null, {}]) {
+    assert.equal((await verify(signToken(key, { admin: value }), jwksFetch([key]))).admin, false, `admin: ${JSON.stringify(value)}`);
+  }
+
+  const [head, body, signature] = signToken(key).split('.');
+  const claims = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
+  await rejects(verify(`${head}.${b64({ ...claims, admin: true })}.${signature}`, jwksFetch([key])), 'bad_signature');
 });
 
 test('reports an unverified email without rejecting the token', async () => {

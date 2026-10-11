@@ -108,6 +108,8 @@ async function verifyIdToken(token, { projectId, fetchImpl = globalThis.fetch, n
     uid: payload.sub,
     email: typeof payload.email === 'string' ? payload.email : null,
     emailVerified: payload.email_verified === true,
+    // Custom claim set on the owner's account with the Admin API; it is part of the signed token, so it can't be forged.
+    admin: payload.admin === true,
   };
 }
 

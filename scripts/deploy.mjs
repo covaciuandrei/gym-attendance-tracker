@@ -13,8 +13,8 @@ const APP = process.env.SWA_NAME || 'swa-calorie-tracker';
 const RESOURCE_GROUP = process.env.SWA_RESOURCE_GROUP || 'rg-calorie-tracker';
 const OUTPUT = 'dist/gym-attendance-tracker/browser';
 
-// Settings read by the API (api/lib). GEMINI_MODELS and ALLOWED_EMAILS are optional.
-const API_SETTINGS = ['GEMINI_API_KEY', 'FIREBASE_PROJECT_ID', 'GEMINI_MODELS', 'ALLOWED_EMAILS'];
+// Settings read by the API (api/lib). GEMINI_MODELS is optional. Who may use the AI is managed in the app, not here.
+const API_SETTINGS = ['GEMINI_API_KEY', 'FIREBASE_PROJECT_ID', 'GEMINI_MODELS'];
 
 function run(command, args, env = {}) {
   const result = spawnSync(command, args, { stdio: 'inherit', cwd: root, env: { ...process.env, ...env } });

@@ -41,9 +41,12 @@ function emulatorVerifier(projectId) {
     }
     if (claims.aud !== projectId) throw new AuthError('bad_audience');
     if (!(claims.exp * 1000 > Date.now())) throw new AuthError('expired');
-    return { uid: claims.user_id || claims.sub, email: claims.email ?? null, emailVerified: claims.email_verified === true };
+    return { uid: claims.user_id || claims.sub, email: claims.email ?? null, emailVerified: claims.email_verified === true, admin: claims.admin === true };
   };
 }
+
+// The access switches live in Firestore; with the emulator the API reads them from the Firestore emulator.
+if (emulator) process.env.FIRESTORE_EMULATOR_HOST ??= '127.0.0.1:8080';
 
 const deps = emulator ? { verifyToken: emulatorVerifier(process.env.FIREBASE_PROJECT_ID) } : {};
 const log = Object.assign((...args) => console.log('[api]', ...args), { warn: console.warn, error: console.error });

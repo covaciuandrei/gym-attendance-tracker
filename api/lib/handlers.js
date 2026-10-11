@@ -2,6 +2,7 @@
 
 const { clientIp, hit, LIMITS } = require('./security');
 const { verifyIdToken, AuthError } = require('./firebase-auth');
+const { hasNutritionAccess, AccessError } = require('./access');
 const { validateRequest, analyze } = require('./analyze');
 
 // Static Web Apps replaces the standard Authorization header before it reaches the API, so the Firebase ID token
@@ -30,19 +31,12 @@ function parseBody(req) {
 
 const isConfigured = (env) => Boolean(env.GEMINI_API_KEY && env.FIREBASE_PROJECT_ID);
 
-function allowedEmails(env) {
-  return new Set(
-    String(env.ALLOWED_EMAILS || '')
-      .split(',')
-      .map((email) => email.trim().toLowerCase())
-      .filter(Boolean),
-  );
-}
-
 function verifier(env, deps) {
   if (deps?.verifyToken) return deps.verifyToken;
   return (token) => verifyIdToken(token, { projectId: env.FIREBASE_PROJECT_ID, fetchImpl: deps?.fetchImpl, now: deps?.now });
 }
+
+const accessChecker = (deps) => deps?.checkAccess || hasNutritionAccess;
 
 const tooManyAttempts = () => json(429, { error: 'too_many_attempts' }, { 'Retry-After': '600' });
 
@@ -68,8 +62,16 @@ async function authenticate({ headers, env, deps }) {
 
   if (!user.emailVerified) return { response: json(403, { error: 'email_not_verified' }) };
 
-  const allowed = allowedEmails(env);
-  if (allowed.size > 0 && !allowed.has(String(user.email || '').toLowerCase())) return { response: json(403, { error: 'not_allowed' }) };
+  // The admin always has access. Everybody else must have been switched on by the admin in the app.
+  if (!user.admin) {
+    try {
+      const allowed = await accessChecker(deps)({ uid: user.uid, idToken: token, env, fetchImpl: deps?.fetchImpl, now: deps?.now });
+      if (!allowed) return { response: json(403, { error: 'not_allowed' }) };
+    } catch (err) {
+      if (err instanceof AccessError && err.code === 'unauthorized') return { response: json(401, { error: 'unauthorized' }) };
+      return { response: json(503, { error: 'access_unavailable' }) };
+    }
+  }
 
   return { user };
 }

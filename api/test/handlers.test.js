@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 
 const { handleAnalyze, handleHealth, parseBody, TOKEN_HEADER } = require('../lib/handlers');
 const { AuthError } = require('../lib/firebase-auth');
+const { AccessError } = require('../lib/access');
 const { resetLimits, LIMITS } = require('../lib/security');
 const { DEFAULT_MODELS } = require('../lib/analyze');
 
@@ -34,10 +35,25 @@ function fakeVerifier(users) {
   };
 }
 
-const alice = { uid: 'alice', email: 'Alice@example.com', emailVerified: true };
-const bob = { uid: 'bob', email: 'bob@example.com', emailVerified: true };
-const mallory = { uid: 'mallory', email: 'mallory@example.com', emailVerified: false };
-const deps = (extra = {}) => ({ verifyToken: fakeVerifier({ alice, bob, mallory }), fetchImpl: geminiOk, ...extra });
+const alice = { uid: 'alice', email: 'Alice@example.com', emailVerified: true, admin: false };
+const bob = { uid: 'bob', email: 'bob@example.com', emailVerified: true, admin: false };
+const carol = { uid: 'carol', email: 'carol@example.com', emailVerified: true, admin: false };
+const mallory = { uid: 'mallory', email: 'mallory@example.com', emailVerified: false, admin: false };
+const root = { uid: 'root', email: 'owner@example.com', emailVerified: true, admin: true };
+
+// The admin switched alice and bob on; carol has not been switched on.
+const switchedOn = new Set(['alice', 'bob']);
+function accessCheck() {
+  const calls = [];
+  const fn = async (request) => {
+    calls.push(request);
+    return switchedOn.has(request.uid);
+  };
+  fn.calls = calls;
+  return fn;
+}
+
+const deps = (extra = {}) => ({ verifyToken: fakeVerifier({ alice, bob, carol, mallory, root }), fetchImpl: geminiOk, checkAccess: accessCheck(), ...extra });
 const analyzeAs = (token, extra = {}) =>
   handleAnalyze({ method: 'POST', headers: withToken(token), body: { note: '2 eggs' }, env: ENV, deps: deps(), ...extra });
 const body = (res) => JSON.parse(res.body);
@@ -68,12 +84,66 @@ test('is unavailable when the server is not configured', async () => {
   assert.equal(body(await analyzeAs('alice', { env: {} })).error, 'not_configured');
 });
 
-test('an optional allow list restricts who can use the AI, ignoring case', async () => {
-  const env = { ...ENV, ALLOWED_EMAILS: ' alice@EXAMPLE.com , someone@else.com ' };
-  assert.equal((await analyzeAs('alice', { env })).status, 200);
-  const denied = await analyzeAs('bob', { env });
+test('only accounts the admin switched on can use the AI', async () => {
+  assert.equal((await analyzeAs('alice')).status, 200);
+
+  const denied = await analyzeAs('carol');
   assert.equal(denied.status, 403);
   assert.equal(body(denied).error, 'not_allowed');
+});
+
+test('the admin always has access, without anybody having to switch them on', async () => {
+  const checkAccess = accessCheck();
+  const res = await analyzeAs('root', { deps: deps({ checkAccess }) });
+  assert.equal(res.status, 200);
+  assert.equal(checkAccess.calls.length, 0);
+});
+
+test('the access check gets the account, its own token and the environment, and runs before any AI call', async () => {
+  const checkAccess = accessCheck();
+  let geminiCalls = 0;
+  const fetchImpl = async (...args) => {
+    geminiCalls++;
+    return geminiOk(...args);
+  };
+
+  await analyzeAs('carol', { deps: deps({ checkAccess, fetchImpl }) });
+  assert.equal(geminiCalls, 0, 'a refused account must never reach the AI');
+  assert.equal(checkAccess.calls.length, 1);
+  assert.equal(checkAccess.calls[0].uid, 'carol');
+  assert.equal(checkAccess.calls[0].idToken, 'carol');
+  assert.equal(checkAccess.calls[0].env.FIREBASE_PROJECT_ID, ENV.FIREBASE_PROJECT_ID);
+});
+
+test('an unverified email is refused before access is even looked at', async () => {
+  const checkAccess = accessCheck();
+  assert.equal((await analyzeAs('mallory', { deps: deps({ checkAccess }) })).status, 403);
+  assert.equal(checkAccess.calls.length, 0);
+});
+
+test('when the switches cannot be read the request fails closed with a retryable error', async () => {
+  const unavailable = async () => {
+    throw new AccessError('unavailable');
+  };
+  const res = await analyzeAs('alice', { deps: deps({ checkAccess: unavailable }) });
+  assert.equal(res.status, 503);
+  assert.equal(body(res).error, 'access_unavailable');
+
+  const unexpected = async () => {
+    throw new TypeError('boom');
+  };
+  assert.equal((await analyzeAs('alice', { deps: deps({ checkAccess: unexpected }) })).status, 503);
+
+  const rejected = async () => {
+    throw new AccessError('unauthorized');
+  };
+  const retry = await analyzeAs('alice', { deps: deps({ checkAccess: rejected }) });
+  assert.equal(retry.status, 401, 'a token Firestore refuses should be renewed by the client');
+});
+
+test('a refused account does not use up the rate limit of anybody else', async () => {
+  for (let i = 0; i < LIMITS.userBurst.limit + 5; i++) assert.equal((await analyzeAs('carol')).status, 403);
+  assert.equal((await analyzeAs('alice')).status, 200);
 });
 
 test('signature problems on the key download are a 503, not a 401', async () => {
@@ -112,6 +182,8 @@ test('health reveals nothing to strangers and confirms a valid session', async (
   assert.deepEqual(body(await handleHealth({ headers: {}, env: ENV, deps: deps() })), { ok: true, configured: true, authorized: false });
   assert.deepEqual(body(await handleHealth({ headers: withToken('forged'), env: ENV, deps: deps() })), { ok: true, configured: true, authorized: false });
   assert.deepEqual(body(await handleHealth({ headers: withToken('alice'), env: ENV, deps: deps() })), { ok: true, configured: true, authorized: true });
+  assert.deepEqual(body(await handleHealth({ headers: withToken('root'), env: ENV, deps: deps() })), { ok: true, configured: true, authorized: true });
+  assert.deepEqual(body(await handleHealth({ headers: withToken('carol'), env: ENV, deps: deps() })), { ok: true, configured: true, authorized: false });
   assert.deepEqual(body(await handleHealth({ headers: withToken('alice'), env: {}, deps: deps() })), { ok: true, configured: false, authorized: false });
 });
 
