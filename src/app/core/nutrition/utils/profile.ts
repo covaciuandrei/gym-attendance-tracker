@@ -21,7 +21,7 @@ function inRange(value: unknown, min: number, max: number, decimals = 0): number
   return Math.round(n * f) / f;
 }
 
-/** Turns whatever was stored, typed or imported into a profile with only plausible values. */
+/** Turns whatever was stored or typed into a profile with only plausible values. */
 export function sanitizeProfile(raw: Partial<Profile> | null | undefined): Profile {
   const p = raw ?? {};
   const rate = typeof p.weeklyChangeKg === 'number' && Number.isFinite(p.weeklyChangeKg) ? p.weeklyChangeKg : 0;

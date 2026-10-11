@@ -36,15 +36,7 @@ const WEIGHTS = 'bodyWeights';
 const SETTINGS = 'foodSettings';
 const PROFILE_DOC = 'profile';
 
-// A commit may carry at most 500 writes and 10 MiB.
-const BATCH_MAX_WRITES = 400;
-const BATCH_MAX_BYTES = 6_000_000;
 const COMMIT_WAIT_MS = 6000;
-
-interface PendingWrite {
-  apply: (batch: WriteBatch) => void;
-  bytes: number;
-}
 
 const byTime = (a: DiaryEntry, b: DiaryEntry) => a.time.localeCompare(b.time) || a.createdAt - b.createdAt;
 
@@ -110,33 +102,11 @@ export class NutritionDataService {
    * Resolves once the server confirmed the write. Offline (or when the server is slow) the write stays queued in the
    * local cache and is synced later, so the screen doesn't wait for it.
    */
-  private async commit(batch: WriteBatch, waitForServer = false): Promise<void> {
+  private async commit(batch: WriteBatch): Promise<void> {
     const pending = batch.commit();
     pending.catch((error) => console.error('Nutrition write failed', error));
     if (!navigator.onLine) return;
-    if (waitForServer) {
-      await pending;
-      return;
-    }
     await Promise.race([pending, new Promise<void>((resolve) => setTimeout(resolve, COMMIT_WAIT_MS))]);
-  }
-
-  private async runWrites(writes: PendingWrite[]): Promise<void> {
-    let batch = writeBatch(this.db);
-    let count = 0;
-    let bytes = 0;
-    for (const write of writes) {
-      if (count > 0 && (count >= BATCH_MAX_WRITES || bytes + write.bytes > BATCH_MAX_BYTES)) {
-        await this.commit(batch, true);
-        batch = writeBatch(this.db);
-        count = 0;
-        bytes = 0;
-      }
-      write.apply(batch);
-      count++;
-      bytes += write.bytes;
-    }
-    if (count > 0) await this.commit(batch, true);
   }
 
   // Meals
@@ -247,44 +217,5 @@ export class NutritionDataService {
     const batch = writeBatch(this.db);
     batch.set(this.ref(SETTINGS, PROFILE_DOC), { ...profile, updatedAt: Date.now() });
     await this.commit(batch);
-  }
-
-  // Backup, import and reset
-
-  async allEntries(): Promise<DiaryEntry[]> {
-    return this.entriesFrom(await this.docs(query(this.col(ENTRIES))));
-  }
-
-  async allPhotos(): Promise<Map<string, string>> {
-    const photos = new Map<string, string>();
-    for (const d of await this.docs(query(this.col(PHOTOS)))) {
-      const data = d.data()['data'];
-      if (isImageDataUrl(data)) photos.set(d.id, data);
-    }
-    return photos;
-  }
-
-  async importAll(entries: DiaryEntry[], photos: Map<string, string>, weights: WeightLog[]): Promise<void> {
-    const writes: PendingWrite[] = [];
-    for (const entry of entries) {
-      const photo = photos.get(entry.id);
-      const stored: DiaryEntry = { ...entry, hasPhoto: !!photo };
-      writes.push({ apply: (b) => b.set(this.ref(ENTRIES, entry.id), toEntryDoc(stored)), bytes: 4000 });
-      if (photo) writes.push({ apply: (b) => b.set(this.ref(PHOTOS, entry.id), { data: photo, updatedAt: entry.updatedAt }), bytes: photo.length });
-    }
-    for (const log of weights) {
-      writes.push({ apply: (b) => b.set(this.ref(WEIGHTS, log.date), { kg: log.kg, updatedAt: Date.now() }), bytes: 200 });
-    }
-    await this.runWrites(writes);
-  }
-
-  /** Deletes every nutrition document of the signed-in user. Needs a connection. */
-  async clearAll(): Promise<void> {
-    if (!navigator.onLine) throw new Error('offline');
-    const writes: PendingWrite[] = [];
-    for (const name of [ENTRIES, PHOTOS, WEIGHTS, SETTINGS]) {
-      for (const d of (await getDocs(query(this.col(name)))).docs) writes.push({ apply: (b) => b.delete(d.ref), bytes: 200 });
-    }
-    await this.runWrites(writes);
   }
 }

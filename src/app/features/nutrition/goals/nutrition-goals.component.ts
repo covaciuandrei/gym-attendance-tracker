@@ -1,12 +1,9 @@
-import { Component, OnDestroy, OnInit, effect, inject, signal } from '@angular/core';
+import { Component, OnDestroy, effect, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 import { ActivityLevel, Profile, Sex } from '../../../core/nutrition/models';
-import { LegacyImportService } from '../../../core/nutrition/services/legacy-import.service';
-import { NutritionBackupService } from '../../../core/nutrition/services/nutrition-backup.service';
 import { NutritionProfileService } from '../../../core/nutrition/services/nutrition-profile.service';
-import { ToastService } from '../../../core/nutrition/services/toast.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { NumberInputDirective } from '../shared/number-input/number-input.directive';
 
@@ -32,13 +29,9 @@ const RATES = [-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5];
   templateUrl: './nutrition-goals.component.html',
   styleUrls: ['./nutrition-goals.component.css'],
 })
-export class NutritionGoalsComponent implements OnInit, OnDestroy {
+export class NutritionGoalsComponent implements OnDestroy {
   private profileService = inject(NutritionProfileService);
-  private backup = inject(NutritionBackupService);
-  private legacy = inject(LegacyImportService);
   private language = inject(LanguageService);
-  private toast = inject(ToastService);
-  private translate = inject(TranslateService);
 
   readonly plan = this.profileService.plan;
   readonly rates = RATES;
@@ -51,9 +44,6 @@ export class NutritionGoalsComponent implements OnInit, OnDestroy {
   ];
 
   form: FormState = this.toForm(this.profileService.profile());
-  includePhotos = false;
-  readonly busy = signal(false);
-  readonly legacyCount = signal(0);
   /** Once the user types, a profile arriving from the server must not overwrite what they are editing. */
   private edited = false;
 
@@ -62,10 +52,6 @@ export class NutritionGoalsComponent implements OnInit, OnDestroy {
       const profile = this.profileService.profile();
       if (!this.edited) this.form = this.toForm(profile);
     });
-  }
-
-  ngOnInit(): void {
-    void this.legacy.pendingCount().then((count) => this.legacyCount.set(count));
   }
 
   ngOnDestroy(): void {
@@ -123,86 +109,5 @@ export class NutritionGoalsComponent implements OnInit, OnDestroy {
   formatRate(rate: number): string {
     const locale = this.language.currentLang() === 'ro' ? 'ro-RO' : 'en-GB';
     return new Intl.NumberFormat(locale, { maximumFractionDigits: 2 }).format(Math.abs(rate));
-  }
-
-  // Data
-
-  async exportBackup(): Promise<void> {
-    this.busy.set(true);
-    try {
-      const { blob, filename } = await this.backup.export(this.includePhotos);
-      const file = new File([blob], filename, { type: 'application/json' });
-      if (navigator.canShare?.({ files: [file] })) {
-        try {
-          await navigator.share({ files: [file], title: filename });
-          return;
-        } catch (err) {
-          if ((err as Error).name === 'AbortError') return;
-        }
-      }
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(url), 10_000);
-      this.toast.show(`✓ ${this.translate.instant('NUTRITION.GOALS.EXPORTED')}`);
-    } catch (err) {
-      console.error('Export failed', err);
-    } finally {
-      this.busy.set(false);
-    }
-  }
-
-  async onImportFile(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = '';
-    if (!file) return;
-    this.busy.set(true);
-    try {
-      const result = await this.backup.import(await file.text());
-      this.edited = false;
-      this.form = this.toForm(this.profileService.profile());
-      this.toast.show(`✓ ${this.translate.instant('NUTRITION.GOALS.IMPORT_OK', { count: result.entries })}`);
-    } catch {
-      this.toast.show(this.translate.instant('NUTRITION.GOALS.IMPORT_ERR'));
-    } finally {
-      this.busy.set(false);
-    }
-  }
-
-  async importLegacy(): Promise<void> {
-    this.busy.set(true);
-    try {
-      const result = await this.legacy.importAll();
-      this.legacyCount.set(0);
-      this.edited = false;
-      this.form = this.toForm(this.profileService.profile());
-      this.toast.show(`✓ ${this.translate.instant('NUTRITION.GOALS.IMPORT_OK', { count: result.entries })}`);
-    } catch (err) {
-      console.error('Legacy import failed', err);
-      this.toast.show(this.translate.instant('NUTRITION.GOALS.IMPORT_ERR'));
-    } finally {
-      this.busy.set(false);
-    }
-  }
-
-  async clearAll(): Promise<void> {
-    if (!confirm(this.translate.instant('NUTRITION.GOALS.CLEAR_CONFIRM'))) return;
-    this.busy.set(true);
-    try {
-      await this.backup.clearAll();
-      this.edited = false;
-      this.form = this.toForm(this.profileService.profile());
-      this.toast.show(this.translate.instant('NUTRITION.GOALS.CLEARED'));
-    } catch (err) {
-      console.error('Clearing the nutrition data failed', err);
-      this.toast.show(this.translate.instant('NUTRITION.GOALS.CLEAR_FAILED'));
-    } finally {
-      this.busy.set(false);
-    }
   }
 }

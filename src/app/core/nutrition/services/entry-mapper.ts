@@ -28,7 +28,7 @@ export function cleanItem(raw: unknown): FoodItem {
 }
 
 /**
- * Builds a clean entry from stored or imported data. Never trusts the stored totals: they are recomputed from
+ * Builds a clean entry from stored data. Never trusts the stored totals: they are recomputed from
  * the items, so they can't drift. Throws when the data can't be a valid entry at all.
  */
 export function normalizeEntry(id: string, data: unknown, now = Date.now()): DiaryEntry {

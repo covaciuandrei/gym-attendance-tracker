@@ -104,43 +104,5 @@
         <div class="card"><p class="hint">{{ 'NUTRITION.GOALS.FILL_PROFILE' | translate }}</p></div>
       }
     </div>
-
-    <!-- Data -->
-    <div class="goals-section">
-      <h4>{{ 'NUTRITION.GOALS.DATA' | translate }}</h4>
-      <p class="hint spaced">{{ 'NUTRITION.GOALS.STORAGE_NOTE' | translate }}</p>
-
-      @if (legacyCount() > 0) {
-        <div class="card legacy-card">
-          <strong>{{ 'NUTRITION.GOALS.LEGACY_TITLE' | translate }}</strong>
-          <p class="hint">{{ 'NUTRITION.GOALS.LEGACY_DESC' | translate: { count: legacyCount() } }}</p>
-          <button type="button" class="btn btn-primary" (click)="importLegacy()" [disabled]="busy()">{{ 'NUTRITION.GOALS.LEGACY_BTN' | translate }}</button>
-        </div>
-      }
-
-      <div class="card data-card">
-        <div class="data-row">
-          <div class="setting-info">
-            <span class="setting-label">{{ 'NUTRITION.GOALS.EXPORT' | translate }}</span>
-            <span class="setting-value">{{ 'NUTRITION.GOALS.EXPORT_DESC' | translate }}</span>
-          </div>
-          <button type="button" class="btn btn-secondary compact" (click)="exportBackup()" [disabled]="busy()" [attr.aria-label]="'NUTRITION.GOALS.EXPORT' | translate">⬇️</button>
-        </div>
-        <label class="check">
-          <input type="checkbox" [(ngModel)]="includePhotos" />
-          <span>{{ 'NUTRITION.GOALS.INCLUDE_PHOTOS' | translate }}</span>
-        </label>
-        <div class="data-row">
-          <div class="setting-info">
-            <span class="setting-label">{{ 'NUTRITION.GOALS.IMPORT' | translate }}</span>
-            <span class="setting-value">{{ 'NUTRITION.GOALS.IMPORT_DESC' | translate }}</span>
-          </div>
-          <button type="button" class="btn btn-secondary compact" (click)="importFile.click()" [disabled]="busy()" [attr.aria-label]="'NUTRITION.GOALS.IMPORT' | translate">⬆️</button>
-          <input #importFile type="file" accept="application/json,.json" hidden (change)="onImportFile($event)" />
-        </div>
-      </div>
-
-      <button type="button" class="btn-text danger" (click)="clearAll()" [disabled]="busy()">{{ 'NUTRITION.GOALS.CLEAR' | translate }}</button>
-    </div>
   </div>
 </div>

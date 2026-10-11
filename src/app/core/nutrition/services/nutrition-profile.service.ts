@@ -74,25 +74,6 @@ export class NutritionProfileService {
     this.timer = setTimeout(() => void this.flush(), SAVE_DELAY_MS);
   }
 
-  /** Replaces the profile (import, reset) and saves it right away. */
-  async replace(next: Partial<Profile>): Promise<void> {
-    const uid = this.uid;
-    if (!uid) return;
-    const clean = sanitizeProfile(next);
-    this.profile.set(clean);
-    this.writeCache(uid, clean);
-    this.dirty = true;
-    await this.flush();
-  }
-
-  /** Forgets the local copy; the Firestore document is deleted together with the rest of the data. */
-  resetLocal(): void {
-    if (this.uid) localStorage.removeItem(CACHE_PREFIX + this.uid);
-    this.dirty = false;
-    this.clearTimer();
-    this.profile.set({ ...DEFAULT_PROFILE });
-  }
-
   async flush(): Promise<void> {
     this.clearTimer();
     if (!this.dirty || !this.uid) return;

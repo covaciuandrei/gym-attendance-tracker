@@ -1,4 +1,4 @@
-/** Photos are stored as JPEG data URLs, so a meal (with its photo) can be saved, synced and exported as plain data. */
+/** Photos are stored as JPEG data URLs, so a meal (with its photo) can be saved and synced as plain data. */
 
 /** Shrinks a photo to a JPEG that is cheap to store, sync and send to the AI. */
 export async function resizeImage(file: Blob, maxSide = 960, quality = 0.7): Promise<string> {
@@ -35,13 +35,4 @@ export function isImageDataUrl(value: unknown): value is string {
 /** The base64 payload of a data URL, as the API expects it. */
 export function dataUrlBase64(dataUrl: string): string {
   return dataUrl.slice(dataUrl.indexOf(',') + 1);
-}
-
-export function blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(reader.error);
-    reader.onload = () => resolve(String(reader.result));
-    reader.readAsDataURL(blob);
-  });
 }

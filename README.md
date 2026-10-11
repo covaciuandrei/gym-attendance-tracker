@@ -190,7 +190,6 @@ The **Food** tab (second tab of the bottom navigation, shown to accounts the adm
 -   **AI estimate**: *Estimate with AI* sends the photo and/or note to Gemini and returns the foods, grams, calories and macros, with a confidence level and the assumptions it made. The note wins over the photo ("half of it", "200 g rice"). Every value stays editable, and changing a portion scales its nutrients proportionally.
 -   **Goals**: sex, age, height, weight and (optionally) body fat give your maintenance calories (Katch-McArdle when body fat is set, Mifflin-St Jeor otherwise), a daily target for your goal and macro targets.
 -   **Stats**: 7/30-day averages, daily calories against the target, macro split and a weight log (**Stats → Nutrition**).
--   **Backup**: export/import (with photos) and *Delete all nutrition data* on the Goals page. Meals logged in the former standalone calorie-tracker app on the same origin are offered for a one-time import.
 
 All of it lives under the signed-in user (see *Database Schema* below), so the Firestore rule from the Firebase setup already protects it. Who may use the food tracker at all is decided separately, by the admin (next section).
 
@@ -264,7 +263,7 @@ npm run deploy -- --settings   # also push GEMINI_API_KEY, FIREBASE_PROJECT_ID (
 /nutrition      - Food home: Today card and calendar (protected)
 /nutrition/day/:date           - Meals of one day (protected)
 /nutrition/day/:date/entry/:id - Meal editor, `new` adds a meal (protected)
-/nutrition/goals - Nutrition goals, backup and import (protected)
+/nutrition/goals - Nutrition goals (protected)
 /stats/nutrition - Nutrition statistics and weight log (protected)
 ```
 
