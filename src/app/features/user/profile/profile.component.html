@@ -31,7 +31,7 @@
         <span class="menu-arrow">›</span>
       </a>
 
-      <a routerLink="/nutrition/goals" class="menu-item">
+      <a routerLink="/nutrition/goals" class="menu-item" *ngIf="access.canUse()">
         <div class="menu-icon">🎯</div>
         <div class="menu-content">
           <span class="menu-title">{{ 'PROFILE.NUTRITION_GOALS' | translate }}</span>

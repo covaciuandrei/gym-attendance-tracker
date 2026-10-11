@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { NutritionAccessService } from '../../../core/nutrition/services/nutrition-access.service';
 import { AuthService, AuthUser } from '../../../core/services/auth.service';
 
 @Component({
@@ -17,7 +18,8 @@ export class ProfileComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    public access: NutritionAccessService
   ) {}
 
   ngOnInit() {

@@ -30,6 +30,27 @@
         "MIGRATION_RESULT": "Migrated {{migrated}} of {{total}} records",
         "DISMISS": "Done"
     },
+    "ADMIN": {
+        "SECTION": "Admin",
+        "ACCESS": {
+            "MENU": "Food tracker access",
+            "MENU_SUBTITLE": "Choose who can use it",
+            "TITLE": "Food tracker access",
+            "INTRO": "Switch the food tracker on or off for each account. New accounts appear here after their first sign-in and start switched off.",
+            "SUMMARY": "{{enabled}} of {{total}} accounts switched on",
+            "SEARCH": "Search by email or name",
+            "YOU": "You · Admin",
+            "ADMIN_NOTE": "Always on",
+            "SWITCH": "Food tracker for {{email}}",
+            "EMPTY": "No accounts yet.",
+            "NO_MATCH": "No account matches your search.",
+            "REFRESH": "Refresh",
+            "LOAD_FAILED": "Couldn't load the accounts. Check your connection and try again.",
+            "SAVE_FAILED": "Couldn't save that change. Nothing was changed.",
+            "SAVED_ON": "{{email}} can now use the food tracker.",
+            "SAVED_OFF": "{{email}} can no longer use the food tracker."
+        }
+    },
     "STATS": {
         "THIS_MONTH": "This Month",
         "THIS_YEAR": "This Year",

@@ -6,7 +6,7 @@
   </div>
 
   <nav class="view-toggle">
-    <a *ngFor="let tab of tabs"
+    <a *ngFor="let tab of visibleTabs"
        [routerLink]="tab.path"
        [queryParamsHandling]="'merge'"
        routerLinkActive="active"

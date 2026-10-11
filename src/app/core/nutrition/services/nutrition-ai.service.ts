@@ -45,7 +45,7 @@ export function mapFailure(status: number, error: string | undefined): AiErrorCo
     if (error === 'too_many_attempts') return 'too_many_attempts';
     return error === 'rate_limited' ? 'rate_limited' : 'busy';
   }
-  if (status === 503) return error === 'auth_unavailable' ? 'unavailable' : 'not_configured';
+  if (status === 503) return error === 'auth_unavailable' || error === 'access_unavailable' ? 'unavailable' : 'not_configured';
   if (status === 413) return 'too_large';
   if (status === 422) return error === 'ai_blocked' ? 'blocked' : 'rejected';
   if (status === 400) return 'invalid_input';

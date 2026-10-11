@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription } from 'rxjs';
+import { NutritionAccessService } from '../../../core/nutrition/services/nutrition-access.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { AttendanceRecord, FirebaseService, SupplementProduct, TrainingType } from '../../../core/services/firebase.service';
 
@@ -111,7 +112,8 @@ export class CalendarComponent implements OnInit, OnDestroy {
 
   constructor(
     private firebaseService: FirebaseService,
-    private authService: AuthService
+    private authService: AuthService,
+    public access: NutritionAccessService
   ) {
     this.currentYear = this.currentDate.getFullYear();
     this.currentMonth = this.currentDate.getMonth();

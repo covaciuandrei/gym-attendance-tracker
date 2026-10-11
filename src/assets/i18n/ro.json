@@ -30,6 +30,27 @@
         "MIGRATION_RESULT": "Migrate {{migrated}} din {{total}} înregistrări",
         "DISMISS": "Gata"
     },
+    "ADMIN": {
+        "SECTION": "Administrator",
+        "ACCESS": {
+            "MENU": "Acces la Mâncare",
+            "MENU_SUBTITLE": "Alege cine poate folosi secțiunea",
+            "TITLE": "Acces la Mâncare",
+            "INTRO": "Activează sau dezactivează jurnalul alimentar pentru fiecare cont. Conturile noi apar aici după prima autentificare și pornesc dezactivate.",
+            "SUMMARY": "{{enabled}} din {{total}} conturi activate",
+            "SEARCH": "Caută după email sau nume",
+            "YOU": "Tu · Administrator",
+            "ADMIN_NOTE": "Mereu activ",
+            "SWITCH": "Jurnal alimentar pentru {{email}}",
+            "EMPTY": "Încă nu există conturi.",
+            "NO_MATCH": "Niciun cont nu se potrivește căutării.",
+            "REFRESH": "Reîncarcă",
+            "LOAD_FAILED": "Nu am putut încărca conturile. Verifică conexiunea și încearcă din nou.",
+            "SAVE_FAILED": "Nu am putut salva modificarea. Nu s-a schimbat nimic.",
+            "SAVED_ON": "{{email}} poate folosi acum jurnalul alimentar.",
+            "SAVED_OFF": "{{email}} nu mai poate folosi jurnalul alimentar."
+        }
+    },
     "STATS": {
         "THIS_MONTH": "Luna Asta",
         "THIS_YEAR": "Anul Ăsta",

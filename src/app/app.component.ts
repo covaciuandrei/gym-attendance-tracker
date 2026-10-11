@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { TranslateModule } from '@ngx-translate/core';
 import { filter } from 'rxjs/operators';
+import { NutritionAccessService } from './core/nutrition/services/nutrition-access.service';
 import { AuthService } from './core/services/auth.service';
 import { LanguageService } from './core/services/language.service';
 import { ThemeService } from './core/services/theme.service';
@@ -19,6 +20,8 @@ export class AppComponent implements OnInit {
   title = 'Gym Attendance Tracker';
   isAuthenticated = false;
   showNav = false;
+  // The Food tab is only shown to accounts the admin has switched on
+  readonly access = inject(NutritionAccessService);
 
   // Routes where bottom nav should be hidden
   private noNavRoutes = ['/login', '/register', '/forgot-password', '/auth/action'];

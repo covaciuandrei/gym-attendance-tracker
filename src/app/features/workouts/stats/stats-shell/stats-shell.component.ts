@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { NutritionAccessService } from '../../../../core/nutrition/services/nutrition-access.service';
 
 @Component({
   selector: 'app-stats-shell',
@@ -21,7 +22,12 @@ export class StatsShellComponent implements OnInit, OnDestroy {
     { path: 'nutrition',   labelKey: 'STATS.TAB_NUTRITION',   label: 'Nutrition' },
   ];
 
-  constructor(private router: Router, private route: ActivatedRoute) {}
+  constructor(private router: Router, private route: ActivatedRoute, public access: NutritionAccessService) {}
+
+  /** The nutrition tab is only offered to accounts the admin has switched on. */
+  get visibleTabs() {
+    return this.tabs.filter(tab => tab.path !== 'nutrition' || this.access.canUse());
+  }
 
   /** The nutrition tab shows rolling windows (7/30 days), so the year selector doesn't apply to it. */
   get showYearNav(): boolean {

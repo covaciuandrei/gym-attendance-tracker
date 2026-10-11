@@ -17,6 +17,7 @@ describe('mapFailure', () => {
   it('maps server and input problems', () => {
     expect(mapFailure(503, 'not_configured')).toBe('not_configured');
     expect(mapFailure(503, 'auth_unavailable')).toBe('unavailable');
+    expect(mapFailure(503, 'access_unavailable')).toBe('unavailable');
     expect(mapFailure(413, 'image_too_large')).toBe('too_large');
     expect(mapFailure(422, 'ai_blocked')).toBe('blocked');
     expect(mapFailure(422, 'ai_rejected_input')).toBe('rejected');
