@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
+import { NutritionAccessService } from '../../../core/nutrition/services/nutrition-access.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { LanguageService } from '../../../core/services/language.service';
 import { ThemeService } from '../../../core/services/theme.service';
@@ -14,7 +15,7 @@ import { ThemeService } from '../../../core/services/theme.service';
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.css']
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnInit {
   appVersion = '2.0.0';
 
   showPasswordForm = false;
@@ -31,8 +32,14 @@ export class SettingsComponent {
   constructor(
     public themeService: ThemeService,
     public authService: AuthService,
-    public languageService: LanguageService
+    public languageService: LanguageService,
+    public access: NutritionAccessService
   ) { }
+
+  ngOnInit() {
+    // Picks up the admin role even if it was granted while the app was already open
+    void this.access.refreshClaims();
+  }
 
   setLanguage(lang: string) {
     this.languageService.setLanguage(lang);

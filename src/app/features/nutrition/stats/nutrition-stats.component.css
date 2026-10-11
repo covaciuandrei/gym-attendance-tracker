@@ -1,0 +1,261 @@
+.nt-stats {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.range-toggle {
+  margin-bottom: 1.25rem;
+}
+
+/* Summary cards (from gym tracker stats) */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.stat-card {
+  border-radius: 16px;
+  padding: 1rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.stat-card.primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+}
+
+.stat-card.secondary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.stat-card.tertiary {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.stat-value small {
+  font-size: 0.9rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  opacity: 0.92;
+  margin-top: 2px;
+}
+
+/* Chart containers */
+.chart-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.chart-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.empty-note {
+  text-align: center;
+  font-size: 0.9rem;
+  padding: 0.5rem 0 1rem;
+}
+
+.target-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.target-swatch {
+  width: 18px;
+  border-top: 2px dashed var(--text-secondary);
+}
+
+/* Bars */
+.chart {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 200px;
+  gap: 8px;
+  padding-top: 22px;
+}
+
+.chart.compact {
+  gap: 2px;
+}
+
+.target-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin-bottom: 20px;
+  border-top: 2px dashed var(--text-secondary);
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.chart-bar {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.bar-container {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.bar {
+  position: relative;
+  width: 100%;
+  max-width: 40px;
+  background: var(--border-color);
+  border-radius: 6px 6px 0 0;
+  min-height: 3px;
+  transition: height 0.3s ease;
+}
+
+.bar[data-level='none'] {
+  min-height: 3px;
+}
+
+.bar[data-level='pending'] {
+  background: var(--primary-color);
+  opacity: 0.55;
+}
+
+.bar[data-level='under'] {
+  background: var(--cal-under);
+}
+
+.bar[data-level='ok'] {
+  background: var(--cal-ok);
+}
+
+.bar[data-level='over'] {
+  background: var(--cal-over);
+}
+
+.bar-value {
+  position: absolute;
+  top: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.bar-label {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  height: 14px;
+  line-height: 14px;
+  white-space: nowrap;
+}
+
+.bar-label.hidden {
+  visibility: hidden;
+}
+
+/* Macro split */
+.split-bar {
+  display: flex;
+  height: 16px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--border-color);
+  margin-bottom: 1rem;
+}
+
+.seg.p {
+  background: var(--protein-color);
+}
+
+.seg.c {
+  background: var(--carbs-color);
+}
+
+.seg.f {
+  background: var(--fat-color);
+}
+
+.split-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.split-item {
+  display: grid;
+  grid-template-columns: 14px 1fr auto auto;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.split-item .swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.split-item.p .swatch {
+  background: var(--protein-color);
+}
+
+.split-item.c .swatch {
+  background: var(--carbs-color);
+}
+
+.split-item.f .swatch {
+  background: var(--fat-color);
+}
+
+.split-item .muted {
+  min-width: 3.5rem;
+  text-align: right;
+  font-size: 0.82rem;
+}

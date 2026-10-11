@@ -1,0 +1,6 @@
+{
+  "name": "calorie-tracker-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Azure Static Web Apps managed API (Azure Functions, Node programming model v3, zero dependencies)"
+}

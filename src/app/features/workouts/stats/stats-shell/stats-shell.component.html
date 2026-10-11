@@ -1,12 +1,12 @@
 <div class="stats-container">
   <div class="stats-header">
-    <button class="nav-btn" (click)="previousYear()">‹</button>
-    <h1 class="title">{{ 'NAV.STATS' | translate }} {{ currentYear }}</h1>
-    <button class="nav-btn" (click)="nextYear()">›</button>
+    <button class="nav-btn" *ngIf="showYearNav" (click)="previousYear()">‹</button>
+    <h1 class="title">{{ 'NAV.STATS' | translate }}<ng-container *ngIf="showYearNav"> {{ currentYear }}</ng-container></h1>
+    <button class="nav-btn" *ngIf="showYearNav" (click)="nextYear()">›</button>
   </div>
 
   <nav class="view-toggle">
-    <a *ngFor="let tab of tabs"
+    <a *ngFor="let tab of visibleTabs"
        [routerLink]="tab.path"
        [queryParamsHandling]="'merge'"
        routerLinkActive="active"

@@ -1,0 +1,85 @@
+<div class="nt nt-stats">
+  <div class="segmented range-toggle">
+    <button type="button" [class.active]="range() === 7" (click)="setRange(7)">{{ 'NUTRITION.STATS.LAST_7' | translate }}</button>
+    <button type="button" [class.active]="range() === 30" (click)="setRange(30)">{{ 'NUTRITION.STATS.LAST_30' | translate }}</button>
+  </div>
+
+  <div class="summary-cards">
+    <div class="stat-card primary">
+      <span class="stat-value">{{ avg()?.kcal ?? '–' }}</span>
+      <span class="stat-label">{{ 'NUTRITION.STATS.AVG_KCAL' | translate }}</span>
+    </div>
+    <div class="stat-card secondary">
+      <span class="stat-value">{{ avg() ? avg()!.protein : '–' }}</span>
+      <span class="stat-label">{{ 'NUTRITION.STATS.AVG_PROTEIN' | translate }} (g)</span>
+    </div>
+    <div class="stat-card tertiary">
+      <span class="stat-value">{{ loggedDays() }}<small>/{{ range() }}</small></span>
+      <span class="stat-label">{{ 'NUTRITION.STATS.DAYS_LOGGED' | translate }}</span>
+    </div>
+  </div>
+
+  <!-- Daily calories -->
+  <section class="chart-container">
+    <div class="chart-header">
+      <h3 class="chart-title">{{ 'NUTRITION.STATS.DAILY_CALORIES' | translate }}</h3>
+      @if (target()) {
+        <span class="target-legend"><span class="target-swatch"></span>{{ 'NUTRITION.STATS.TARGET' | translate }} {{ target() }}</span>
+      }
+    </div>
+
+    @if (loggedDays() === 0 && !loading()) {
+      <p class="muted empty-note">{{ 'NUTRITION.STATS.NO_DATA' | translate }}</p>
+    }
+
+    <div class="chart" [class.compact]="range() > 7">
+      @if (targetLine() !== null) {
+        <div class="target-line" [style.bottom.%]="targetLine()"></div>
+      }
+      @for (bar of bars(); track bar.key) {
+        <div class="chart-bar">
+          <div class="bar-container">
+            <div class="bar" [attr.data-level]="bar.level" [style.height.%]="bar.height">
+              @if (range() === 7 && bar.kcal > 0) {
+                <span class="bar-value">{{ bar.kcal }}</span>
+              }
+            </div>
+          </div>
+          <span class="bar-label" [class.hidden]="!bar.showLabel">{{ bar.label }}</span>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Macro split -->
+  @if (split(); as s) {
+    <section class="chart-container">
+      <h3 class="chart-title">{{ 'NUTRITION.STATS.MACRO_SPLIT' | translate }}</h3>
+      <div class="split-bar" role="img">
+        <div class="seg p" [style.width.%]="s.p"></div>
+        <div class="seg c" [style.width.%]="s.c"></div>
+        <div class="seg f" [style.width.%]="s.f"></div>
+      </div>
+      <div class="split-legend">
+        <div class="split-item p">
+          <span class="swatch"></span>
+          <span>{{ 'NUTRITION.MACROS.PROTEIN' | translate }}</span>
+          <strong>{{ s.p }}%</strong>
+          <span class="muted">{{ avg()!.protein }} g</span>
+        </div>
+        <div class="split-item c">
+          <span class="swatch"></span>
+          <span>{{ 'NUTRITION.MACROS.CARBS' | translate }}</span>
+          <strong>{{ s.c }}%</strong>
+          <span class="muted">{{ avg()!.carbs }} g</span>
+        </div>
+        <div class="split-item f">
+          <span class="swatch"></span>
+          <span>{{ 'NUTRITION.MACROS.FAT' | translate }}</span>
+          <strong>{{ s.f }}%</strong>
+          <span class="muted">{{ avg()!.fat }} g</span>
+        </div>
+      </div>
+    </section>
+  }
+</div>

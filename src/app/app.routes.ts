@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard, nutritionGuard } from './core/guards/access.guard';
 import { authGuard, guestGuard } from './core/guards/auth.guard';
 
 // Auth pages (public)
@@ -42,12 +43,31 @@ export const routes: Routes = [
       { path: 'workouts',    component: WorkoutsStatsComponent },
       { path: 'duration',    component: DurationStatsComponent },
       { path: 'health',      component: HealthStatsComponent },
+      {
+        path: 'nutrition',
+        canActivate: [nutritionGuard],
+        loadComponent: () => import('./features/nutrition/stats/nutrition-stats.component').then(m => m.NutritionStatsComponent)
+      },
     ]
   },
   { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'workout-types', component: WorkoutTypesComponent, canActivate: [authGuard] },
+  // Only the admin account: lets it switch the food tracker on or off for each account
+  {
+    path: 'settings/access',
+    canActivate: [authGuard, adminGuard],
+    loadComponent: () => import('./features/admin/access/admin-access.component').then(m => m.AdminAccessComponent)
+  },
   { path: 'settings', component: SettingsComponent, canActivate: [authGuard] },
   { path: 'health', component: HealthComponent, canActivate: [authGuard] },
+
+  // Nutrition (calorie tracker): loaded on demand, so it isn't part of the initial bundle.
+  // Only accounts the admin has switched on get in.
+  {
+    path: 'nutrition',
+    canActivate: [authGuard, nutritionGuard],
+    loadChildren: () => import('./features/nutrition/nutrition.routes').then(m => m.NUTRITION_ROUTES)
+  },
 
   // Default redirect
   { path: '', redirectTo: '/calendar', pathMatch: 'full' },

@@ -1,0 +1,84 @@
+<div class="access-container">
+  <header class="page-header">
+    <a routerLink="/settings" class="back-btn" [attr.aria-label]="'SETTINGS.TITLE' | translate">‹</a>
+    <h2>{{ 'ADMIN.ACCESS.TITLE' | translate }}</h2>
+  </header>
+
+  <p class="intro">{{ 'ADMIN.ACCESS.INTRO' | translate }}</p>
+
+  @if (loading()) {
+    <div class="skeleton-list" aria-hidden="true">
+      <div class="account ghost"></div>
+      <div class="account ghost"></div>
+      <div class="account ghost"></div>
+    </div>
+  } @else if (loadFailed()) {
+    <div class="state-card">
+      <p>{{ 'ADMIN.ACCESS.LOAD_FAILED' | translate }}</p>
+      <button type="button" class="btn-primary" (click)="load()">{{ 'ADMIN.ACCESS.REFRESH' | translate }}</button>
+    </div>
+  } @else {
+    <div class="toolbar">
+      <span class="summary">{{ 'ADMIN.ACCESS.SUMMARY' | translate: { enabled: enabledCount(), total: others().length } }}</span>
+      <button type="button" class="btn-text" (click)="load()">{{ 'ADMIN.ACCESS.REFRESH' | translate }}</button>
+    </div>
+
+    @if (entries().length > 5) {
+      <input
+        class="search"
+        type="search"
+        [ngModel]="query()"
+        (ngModelChange)="setQuery($event)"
+        [placeholder]="'ADMIN.ACCESS.SEARCH' | translate"
+        [attr.aria-label]="'ADMIN.ACCESS.SEARCH' | translate"
+      />
+    }
+
+    @if (entries().length === 0) {
+      <div class="state-card">{{ 'ADMIN.ACCESS.EMPTY' | translate }}</div>
+    } @else if (visible().length === 0) {
+      <div class="state-card">{{ 'ADMIN.ACCESS.NO_MATCH' | translate }}</div>
+    } @else {
+      <ul class="accounts">
+        @for (entry of visible(); track entry.uid) {
+          <li class="account" [class.on]="entry.enabled || entry.uid === ownUid">
+            <div class="avatar" aria-hidden="true">{{ initial(entry) }}</div>
+            <div class="who">
+              <span class="email">{{ entry.email }}</span>
+              @if (entry.displayName || entry.uid === ownUid) {
+                <span class="meta">
+                  {{ entry.displayName }}
+                  @if (entry.uid === ownUid) {
+                    <span class="badge">{{ 'ADMIN.ACCESS.YOU' | translate }}</span>
+                  }
+                </span>
+              }
+            </div>
+
+            @if (entry.uid === ownUid) {
+              <span class="always-on">{{ 'ADMIN.ACCESS.ADMIN_NOTE' | translate }}</span>
+            } @else {
+              <button
+                type="button"
+                class="switch"
+                role="switch"
+                [attr.aria-checked]="entry.enabled"
+                [attr.aria-label]="'ADMIN.ACCESS.SWITCH' | translate: { email: entry.email }"
+                [disabled]="saving().has(entry.uid)"
+                (click)="toggle(entry)"
+              >
+                <span class="thumb"></span>
+              </button>
+            }
+          </li>
+        }
+      </ul>
+    }
+  }
+
+  <div class="notice-area" role="status" aria-live="polite">
+    @if (notice(); as n) {
+      <div class="notice" [class.error]="n.kind === 'error'">{{ n.key | translate: n.params }}</div>
+    }
+  </div>
+</div>

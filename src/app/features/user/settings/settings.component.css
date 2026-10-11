@@ -75,6 +75,18 @@ h4 {
   background: var(--bg-color);
 }
 
+a.setting-item.link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.setting-chevron {
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
 .setting-info {
   display: flex;
   flex-direction: column;

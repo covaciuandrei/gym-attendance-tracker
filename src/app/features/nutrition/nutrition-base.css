@@ -1,0 +1,287 @@
+/*
+ * Shared building blocks for the nutrition screens (adapted from the standalone calorie tracker).
+ * Everything is scoped under `.nt`, which wraps the nutrition pages, so none of it can leak into the rest of the app.
+ * The base design tokens (--primary-color, --card-bg, ...) come from the app-wide styles.css.
+ */
+.nt {
+  --protein-color: #3b82f6;
+  --carbs-color: #f59e0b;
+  --fat-color: #ec4899;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+
+  /* Day states on the calendar and charts: solid fills keep white text readable. */
+  --cal-under: #0369a1;
+  --cal-ok: #047857;
+  --cal-over: #c2410c;
+  --cal-text-active: #ffffff;
+}
+
+.nt .page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.nt .page-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.nt .page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.nt .back-btn {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.nt .back-btn:hover {
+  background: var(--hover-bg);
+}
+
+.nt .card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.nt .section-title {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+
+.nt .muted {
+  color: var(--text-secondary);
+}
+
+.nt .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 48px;
+  padding: 0 1.25rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s, background-color 0.2s;
+}
+
+.nt .btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.nt .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.nt .btn-block {
+  width: 100%;
+}
+
+.nt .btn-primary {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.nt .btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark);
+}
+
+.nt .btn-secondary {
+  background: var(--card-bg);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.nt .btn-secondary:hover:not(:disabled) {
+  background: var(--hover-bg);
+}
+
+.nt .btn-danger {
+  background: transparent;
+  border-color: rgba(239, 68, 68, 0.4);
+  color: var(--danger-color);
+}
+
+.nt .btn-text {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-family: inherit;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.nt .btn-text:hover {
+  background: var(--primary-light);
+}
+
+.nt .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin-bottom: 1rem;
+}
+
+.nt .field > label,
+.nt .label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.nt .hint {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.nt .input,
+.nt .select,
+.nt .textarea {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-ground);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.nt .textarea {
+  resize: vertical;
+  min-height: 88px;
+  line-height: 1.4;
+}
+
+.nt .input:focus,
+.nt .select:focus,
+.nt .textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.nt .select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 2rem;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748b%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem top 50%;
+  background-size: 0.65rem auto;
+}
+
+.nt .segmented {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface-ground);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.nt .segmented > button {
+  flex: 1;
+  min-height: 40px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.nt .segmented > button.active {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.nt .spinner {
+  width: 1.1em;
+  height: 1.1em;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  display: inline-block;
+  animation: nt-spin 0.7s linear infinite;
+}
+
+@keyframes nt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.nt .toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  max-width: min(92vw, 420px);
+  background: #0f172a;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  font-size: 0.9rem;
+  text-align: center;
+  z-index: 300;
+  animation: nt-toast-in 0.25s ease;
+}
+
+body.dark-mode .nt .toast {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+@keyframes nt-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}

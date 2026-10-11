@@ -5,6 +5,18 @@
   </header>
 
   <div class="settings-content">
+    <div class="settings-section" *ngIf="access.isAdmin()">
+      <h4>{{ 'ADMIN.SECTION' | translate }}</h4>
+
+      <a routerLink="/settings/access" class="setting-item link">
+        <div class="setting-info">
+          <span class="setting-label">{{ 'ADMIN.ACCESS.MENU' | translate }}</span>
+          <span class="setting-value">{{ 'ADMIN.ACCESS.MENU_SUBTITLE' | translate }}</span>
+        </div>
+        <span class="setting-chevron">›</span>
+      </a>
+    </div>
+
     <div class="settings-section">
       <h4>{{ 'SETTINGS.ABOUT' | translate }}</h4>
 
