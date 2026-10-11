@@ -189,7 +189,7 @@ The **Food** tab (second tab of the bottom navigation, shown to accounts the adm
 -   **Meals**: any number of meals per day, each with an optional photo, a note, a meal type and a time. *Add again* re-logs a meal you ate before.
 -   **AI estimate**: *Estimate with AI* sends the photo and/or note to Gemini and returns the foods, grams, calories and macros, with a confidence level and the assumptions it made. The note wins over the photo ("half of it", "200 g rice"). Every value stays editable, and changing a portion scales its nutrients proportionally.
 -   **Goals**: sex, age, height, weight and (optionally) body fat give your maintenance calories (Katch-McArdle when body fat is set, Mifflin-St Jeor otherwise), a daily target for your goal and macro targets.
--   **Stats**: 7/30-day averages, daily calories against the target, macro split and a weight log (**Stats → Nutrition**).
+-   **Stats**: 7/30-day averages, daily calories against the target and the macro split (**Stats → Nutrition**).
 
 All of it lives under the signed-in user (see *Database Schema* below), so the Firestore rule from the Firebase setup already protects it. Who may use the food tracker at all is decided separately, by the admin (next section).
 
@@ -264,7 +264,7 @@ npm run deploy -- --settings   # also push GEMINI_API_KEY, FIREBASE_PROJECT_ID (
 /nutrition/day/:date           - Meals of one day (protected)
 /nutrition/day/:date/entry/:id - Meal editor, `new` adds a meal (protected)
 /nutrition/goals - Nutrition goals (protected)
-/stats/nutrition - Nutrition statistics and weight log (protected)
+/stats/nutrition - Nutrition statistics (protected)
 ```
 
 ## 🗄️ Database Schema
@@ -289,9 +289,6 @@ The app uses a multi-tenant Firestore structure:
 
 /users/{userId}/foodSettings/profile
   - sex, age, height, weight, body fat, activity level, goal, macro split
-
-/users/{userId}/bodyWeights/{date}
-  - kg, updatedAt
 
 /nutritionAccess/{userId}
   - email, displayName, enabled, createdAt (updatedAt, updatedBy once the admin changed it)

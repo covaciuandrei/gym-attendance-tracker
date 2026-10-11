@@ -370,14 +370,7 @@
             "DAILY_CALORIES": "Daily calories",
             "TARGET": "Target",
             "MACRO_SPLIT": "Macro split",
-            "NO_DATA": "No meals logged in this period yet.",
-            "WEIGHT": "Weight",
-            "LOG_WEIGHT": "Log weight",
-            "WEIGHT_PLACEHOLDER": "kg",
-            "WEIGHT_SAVED": "Weight saved",
-            "CHANGE": "Change",
-            "NO_WEIGHT": "Log your weight to see the trend.",
-            "WEIGHT_INVALID": "Enter a weight between 30 and 300 kg."
+            "NO_DATA": "No meals logged in this period yet."
         },
         "GOALS": {
             "TITLE": "Nutrition goals",

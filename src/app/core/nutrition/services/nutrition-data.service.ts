@@ -22,8 +22,8 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { AuthService } from '../../services/auth.service';
-import { DiaryEntry, Profile, WeightLog } from '../models';
-import { isDateKey, mealForTime, todayKey } from '../utils/date';
+import { DiaryEntry, Profile } from '../models';
+import { mealForTime } from '../utils/date';
 import { newId } from '../utils/id';
 import { isImageDataUrl } from '../utils/image';
 import { itemsTotals } from '../utils/nutrition';
@@ -32,7 +32,6 @@ import { cleanItem, normalizeEntry, toEntryDoc } from './entry-mapper';
 // Everything lives under users/{uid}/..., which the project's existing Firestore rules already restrict to the owner.
 const ENTRIES = 'foodEntries';
 const PHOTOS = 'foodPhotos';
-const WEIGHTS = 'bodyWeights';
 const SETTINGS = 'foodSettings';
 const PROFILE_DOC = 'profile';
 
@@ -180,30 +179,6 @@ export class NutritionDataService {
       if (out.length >= max) break;
     }
     return out;
-  }
-
-  // Body weight
-
-  async weights(): Promise<WeightLog[]> {
-    const docs = await this.docs(query(this.col(WEIGHTS)));
-    const logs: WeightLog[] = [];
-    for (const d of docs) {
-      const kg = d.data()['kg'];
-      if (isDateKey(d.id) && typeof kg === 'number' && Number.isFinite(kg)) logs.push({ date: d.id, kg });
-    }
-    return logs.sort((a, b) => a.date.localeCompare(b.date));
-  }
-
-  async logWeight(kg: number, date = todayKey()): Promise<void> {
-    const batch = writeBatch(this.db);
-    batch.set(this.ref(WEIGHTS, date), { kg: Math.round(kg * 10) / 10, updatedAt: Date.now() });
-    await this.commit(batch);
-  }
-
-  async removeWeight(date: string): Promise<void> {
-    const batch = writeBatch(this.db);
-    batch.delete(this.ref(WEIGHTS, date));
-    await this.commit(batch);
   }
 
   // Profile

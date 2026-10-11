@@ -44,12 +44,6 @@ export interface DiaryEntry {
   updatedAt: number;
 }
 
-export interface WeightLog {
-  /** YYYY-MM-DD */
-  date: string;
-  kg: number;
-}
-
 export type Sex = 'male' | 'female';
 export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
 

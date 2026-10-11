@@ -370,14 +370,7 @@
             "DAILY_CALORIES": "Calorii zilnice",
             "TARGET": "Țintă",
             "MACRO_SPLIT": "Distribuția macro",
-            "NO_DATA": "Nicio masă înregistrată în această perioadă.",
-            "WEIGHT": "Greutate",
-            "LOG_WEIGHT": "Adaugă greutate",
-            "WEIGHT_PLACEHOLDER": "kg",
-            "WEIGHT_SAVED": "Greutate salvată",
-            "CHANGE": "Schimbare",
-            "NO_WEIGHT": "Adaugă greutatea ca să vezi evoluția.",
-            "WEIGHT_INVALID": "Introdu o greutate între 30 și 300 kg."
+            "NO_DATA": "Nicio masă înregistrată în această perioadă."
         },
         "GOALS": {
             "TITLE": "Obiective nutriție",
