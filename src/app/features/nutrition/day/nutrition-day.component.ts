@@ -32,6 +32,8 @@ export class NutritionDayComponent {
   readonly recents = signal<DiaryEntry[]>([]);
   readonly photos = signal<Record<string, string>>({});
   readonly loading = signal(true);
+  /** True when the meals of the day could not be read. Without it a failed read looked like an empty day. */
+  readonly loadFailed = signal(false);
   private loadSeq = 0;
   private destroyed = false;
 
@@ -72,6 +74,7 @@ export class NutritionDayComponent {
   private async load(): Promise<void> {
     const seq = ++this.loadSeq;
     this.loading.set(true);
+    this.loadFailed.set(false);
     try {
       const [entries, recents] = await Promise.all([this.data.getDay(this.date()), this.data.recentMeals(8)]);
       if (this.destroyed || seq !== this.loadSeq) return;
@@ -81,9 +84,18 @@ export class NutritionDayComponent {
       void this.loadPhotos(entries, seq);
     } catch (err) {
       console.error('Could not load the day', err);
+      if (!this.destroyed && seq === this.loadSeq) {
+        // Never leave the meals of another day on screen under this day's title.
+        this.entries.set([]);
+        this.loadFailed.set(true);
+      }
     } finally {
       if (!this.destroyed && seq === this.loadSeq) this.loading.set(false);
     }
+  }
+
+  retry(): void {
+    void this.load();
   }
 
   /** Photos live in their own documents, so the list shows first and the thumbnails fill in as they arrive. */

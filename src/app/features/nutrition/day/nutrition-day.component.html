@@ -17,6 +17,11 @@
       <div class="entry-card ghost"></div>
       <div class="entry-card ghost"></div>
     </div>
+  } @else if (loadFailed()) {
+    <div class="load-error" role="alert">
+      <p>{{ 'NUTRITION.DAY.LOAD_FAILED' | translate }}</p>
+      <button type="button" class="btn btn-secondary" (click)="retry()">{{ 'NUTRITION.COMMON.RETRY' | translate }}</button>
+    </div>
   } @else if (entries().length === 0) {
     <div class="empty">
       <div class="empty-icon">🍽️</div>

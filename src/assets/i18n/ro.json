@@ -265,7 +265,8 @@
             "CLOSE": "Închide",
             "PREVIOUS": "Anterior",
             "NEXT": "Următor",
-            "LOADING": "Se încarcă..."
+            "LOADING": "Se încarcă...",
+            "RETRY": "Încearcă din nou"
         },
         "MACROS": {
             "PROTEIN": "Proteine",
@@ -304,7 +305,8 @@
             "NO_TARGET": "kcal consumate",
             "PREVIOUS": "Ziua precedentă",
             "NEXT": "Ziua următoare",
-            "ADDED": "Adăugat în această zi"
+            "ADDED": "Adăugat în această zi",
+            "LOAD_FAILED": "Nu am putut încărca mesele. Verifică conexiunea și încearcă din nou."
         },
         "ENTRY": {
             "NEW_TITLE": "Masă nouă",

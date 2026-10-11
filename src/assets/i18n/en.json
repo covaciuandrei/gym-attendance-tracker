@@ -265,7 +265,8 @@
             "CLOSE": "Close",
             "PREVIOUS": "Previous",
             "NEXT": "Next",
-            "LOADING": "Loading..."
+            "LOADING": "Loading...",
+            "RETRY": "Try again"
         },
         "MACROS": {
             "PROTEIN": "Protein",
@@ -304,7 +305,8 @@
             "NO_TARGET": "kcal eaten",
             "PREVIOUS": "Previous day",
             "NEXT": "Next day",
-            "ADDED": "Added to this day"
+            "ADDED": "Added to this day",
+            "LOAD_FAILED": "Couldn't load your meals. Check your connection and try again."
         },
         "ENTRY": {
             "NEW_TITLE": "New meal",
