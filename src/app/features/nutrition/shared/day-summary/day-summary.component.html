@@ -1,0 +1,31 @@
+<div class="summary">
+  <div class="ring" [class.over]="over" [style.--pct]="pct" role="img" [attr.aria-label]="kcal + ' kcal'">
+    <div class="ring-inner">
+      <span class="ring-value">{{ kcal }}</span>
+      @if (target) {
+        <span class="ring-sub">{{ 'NUTRITION.DAY.OF_TARGET' | translate: { target: target } }}</span>
+      } @else {
+        <span class="ring-sub">{{ 'NUTRITION.DAY.NO_TARGET' | translate }}</span>
+      }
+    </div>
+  </div>
+
+  <div class="macros">
+    @if (target) {
+      <p class="left" [class.over]="over">
+        {{ (over ? 'NUTRITION.DAY.OVER' : 'NUTRITION.DAY.LEFT') | translate: { count: difference } }}
+      </p>
+    }
+    @for (row of rows; track row.key) {
+      <div class="macro">
+        <div class="macro-head">
+          <span class="macro-name"><span class="dot" [style.background]="row.color"></span>{{ 'NUTRITION.MACROS.' + row.key | translate }}</span>
+          <span class="macro-val">
+            <strong>{{ row.value }}</strong>@if (row.target) {<span class="muted"> / {{ row.target }}</span>}<span class="muted"> g</span>
+          </span>
+        </div>
+        <div class="bar"><div class="fill" [style.width.%]="row.pct" [style.background]="row.color"></div></div>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,26 @@
+{
+  "platform": {
+    "apiRuntime": "node:22"
+  },
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/assets/*", "/api/*", "/*.{png,jpg,jpeg,gif,webp,svg,ico,css,js,json,webmanifest,txt,map,woff,woff2}"]
+  },
+  "routes": [
+    { "route": "/index.html", "headers": { "Cache-Control": "no-cache" } },
+    { "route": "/ngsw.json", "headers": { "Cache-Control": "no-cache" } },
+    { "route": "/ngsw-worker.js", "headers": { "Cache-Control": "no-cache" } },
+    { "route": "/safety-worker.js", "headers": { "Cache-Control": "no-cache" } },
+    { "route": "/worker-basic.min.js", "headers": { "Cache-Control": "no-cache" } },
+    { "route": "/manifest.webmanifest", "headers": { "Cache-Control": "no-cache" } }
+  ],
+  "mimeTypes": {
+    ".webmanifest": "application/manifest+json"
+  },
+  "globalHeaders": {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(self), microphone=(), geolocation=(), payment=()"
+  }
+}

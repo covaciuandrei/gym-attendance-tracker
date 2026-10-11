@@ -1,0 +1,193 @@
+<div class="page editor-page">
+  <header class="page-header">
+    <button type="button" class="back-btn" (click)="goBack()" [attr.aria-label]="'NUTRITION.COMMON.BACK' | translate">‹</button>
+    <h1 class="page-title">{{ title | translate }}</h1>
+  </header>
+
+  @if (!ready()) {
+    <div class="center muted"><span class="spinner"></span></div>
+  } @else if (notFound()) {
+    <div class="empty card">
+      <p>{{ 'NUTRITION.ENTRY.NOT_FOUND' | translate }}</p>
+      <a class="btn btn-secondary" [routerLink]="['/nutrition', 'day', date]">{{ 'NUTRITION.COMMON.BACK' | translate }}</a>
+    </div>
+  } @else {
+    <!-- Photo -->
+    <section class="photo-section">
+      @if (photo(); as url) {
+        <div class="photo-wrap">
+          <img class="photo-preview" [src]="url" alt="" />
+          <button type="button" class="photo-remove" (click)="removePhoto()" [attr.aria-label]="'NUTRITION.ENTRY.REMOVE_PHOTO' | translate">✕</button>
+        </div>
+      } @else {
+        <div class="photo-empty">
+          <div class="photo-buttons">
+            <button type="button" class="photo-btn" (click)="camera.click()">
+              <span class="photo-icon">📷</span>
+              <span>{{ 'NUTRITION.ENTRY.TAKE_PHOTO' | translate }}</span>
+            </button>
+            <button type="button" class="photo-btn" (click)="gallery.click()">
+              <span class="photo-icon">🖼️</span>
+              <span>{{ 'NUTRITION.ENTRY.FROM_GALLERY' | translate }}</span>
+            </button>
+          </div>
+          <p class="hint">{{ 'NUTRITION.ENTRY.PHOTO_HINT' | translate }}</p>
+        </div>
+      }
+      <input #camera type="file" accept="image/*" capture="environment" hidden (change)="onPhotoSelected($event)" />
+      <input #gallery type="file" accept="image/*" hidden (change)="onPhotoSelected($event)" />
+    </section>
+
+    <!-- Note -->
+    <div class="field">
+      <label for="note">{{ 'NUTRITION.ENTRY.NOTE_LABEL' | translate }}</label>
+      <textarea
+        id="note"
+        class="textarea"
+        rows="2"
+        maxlength="600"
+        [(ngModel)]="note"
+        (ngModelChange)="touch()"
+        [placeholder]="'NUTRITION.ENTRY.NOTE_PLACEHOLDER' | translate"
+      ></textarea>
+    </div>
+
+    <!-- Meal + time -->
+    <div class="meal-row">
+      <div class="field meal-field">
+        <span class="label">{{ 'NUTRITION.ENTRY.MEAL_LABEL' | translate }}</span>
+        <div class="segmented meal-segmented" role="radiogroup">
+          @for (type of mealTypes; track type) {
+            <button type="button" role="radio" [attr.aria-checked]="meal === type" [class.active]="meal === type" (click)="chooseMeal(type)" [attr.title]="('NUTRITION.MEAL.' + type.toUpperCase()) | translate">
+              <span aria-hidden="true">{{ mealIcons[type] }}</span>
+            </button>
+          }
+        </div>
+        <span class="hint">{{ ('NUTRITION.MEAL.' + meal.toUpperCase()) | translate }}</span>
+      </div>
+      <div class="field time-field">
+        <label for="time">{{ 'NUTRITION.ENTRY.TIME_LABEL' | translate }}</label>
+        <input id="time" class="input" type="time" [(ngModel)]="time" (ngModelChange)="onTimeChange()" />
+      </div>
+    </div>
+
+    <!-- AI -->
+    <button type="button" class="btn btn-primary btn-block estimate-btn" (click)="estimate()" [disabled]="!canEstimate || analyzing()">
+      @if (analyzing()) {
+        <span class="spinner"></span>
+        <span>{{ 'NUTRITION.ENTRY.ESTIMATING' | translate }}</span>
+      } @else {
+        <span>✨ {{ (rows().length > 0 ? 'NUTRITION.ENTRY.RE_ESTIMATE' : 'NUTRITION.ENTRY.ESTIMATE') | translate }}</span>
+      }
+    </button>
+    @if (!canEstimate && rows().length === 0) {
+      <p class="hint center-text">{{ 'NUTRITION.ENTRY.NEED_INPUT' | translate }}</p>
+    }
+
+    @if (error(); as message) {
+      <div class="error-box" role="alert">{{ message }}</div>
+    }
+
+    <!-- Result -->
+    @if (rows().length > 0) {
+      <section class="result">
+        <div class="field">
+          <label for="name">{{ 'NUTRITION.ENTRY.NAME_LABEL' | translate }}</label>
+          <input id="name" class="input" type="text" maxlength="80" [(ngModel)]="name" (ngModelChange)="touch()" [placeholder]="'NUTRITION.ENTRY.NAME_PLACEHOLDER' | translate" />
+        </div>
+
+        <div class="card totals-card">
+          <div class="totals-main">
+            <span class="totals-kcal">{{ round(totals().kcal) }}</span>
+            <span class="totals-unit">{{ 'NUTRITION.COMMON.KCAL' | translate }}</span>
+          </div>
+          <div class="totals-macros">
+            <span class="pill p"><b>{{ round(totals().protein) }}</b> g {{ 'NUTRITION.MACROS.PROTEIN' | translate }}</span>
+            <span class="pill c"><b>{{ round(totals().carbs) }}</b> g {{ 'NUTRITION.MACROS.CARBS' | translate }}</span>
+            <span class="pill f"><b>{{ round(totals().fat) }}</b> g {{ 'NUTRITION.MACROS.FAT' | translate }}</span>
+          </div>
+          @if (totals().fiber > 0 || totals().sugar > 0) {
+            <div class="totals-extra muted">
+              {{ 'NUTRITION.MACROS.FIBER' | translate }} {{ round(totals().fiber) }} g · {{ 'NUTRITION.MACROS.SUGAR' | translate }} {{ round(totals().sugar) }} g
+            </div>
+          }
+          @if (confidence(); as level) {
+            <div class="confidence" [attr.data-level]="level">
+              {{ 'NUTRITION.ENTRY.CONFIDENCE' | translate }}: <strong>{{ ('NUTRITION.ENTRY.CONFIDENCE_' + level.toUpperCase()) | translate }}</strong>
+            </div>
+          }
+          @if (comment()) {
+            <p class="ai-comment"><span>🤖 {{ 'NUTRITION.ENTRY.ASSUMPTIONS' | translate }}:</span> {{ comment() }}</p>
+          }
+        </div>
+
+        <h3 class="section-title">{{ 'NUTRITION.ENTRY.ITEMS' | translate }}</h3>
+        <div class="items">
+          @for (row of rows(); track i; let i = $index) {
+            <div class="item-card">
+              <div class="item-top">
+                <input
+                  class="input"
+                  type="text"
+                  maxlength="80"
+                  [ngModel]="row.item.name"
+                  (ngModelChange)="setItemName(i, $event)"
+                  [placeholder]="'NUTRITION.ENTRY.ITEM_NAME_PLACEHOLDER' | translate"
+                />
+                <button type="button" class="icon-btn" (click)="removeItem(i)" [attr.aria-label]="'NUTRITION.ENTRY.REMOVE_ITEM' | translate">✕</button>
+              </div>
+              <div class="item-row">
+                <label class="grams">
+                  <span class="label">{{ 'NUTRITION.ENTRY.GRAMS' | translate }}</span>
+                  <input class="input" appNum inputmode="numeric" [num]="row.item.grams" (numChange)="setGrams(i, $event)" />
+                </label>
+                <div class="item-values">
+                  <strong>{{ round(row.item.kcal) }} {{ 'NUTRITION.COMMON.KCAL' | translate }}</strong>
+                  <span class="muted">P {{ round(row.item.protein) }} · C {{ round(row.item.carbs) }} · F {{ round(row.item.fat) }}</span>
+                </div>
+              </div>
+              <button type="button" class="btn-text small" (click)="toggleRow(i)">
+                {{ (row.open ? 'NUTRITION.ENTRY.HIDE_VALUES' : 'NUTRITION.ENTRY.EDIT_VALUES') | translate }}
+              </button>
+              @if (row.open) {
+                <div class="edit-grid">
+                  <label class="field">
+                    <span class="label">{{ 'NUTRITION.COMMON.KCAL' | translate }}</span>
+                    <input class="input" appNum inputmode="numeric" [num]="row.item.kcal" (numChange)="setField(i, 'kcal', $event)" />
+                  </label>
+                  <label class="field">
+                    <span class="label">{{ 'NUTRITION.MACROS.PROTEIN' | translate }} (g)</span>
+                    <input class="input" appNum [num]="row.item.protein" (numChange)="setField(i, 'protein', $event)" />
+                  </label>
+                  <label class="field">
+                    <span class="label">{{ 'NUTRITION.MACROS.CARBS' | translate }} (g)</span>
+                    <input class="input" appNum [num]="row.item.carbs" (numChange)="setField(i, 'carbs', $event)" />
+                  </label>
+                  <label class="field">
+                    <span class="label">{{ 'NUTRITION.MACROS.FAT' | translate }} (g)</span>
+                    <input class="input" appNum [num]="row.item.fat" (numChange)="setField(i, 'fat', $event)" />
+                  </label>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <button type="button" class="btn btn-secondary btn-block add-item" (click)="addItem()">＋ {{ 'NUTRITION.ENTRY.ADD_ITEM' | translate }}</button>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button type="button" class="btn btn-primary btn-block" (click)="save()" [disabled]="saving() || analyzing()">
+        @if (saving()) {
+          <span class="spinner"></span>
+        }
+        {{ 'NUTRITION.ENTRY.SAVE' | translate }}
+      </button>
+      @if (!isNew) {
+        <button type="button" class="btn btn-danger btn-block" (click)="remove()">{{ 'NUTRITION.COMMON.DELETE' | translate }}</button>
+      }
+    </div>
+  }
+</div>

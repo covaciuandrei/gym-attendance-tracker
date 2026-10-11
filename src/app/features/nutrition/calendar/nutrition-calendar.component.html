@@ -1,0 +1,99 @@
+<div class="calendar-container">
+  <section class="card today-card">
+    <div class="today-head">
+      <span class="today-title">{{ 'NUTRITION.CALENDAR.TODAY' | translate }}</span>
+      <span class="today-date">{{ todayLabel() }}</span>
+    </div>
+    <a class="today-body" [routerLink]="['/nutrition', 'day', today()]">
+      <app-nt-day-summary [totals]="todayTotals()" [target]="target()" [macroTargets]="macroTargets()" />
+    </a>
+    <a class="btn btn-primary btn-block" [routerLink]="['/nutrition', 'day', today(), 'entry', 'new']">＋ {{ 'NUTRITION.CALENDAR.ADD_MEAL' | translate }}</a>
+  </section>
+
+  @if (showSetup()) {
+    <a class="card setup-card" routerLink="/nutrition/goals">
+      <span class="setup-icon">🎯</span>
+      <span class="setup-text">
+        <strong>{{ 'NUTRITION.CALENDAR.SETUP_TITLE' | translate }}</strong>
+        <span>{{ 'NUTRITION.CALENDAR.SETUP_DESC' | translate }}</span>
+      </span>
+      <span class="setup-arrow">›</span>
+    </a>
+  } @else {
+    <a class="goals-link" routerLink="/nutrition/goals">🎯 {{ 'NUTRITION.CALENDAR.GOALS' | translate }}</a>
+  }
+
+  <header class="calendar-header">
+    <button type="button" class="nav-btn" (click)="previous()" [attr.aria-label]="'NUTRITION.COMMON.PREVIOUS' | translate">‹</button>
+    <h2 class="title">{{ title() }}</h2>
+    <button type="button" class="nav-btn" (click)="next()" [attr.aria-label]="'NUTRITION.COMMON.NEXT' | translate">›</button>
+  </header>
+
+  <div class="view-toggle">
+    <button type="button" class="toggle-btn" [class.active]="view() === 'monthly'" (click)="setView('monthly')">
+      {{ 'NUTRITION.CALENDAR.MONTHLY' | translate }}
+    </button>
+    <button type="button" class="toggle-btn" [class.active]="view() === 'yearly'" (click)="setView('yearly')">
+      {{ 'NUTRITION.CALENDAR.YEARLY' | translate }}
+    </button>
+  </div>
+
+  @if (view() === 'monthly') {
+    <div class="monthly-view" [class.skeleton-pulse]="loading()">
+      <div class="weekdays">
+        @for (name of weekdays(); track $index) {
+          <div class="weekday">{{ name }}</div>
+        }
+      </div>
+      <div class="days-grid">
+        @for (day of days(); track day.fullDate) {
+          <button
+            type="button"
+            class="day-cell"
+            [attr.data-level]="day.level"
+            [class.other-month]="!day.isCurrentMonth"
+            [class.today]="day.isToday"
+            (click)="openDay(day.fullDate)"
+          >
+            <span class="day-number">{{ day.date }}</span>
+            @if (day.level !== 'none') {
+              <span class="day-kcal">{{ day.kcal }}</span>
+            }
+          </button>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="yearly-view" [class.skeleton-pulse]="loading()">
+      @for (m of months(); track m.month) {
+        <div class="month-card">
+          <h3 class="month-name">{{ m.label }}</h3>
+          <div class="mini-weekdays">
+            @for (name of weekdaysMini(); track $index) {
+              <span>{{ name }}</span>
+            }
+          </div>
+          <div class="mini-days-grid">
+            @for (day of m.days; track $index) {
+              @if (day.date === 0) {
+                <div class="mini-day empty"></div>
+              } @else {
+                <button type="button" class="mini-day" [attr.data-level]="day.level" [class.today]="day.isToday" (click)="openDay(day.fullDate)">
+                  {{ day.date }}
+                </button>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (target()) {
+    <div class="legend">
+      <span class="legend-item"><span class="legend-dot" data-level="under"></span>{{ 'NUTRITION.CALENDAR.LEGEND_UNDER' | translate }}</span>
+      <span class="legend-item"><span class="legend-dot" data-level="ok"></span>{{ 'NUTRITION.CALENDAR.LEGEND_OK' | translate }}</span>
+      <span class="legend-item"><span class="legend-dot" data-level="over"></span>{{ 'NUTRITION.CALENDAR.LEGEND_OVER' | translate }}</span>
+    </div>
+  }
+</div>

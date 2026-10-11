@@ -23,10 +23,12 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/manifest.webmanifest"
+              "src/manifest.webmanifest",
+              "src/staticwebapp.config.json"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "src/app/features/nutrition/nutrition-base.css"
             ],
             "scripts": []
           },
@@ -57,6 +59,9 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "gym-attendance-tracker:build:production"
@@ -87,7 +92,8 @@
               "src/manifest.webmanifest"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "src/app/features/nutrition/nutrition-base.css"
             ],
             "scripts": []
           }

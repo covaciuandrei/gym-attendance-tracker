@@ -1,0 +1,72 @@
+<div class="page day-page">
+  <header class="page-header">
+    <a class="back-btn" routerLink="/nutrition" [attr.aria-label]="'NUTRITION.COMMON.BACK' | translate">‹</a>
+    <h1 class="page-title">{{ title() }}</h1>
+    <div class="day-nav">
+      <button type="button" class="back-btn" (click)="shift(-1)" [attr.aria-label]="'NUTRITION.DAY.PREVIOUS' | translate">‹</button>
+      <button type="button" class="back-btn" (click)="shift(1)" [attr.aria-label]="'NUTRITION.DAY.NEXT' | translate">›</button>
+    </div>
+  </header>
+
+  <section class="card summary-card">
+    <app-nt-day-summary [totals]="totals()" [target]="target()" [macroTargets]="macroTargets()" />
+  </section>
+
+  @if (loading()) {
+    <div class="entry-list skeleton">
+      <div class="entry-card ghost"></div>
+      <div class="entry-card ghost"></div>
+    </div>
+  } @else if (entries().length === 0) {
+    <div class="empty">
+      <div class="empty-icon">🍽️</div>
+      <h3>{{ 'NUTRITION.DAY.EMPTY_TITLE' | translate }}</h3>
+      <p class="muted">{{ 'NUTRITION.DAY.EMPTY_DESC' | translate }}</p>
+    </div>
+  } @else {
+    <div class="entry-list">
+      @for (entry of entries(); track entry.id) {
+        <button type="button" class="entry-card" (click)="open(entry)">
+          <span class="entry-thumb">
+            @if (photos()[entry.id]; as url) {
+              <img [src]="url" alt="" loading="lazy" />
+            } @else {
+              <span class="entry-emoji">{{ mealIcons[entry.meal] }}</span>
+            }
+          </span>
+          <span class="entry-main">
+            <span class="entry-name">{{ displayName(entry) }}</span>
+            <span class="entry-meta">{{ entry.time }} · {{ mealKey(entry.meal) | translate }}</span>
+            <span class="entry-macros">
+              <span class="p">P {{ round(entry.totals.protein) }}</span>
+              <span class="c">C {{ round(entry.totals.carbs) }}</span>
+              <span class="f">F {{ round(entry.totals.fat) }}</span>
+            </span>
+          </span>
+          <span class="entry-kcal">
+            <strong>{{ round(entry.totals.kcal) }}</strong>
+            <small>{{ 'NUTRITION.COMMON.KCAL' | translate }}</small>
+          </span>
+        </button>
+      }
+    </div>
+  }
+
+  <a class="btn btn-primary btn-block add-btn" [routerLink]="['/nutrition', 'day', date(), 'entry', 'new']">＋ {{ 'NUTRITION.DAY.ADD_MEAL' | translate }}</a>
+
+  @if (recents().length > 0) {
+    <section class="recents">
+      <h3 class="section-title">{{ 'NUTRITION.DAY.ADD_AGAIN' | translate }}</h3>
+      <p class="hint">{{ 'NUTRITION.DAY.ADD_AGAIN_HINT' | translate }}</p>
+      <div class="chips">
+        @for (meal of recents(); track meal.id) {
+          <button type="button" class="chip" (click)="addAgain(meal)">
+            <span>{{ mealIcons[meal.meal] }}</span>
+            <span class="chip-name">{{ displayName(meal) }}</span>
+            <span class="chip-kcal">{{ round(meal.totals.kcal) }}</span>
+          </button>
+        }
+      </div>
+    </section>
+  }
+</div>

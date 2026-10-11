@@ -1,0 +1,186 @@
+.goals-section {
+  margin-bottom: 2rem;
+}
+
+h4 {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+}
+
+.form-card .field.last {
+  margin-bottom: 0;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 0.75rem;
+}
+
+.hint.spaced {
+  margin: -0.25rem 0 1rem;
+}
+
+/* Plan */
+.plan-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.plan-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: var(--surface-ground);
+}
+
+.plan-stat.accent {
+  background: var(--primary-light);
+}
+
+.plan-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.plan-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.plan-value small {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.plan-stat.accent .plan-value {
+  color: var(--primary-color);
+}
+
+.plan-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.92rem;
+}
+
+.macro-values {
+  display: inline-flex;
+  gap: 0.75rem;
+}
+
+.macro-values .p {
+  color: var(--protein-color);
+}
+
+.macro-values .c {
+  color: var(--carbs-color);
+}
+
+.macro-values .f {
+  color: var(--fat-color);
+}
+
+.plan-card .hint {
+  margin: 0.5rem 0 0;
+}
+
+.warning {
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  font-size: 0.85rem;
+}
+
+:host-context(body.dark-mode) .warning {
+  color: #fbbf24;
+}
+
+/* Data */
+.legacy-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  border-color: var(--primary-color);
+  background: var(--primary-light);
+}
+
+.legacy-card .hint {
+  margin: 0;
+}
+
+.data-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.data-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.setting-label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.setting-value {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.btn.compact {
+  min-height: 44px;
+  min-width: 52px;
+  padding: 0 0.75rem;
+  font-size: 1.1rem;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--primary-color);
+}
+
+.btn-text.danger {
+  color: var(--danger-color);
+  width: 100%;
+}
+
+.btn-text.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}

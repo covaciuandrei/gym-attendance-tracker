@@ -1,0 +1,146 @@
+<div class="page goals-page">
+  <header class="page-header">
+    <a class="back-btn" routerLink="/nutrition" [attr.aria-label]="'NUTRITION.COMMON.BACK' | translate">‹</a>
+    <h1 class="page-title">{{ 'NUTRITION.GOALS.TITLE' | translate }}</h1>
+  </header>
+
+  <div class="goals-content">
+    <!-- Profile -->
+    <div class="goals-section">
+      <h4>{{ 'NUTRITION.GOALS.PROFILE' | translate }}</h4>
+      <div class="card form-card">
+        <div class="field">
+          <span class="label">{{ 'NUTRITION.GOALS.SEX' | translate }}</span>
+          <div class="segmented">
+            <button type="button" [class.active]="form.sex === 'male'" (click)="setSex('male')">{{ 'NUTRITION.GOALS.MALE' | translate }}</button>
+            <button type="button" [class.active]="form.sex === 'female'" (click)="setSex('female')">{{ 'NUTRITION.GOALS.FEMALE' | translate }}</button>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="age">{{ 'NUTRITION.GOALS.AGE' | translate }}</label>
+            <input id="age" class="input" appNum inputmode="numeric" [num]="form.age" (numChange)="setNumber('age', $event)" />
+          </div>
+          <div class="field">
+            <label for="height">{{ 'NUTRITION.GOALS.HEIGHT' | translate }}</label>
+            <input id="height" class="input" appNum inputmode="numeric" [num]="form.heightCm" (numChange)="setNumber('heightCm', $event)" />
+          </div>
+          <div class="field">
+            <label for="weight">{{ 'NUTRITION.GOALS.WEIGHT' | translate }}</label>
+            <input id="weight" class="input" appNum [num]="form.weightKg" (numChange)="setNumber('weightKg', $event)" />
+          </div>
+          <div class="field">
+            <label for="bodyfat">{{ 'NUTRITION.GOALS.BODY_FAT' | translate }}</label>
+            <input id="bodyfat" class="input" appNum [num]="form.bodyFatPct" (numChange)="setNumber('bodyFatPct', $event)" />
+          </div>
+        </div>
+        <p class="hint spaced">{{ 'NUTRITION.GOALS.BODY_FAT_HINT' | translate }}</p>
+
+        <div class="field">
+          <label for="activity">{{ 'NUTRITION.GOALS.ACTIVITY' | translate }}</label>
+          <select id="activity" class="select" [(ngModel)]="form.activity" (ngModelChange)="onProfileChange()">
+            @for (a of activities; track a.value) {
+              <option [ngValue]="a.value">{{ a.key | translate }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="goal">{{ 'NUTRITION.GOALS.GOAL' | translate }}</label>
+          <select id="goal" class="select" [(ngModel)]="form.rate" (ngModelChange)="onProfileChange()">
+            @for (r of rates; track r) {
+              <option [ngValue]="r">{{ goalKey(r) | translate: { rate: formatRate(r) } }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field last">
+          <label for="custom">{{ 'NUTRITION.GOALS.CUSTOM_TARGET' | translate }}</label>
+          <input id="custom" class="input" appNum inputmode="numeric" [num]="form.customTarget" (numChange)="setNumber('customTarget', $event)" />
+          <span class="hint">{{ 'NUTRITION.GOALS.CUSTOM_HINT' | translate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan -->
+    <div class="goals-section">
+      <h4>{{ 'NUTRITION.GOALS.PLAN' | translate }}</h4>
+      @if (plan(); as p) {
+        <div class="card plan-card">
+          <div class="plan-hero">
+            <div class="plan-stat">
+              <span class="plan-label">{{ 'NUTRITION.GOALS.MAINTENANCE' | translate }}</span>
+              <span class="plan-value">{{ p.maintenance }} <small>{{ 'NUTRITION.COMMON.KCAL' | translate }}</small></span>
+            </div>
+            <div class="plan-stat accent">
+              <span class="plan-label">{{ 'NUTRITION.GOALS.TARGET' | translate }}</span>
+              <span class="plan-value">{{ p.target }} <small>{{ 'NUTRITION.COMMON.KCAL' | translate }}</small></span>
+            </div>
+          </div>
+          <div class="plan-row">
+            <span>{{ 'NUTRITION.GOALS.BMR' | translate }}</span>
+            <strong>{{ p.bmr }} {{ 'NUTRITION.COMMON.KCAL' | translate }}</strong>
+          </div>
+          <div class="plan-row macros">
+            <span>{{ 'NUTRITION.GOALS.MACRO_TARGETS' | translate }}</span>
+            <span class="macro-values">
+              <b class="p">P {{ p.protein }}</b>
+              <b class="c">C {{ p.carbs }}</b>
+              <b class="f">F {{ p.fat }}</b>
+            </span>
+          </div>
+          <p class="hint">
+            {{ formulaKey | translate }}
+            @if (p.altBmr !== null) {
+              {{ 'NUTRITION.GOALS.COMPARE' | translate: { value: p.altBmr } }}
+            }
+          </p>
+          @if (p.belowSafeMinimum) {
+            <p class="warning">⚠️ {{ 'NUTRITION.GOALS.LOW_WARNING' | translate }}</p>
+          }
+        </div>
+      } @else {
+        <div class="card"><p class="hint">{{ 'NUTRITION.GOALS.FILL_PROFILE' | translate }}</p></div>
+      }
+    </div>
+
+    <!-- Data -->
+    <div class="goals-section">
+      <h4>{{ 'NUTRITION.GOALS.DATA' | translate }}</h4>
+      <p class="hint spaced">{{ 'NUTRITION.GOALS.STORAGE_NOTE' | translate }}</p>
+
+      @if (legacyCount() > 0) {
+        <div class="card legacy-card">
+          <strong>{{ 'NUTRITION.GOALS.LEGACY_TITLE' | translate }}</strong>
+          <p class="hint">{{ 'NUTRITION.GOALS.LEGACY_DESC' | translate: { count: legacyCount() } }}</p>
+          <button type="button" class="btn btn-primary" (click)="importLegacy()" [disabled]="busy()">{{ 'NUTRITION.GOALS.LEGACY_BTN' | translate }}</button>
+        </div>
+      }
+
+      <div class="card data-card">
+        <div class="data-row">
+          <div class="setting-info">
+            <span class="setting-label">{{ 'NUTRITION.GOALS.EXPORT' | translate }}</span>
+            <span class="setting-value">{{ 'NUTRITION.GOALS.EXPORT_DESC' | translate }}</span>
+          </div>
+          <button type="button" class="btn btn-secondary compact" (click)="exportBackup()" [disabled]="busy()" [attr.aria-label]="'NUTRITION.GOALS.EXPORT' | translate">⬇️</button>
+        </div>
+        <label class="check">
+          <input type="checkbox" [(ngModel)]="includePhotos" />
+          <span>{{ 'NUTRITION.GOALS.INCLUDE_PHOTOS' | translate }}</span>
+        </label>
+        <div class="data-row">
+          <div class="setting-info">
+            <span class="setting-label">{{ 'NUTRITION.GOALS.IMPORT' | translate }}</span>
+            <span class="setting-value">{{ 'NUTRITION.GOALS.IMPORT_DESC' | translate }}</span>
+          </div>
+          <button type="button" class="btn btn-secondary compact" (click)="importFile.click()" [disabled]="busy()" [attr.aria-label]="'NUTRITION.GOALS.IMPORT' | translate">⬆️</button>
+          <input #importFile type="file" accept="application/json,.json" hidden (change)="onImportFile($event)" />
+        </div>
+      </div>
+
+      <button type="button" class="btn-text danger" (click)="clearAll()" [disabled]="busy()">{{ 'NUTRITION.GOALS.CLEAR' | translate }}</button>
+    </div>
+  </div>
+</div>
