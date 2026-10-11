@@ -25,7 +25,11 @@ export type AiErrorCode =
   | 'unknown';
 
 export class AiError extends Error {
-  constructor(readonly code: AiErrorCode) {
+  /** `detail` is a short technical hint (an HTTP status, say) for the problems the message cannot explain. */
+  constructor(
+    readonly code: AiErrorCode,
+    readonly detail?: string,
+  ) {
     super(code);
     this.name = 'AiError';
   }
@@ -81,9 +85,9 @@ export class NutritionAiService {
       // Our API always answers with a JSON error code. Anything else came from something in front of it, or nothing
       // is serving /api at all (locally: the dev API isn't running).
       if (typeof json?.error !== 'string') console.warn(`The AI request got HTTP ${res.status} without an API error. Is the API running? Locally: npm start, or npm run dev:api.`);
-      throw new AiError(mapFailure(res.status, json?.error));
+      throw new AiError(mapFailure(res.status, json?.error), `HTTP ${res.status}`);
     }
-    if (!json || typeof json !== 'object' || !Array.isArray(json.items)) throw new AiError('unknown');
+    if (!json || typeof json !== 'object' || !Array.isArray(json.items)) throw new AiError('unknown', 'unexpected answer');
     return json as AnalysisResult;
   }
 
@@ -110,7 +114,7 @@ export class NutritionAiService {
       });
     } catch (err) {
       if ((err as Error)?.name === 'AbortError') throw new AiError('timeout');
-      throw new AiError(navigator.onLine ? 'network' : 'offline');
+      throw new AiError(navigator.onLine ? 'network' : 'offline', (err as Error)?.message);
     } finally {
       clearTimeout(timer);
     }

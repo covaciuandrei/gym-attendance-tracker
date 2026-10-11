@@ -21,6 +21,9 @@ interface Row {
 
 type EditableField = 'kcal' | 'protein' | 'carbs' | 'fat';
 
+/** AI failures whose message does not say what went wrong; they also show the technical reason. */
+const HINTED_AI_ERRORS: string[] = ['unknown', 'network', 'unavailable'];
+
 const toNumber = (value: unknown): number => {
   const n = typeof value === 'number' ? value : parseFloat(String(value ?? '').replace(',', '.'));
   return Number.isFinite(n) && n > 0 ? n : 0;
@@ -180,7 +183,7 @@ export class EntryEditorComponent implements OnInit {
     } catch (err) {
       if (this.destroyed || seq !== this.photoSeq) return;
       console.error('Could not read the photo', err);
-      this.error.set(this.translate.instant('NUTRITION.ENTRY.PHOTO_FAILED'));
+      this.error.set(this.withReason(this.translate.instant('NUTRITION.ENTRY.PHOTO_FAILED'), err));
     }
   }
 
@@ -263,7 +266,18 @@ export class EntryEditorComponent implements OnInit {
 
   private messageFor(err: unknown): string {
     const code = err instanceof AiError ? err.code : 'unknown';
-    return this.translate.instant(`NUTRITION.ERRORS.${code.toUpperCase()}`);
+    if (!(err instanceof AiError)) console.error('The AI estimate failed', err);
+    const message = this.translate.instant(`NUTRITION.ERRORS.${code.toUpperCase()}`);
+    // The problems the message cannot explain get a short technical hint, so they can be told apart.
+    const hint = err instanceof AiError ? err.detail : err instanceof Error ? err.message : undefined;
+    return HINTED_AI_ERRORS.includes(code) && hint ? `${message} (${hint.slice(0, 80)})` : message;
+  }
+
+  /** Appends the technical reason, such as a Firestore error code, so a failure on someone's phone can be identified. */
+  private withReason(message: string, err: unknown): string {
+    const code = (err as { code?: unknown } | null)?.code;
+    const reason = typeof code === 'string' ? code : err instanceof Error ? err.message : '';
+    return reason ? `${message} (${reason.slice(0, 80)})` : message;
   }
 
   // Save / delete / leave
@@ -307,7 +321,7 @@ export class EntryEditorComponent implements OnInit {
       await this.router.navigate(['/nutrition', 'day', this.date], { replaceUrl: true });
     } catch (err) {
       console.error('Could not save the meal', err);
-      this.error.set(this.translate.instant('NUTRITION.ENTRY.SAVE_FAILED'));
+      this.error.set(this.withReason(this.translate.instant('NUTRITION.ENTRY.SAVE_FAILED'), err));
     } finally {
       this.saving.set(false);
     }
@@ -321,7 +335,7 @@ export class EntryEditorComponent implements OnInit {
       await this.router.navigate(['/nutrition', 'day', this.date], { replaceUrl: true });
     } catch (err) {
       console.error('Could not delete the meal', err);
-      this.error.set(this.translate.instant('NUTRITION.ENTRY.SAVE_FAILED'));
+      this.error.set(this.withReason(this.translate.instant('NUTRITION.ENTRY.SAVE_FAILED'), err));
     }
   }
 
